@@ -156,6 +156,8 @@ class Shape {
     return cn;
   }
 
+  bool get isBasicTypeOrEnum => enumeration != null || type.isBasicType();
+
   void markUsed(bool isInput) {
     if (isInput && isUsedInInput) return;
     if (!isInput && isUsedInOutput) return;

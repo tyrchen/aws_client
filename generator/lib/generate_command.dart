@@ -230,6 +230,7 @@ class GenerateCommand extends Command {
       print(pr.stderr);
       throw Exception('pub get failed at $baseDir');
     }
+    await Future.delayed(Duration(seconds: 5));
   }
 
   Future<void> _runBuildRunner(String baseDir) async {
@@ -244,6 +245,7 @@ class GenerateCommand extends Command {
       print(pr.stderr);
       throw Exception('build_runner failed at $baseDir');
     }
+    await Future.delayed(Duration(seconds: 5));
   }
 }
 

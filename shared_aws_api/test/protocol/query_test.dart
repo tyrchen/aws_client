@@ -5,13 +5,13 @@ import 'package:shared_aws_api/src/protocol/query.dart';
 void main() {
   group('flatQueryParams', () {
     test('string values', () {
-      expect(flatQueryParams({'Version': ''}), {'Version': ''});
-      expect(flatQueryParams({'Version': '1.2.3'}), {'Version': '1.2.3'});
+      expect(queryParamsAsFlatMap({'Version': ''}), {'Version': ''});
+      expect(queryParamsAsFlatMap({'Version': '1.2.3'}), {'Version': '1.2.3'});
     });
 
     test('empty list', () {
       expect(
-        flatQueryParams({'List': []}),
+        queryParamsAsFlatMap({'List': []}),
         {
           'List': '',
         },
@@ -20,7 +20,7 @@ void main() {
 
     test('list', () {
       expect(
-        flatQueryParams({
+        queryParamsAsFlatMap({
           'List': ['a', 'b']
         }),
         {
@@ -31,12 +31,12 @@ void main() {
     });
 
     test('empty map', () {
-      expect(flatQueryParams({'Map': {}}), {});
+      expect(queryParamsAsFlatMap({'Map': {}}), {});
     });
 
     test('map', () {
       expect(
-        flatQueryParams({
+        queryParamsAsFlatMap({
           'Map': {'a': 'A', 'b': 'B'}
         }),
         {

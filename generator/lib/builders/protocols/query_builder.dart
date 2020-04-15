@@ -28,11 +28,28 @@ class QueryServiceBuilder extends ServiceBuilder {
         '      \'Version\': \'${api.metadata.apiVersion}\',');
     buf.writeln('    };');
     parameterShape?.members?.forEach((member) {
+      String Function(String arg) transform;
+      final attrBaseName = member.locationName ?? member.name;
+      if (member.shapeClass.type == 'list' &&
+          !member.shapeClass.member.shapeClass.isBasicTypeOrEnum) {
+        transform = (x) =>
+            '\$request[\'$attrBaseName\'] = $x.map((v) => v.toJson()).toList()';
+      } else if (member.shapeClass.type == 'map' &&
+          member.flattened &&
+          !member.shapeClass.value.shapeClass.isBasicTypeOrEnum) {
+        transform = (x) =>
+            '\$request.addEntries(_s.flattenQueryParams(<String>[\'$attrBaseName\'], Map.fromEntries($x.entries.map((e) => MapEntry(e.key, e.value.toJson()))), flatten: true))';
+      } else if (member.shapeClass.type == 'map' &&
+          !member.shapeClass.value.shapeClass.isBasicTypeOrEnum) {
+        transform = (x) =>
+            '\$request[\'$attrBaseName\'] = Map.fromEntries($x.entries.map((e) => MapEntry(e.key, e.value.toJson())))';
+      }
+      transform ??= (x) => '\$request[\'$attrBaseName\'] = $x';
+
       if (member.isRequired) {
-        buf.writeln("\$request['${member.name}'] = ${member.fieldName};");
+        buf.writeln('${transform(member.fieldName)};');
       } else {
-        buf.writeln(
-            "${member.fieldName}?.also((arg) => \$request['${member.name}'] = arg);");
+        buf.writeln("${member.fieldName}?.also((arg) => ${transform('arg')});");
       }
     });
     final params = StringBuffer('\$request, '

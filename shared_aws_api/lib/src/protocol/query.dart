@@ -71,7 +71,8 @@ class QueryProtocol {
   Request _buildRequest(
       Map<String, dynamic> data, String method, String requestUri) {
     final rq = Request(method, Uri.parse('$_endpointUrl$requestUri'));
-    rq.body = _canonical(flatQueryParams(data));
+    rq.body = _canonical(queryParamsAsFlatMap(data));
+    print(rq.body);
     rq.headers['Content-Type'] = 'application/x-www-form-urlencoded';
     // TODO: handle if the API is using different signing
     signAws4HmacSha256(
@@ -85,12 +86,14 @@ class QueryProtocol {
 }
 
 @visibleForTesting
-Map<String, String> flatQueryParams(dynamic data) {
-  return Map.fromEntries(_flatten([], data));
+Map<String, String> queryParamsAsFlatMap(dynamic data) {
+  return Map.fromEntries(flattenQueryParams([], data));
 }
 
-Iterable<MapEntry<String, String>> _flatten(
-    List<String> prefixes, dynamic data) sync* {
+Iterable<MapEntry<String, String>> flattenQueryParams(
+    List<String> prefixes, dynamic data,
+    {bool flatten}) sync* {
+  flatten ??= prefixes.isEmpty;
   if (data == null) {
     return;
   }
@@ -113,7 +116,7 @@ Iterable<MapEntry<String, String>> _flatten(
     } else {
       for (var i = 0; i < data.length; i++) {
         final newPrefixes = [...prefixes, '${i + 1}'];
-        yield* _flatten(newPrefixes, data[i]);
+        yield* flattenQueryParams(newPrefixes, data[i]);
       }
     }
     return;
@@ -125,17 +128,20 @@ Iterable<MapEntry<String, String>> _flatten(
   }
 
   if (data is Map) {
-    var flat = false;
-    if (prefixes.isEmpty) flat = true;
-
     var i = 0;
     for (final e in data.entries) {
       final key = e.key;
-      if (flat && key is String) {
-        yield* _flatten([...prefixes, key], e.value);
+      final value = e.value;
+      if (flatten && key is String && value is Map) {
+        yield* flattenQueryParams([...prefixes, '${i + 1}', 'Name'], key);
+        yield* flattenQueryParams([...prefixes, '${i + 1}', 'Value'], value);
+      } else if (flatten && key is String) {
+        yield* flattenQueryParams([...prefixes, key], e.value);
       } else {
-        yield* _flatten([...prefixes, 'entry', '${i + 1}', 'key'], key);
-        yield* _flatten([...prefixes, 'entry', '${i + 1}', 'value'], e.value);
+        yield* flattenQueryParams(
+            [...prefixes, 'Entry', '${i + 1}', 'Key'], key);
+        yield* flattenQueryParams(
+            [...prefixes, 'Entry', '${i + 1}', 'Value'], e.value);
       }
       i++;
     }
