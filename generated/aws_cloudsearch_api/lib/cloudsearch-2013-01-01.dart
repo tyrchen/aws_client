@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'cloudsearch-2013-01-01.g.dart';
 
 /// You use the Amazon CloudSearch configuration service to create, configure,
 /// and manage search domains. Configuration service requests are submitted
@@ -1296,8 +1306,15 @@ class CloudSearch {
 
 /// The configured access rules for the domain's document and search endpoints,
 /// and the current status of those rules.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccessPoliciesStatus {
+  @_s.JsonKey(name: 'Options')
   final String options;
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   AccessPoliciesStatus({
@@ -1315,9 +1332,13 @@ class AccessPoliciesStatus {
 }
 
 enum AlgorithmicStemming {
+  @_s.JsonValue('none')
   none,
+  @_s.JsonValue('minimal')
   minimal,
+  @_s.JsonValue('light')
   light,
+  @_s.JsonValue('full')
   full,
 }
 
@@ -1339,6 +1360,11 @@ extension on String {
 
 /// Synonyms, stopwords, and stemming options for an analysis scheme. Includes
 /// tokenization dictionary for Japanese.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AnalysisOptions {
   /// The level of algorithmic stemming to perform: <code>none</code>,
   /// <code>minimal</code>, <code>light</code>, or <code>full</code>. The
@@ -1347,12 +1373,14 @@ class AnalysisOptions {
   /// href="http://docs.aws.amazon.com/cloudsearch/latest/developerguide/text-processing.html#text-processing-settings"
   /// target="_blank">Language Specific Text Processing Settings</a> in the
   /// <i>Amazon CloudSearch Developer Guide</i>
+  @_s.JsonKey(name: 'AlgorithmicStemming')
   final AlgorithmicStemming algorithmicStemming;
 
   /// A JSON array that contains a collection of terms, tokens, readings and part
   /// of speech for Japanese Tokenizaiton. The Japanese tokenization dictionary
   /// enables you to override the default tokenization for selected terms. This is
   /// only valid for Japanese language fields.
+  @_s.JsonKey(name: 'JapaneseTokenizationDictionary')
   final String japaneseTokenizationDictionary;
 
   /// A JSON object that contains a collection of string:value pairs that each map
@@ -1361,12 +1389,14 @@ class AnalysisOptions {
   /// any algorithmic stemming. This enables you to override the results of the
   /// algorithmic stemming to correct specific cases of overstemming or
   /// understemming. The maximum size of a stemming dictionary is 500 KB.
+  @_s.JsonKey(name: 'StemmingDictionary')
   final String stemmingDictionary;
 
   /// A JSON array of terms to ignore during indexing and searching. For example,
   /// <code>["a", "an", "the", "of"]</code>. The stopwords dictionary must
   /// explicitly list each word you want to ignore. Wildcards and regular
   /// expressions are not supported.
+  @_s.JsonKey(name: 'Stopwords')
   final String stopwords;
 
   /// A JSON object that defines synonym groups and aliases. A synonym group is an
@@ -1379,6 +1409,7 @@ class AnalysisOptions {
   /// information about specifying synonyms, see <a
   /// href="http://docs.aws.amazon.com/cloudsearch/latest/developerguide/configuring-analysis-schemes.html#synonyms">Synonyms</a>
   /// in the <i>Amazon CloudSearch Developer Guide</i>.
+  @_s.JsonKey(name: 'Synonyms')
   final String synonyms;
 
   AnalysisOptions({
@@ -1400,6 +1431,8 @@ class AnalysisOptions {
       synonyms: _s.extractXmlStringValue(elem, 'Synonyms'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$AnalysisOptionsToJson(this);
 }
 
 /// Configuration information for an analysis scheme. Each analysis scheme has a
@@ -1408,9 +1441,17 @@ class AnalysisOptions {
 /// <code>Synonyms</code>, <code>Stopwords</code>,
 /// <code>StemmingDictionary</code>, <code>JapaneseTokenizationDictionary</code>
 /// and <code>AlgorithmicStemming</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AnalysisScheme {
+  @_s.JsonKey(name: 'AnalysisSchemeLanguage')
   final AnalysisSchemeLanguage analysisSchemeLanguage;
+  @_s.JsonKey(name: 'AnalysisSchemeName')
   final String analysisSchemeName;
+  @_s.JsonKey(name: 'AnalysisOptions')
   final AnalysisOptions analysisOptions;
 
   AnalysisScheme({
@@ -1429,45 +1470,82 @@ class AnalysisScheme {
           ?.let((e) => AnalysisOptions.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$AnalysisSchemeToJson(this);
 }
 
 /// An <a href="http://tools.ietf.org/html/rfc4646" target="_blank">IETF RFC
 /// 4646</a> language code or <code>mul</code> for multiple languages.
 enum AnalysisSchemeLanguage {
+  @_s.JsonValue('ar')
   ar,
+  @_s.JsonValue('bg')
   bg,
+  @_s.JsonValue('ca')
   ca,
+  @_s.JsonValue('cs')
   cs,
+  @_s.JsonValue('da')
   da,
+  @_s.JsonValue('de')
   de,
+  @_s.JsonValue('el')
   el,
+  @_s.JsonValue('en')
   en,
+  @_s.JsonValue('es')
   es,
+  @_s.JsonValue('eu')
   eu,
+  @_s.JsonValue('fa')
   fa,
+  @_s.JsonValue('fi')
   fi,
+  @_s.JsonValue('fr')
   fr,
+  @_s.JsonValue('ga')
   ga,
+  @_s.JsonValue('gl')
   gl,
+  @_s.JsonValue('he')
   he,
+  @_s.JsonValue('hi')
   hi,
+  @_s.JsonValue('hu')
   hu,
+  @_s.JsonValue('hy')
   hy,
+  @_s.JsonValue('id')
   id,
+  @_s.JsonValue('it')
   it,
+  @_s.JsonValue('ja')
   ja,
+  @_s.JsonValue('ko')
   ko,
+  @_s.JsonValue('lv')
   lv,
+  @_s.JsonValue('mul')
   mul,
+  @_s.JsonValue('nl')
   nl,
+  @_s.JsonValue('no')
   no,
+  @_s.JsonValue('pt')
   pt,
+  @_s.JsonValue('ro')
   ro,
+  @_s.JsonValue('ru')
   ru,
+  @_s.JsonValue('sv')
   sv,
+  @_s.JsonValue('th')
   th,
+  @_s.JsonValue('tr')
   tr,
+  @_s.JsonValue('zh-Hans')
   zhHans,
+  @_s.JsonValue('zh-Hant')
   zhHant,
 }
 
@@ -1550,8 +1628,15 @@ extension on String {
 }
 
 /// The status and configuration of an <code>AnalysisScheme</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AnalysisSchemeStatus {
+  @_s.JsonKey(name: 'Options')
   final AnalysisScheme options;
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   AnalysisSchemeStatus({
@@ -1571,9 +1656,16 @@ class AnalysisSchemeStatus {
 }
 
 /// The status and configuration of the domain's availability options.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AvailabilityOptionsStatus {
   /// The availability options configured for the domain.
+  @_s.JsonKey(name: 'Options')
   final bool options;
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   AvailabilityOptionsStatus({
@@ -1592,7 +1684,13 @@ class AvailabilityOptionsStatus {
 
 /// The result of a <code>BuildSuggester</code> request. Contains a list of the
 /// fields used for suggestions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BuildSuggestersResponse {
+  @_s.JsonKey(name: 'FieldNames')
   final List<String> fieldNames;
 
   BuildSuggestersResponse({
@@ -1609,7 +1707,13 @@ class BuildSuggestersResponse {
 
 /// The result of a <code>CreateDomainRequest</code>. Contains the status of a
 /// newly created domain.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDomainResponse {
+  @_s.JsonKey(name: 'DomainStatus')
   final DomainStatus domainStatus;
 
   CreateDomainResponse({
@@ -1627,20 +1731,30 @@ class CreateDomainResponse {
 /// Options for a field that contains an array of dates. Present if
 /// <code>IndexFieldType</code> specifies the field is of type
 /// <code>date-array</code>. All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DateArrayOptions {
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// A list of source fields to map to the field.
+  @_s.JsonKey(name: 'SourceFields')
   final String sourceFields;
 
   DateArrayOptions({
@@ -1659,27 +1773,40 @@ class DateArrayOptions {
       sourceFields: _s.extractXmlStringValue(elem, 'SourceFields'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DateArrayOptionsToJson(this);
 }
 
 /// Options for a date field. Dates and times are specified in UTC (Coordinated
 /// Universal Time) according to IETF RFC3339: yyyy-mm-ddT00:00:00Z. Present if
 /// <code>IndexFieldType</code> specifies the field is of type
 /// <code>date</code>. All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DateOptions {
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// Whether the field can be used to sort the search results.
+  @_s.JsonKey(name: 'SortEnabled')
   final bool sortEnabled;
+  @_s.JsonKey(name: 'SourceField')
   final String sourceField;
 
   DateOptions({
@@ -1700,11 +1827,19 @@ class DateOptions {
       sourceField: _s.extractXmlStringValue(elem, 'SourceField'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DateOptionsToJson(this);
 }
 
 /// The result of a <code><a>DefineAnalysisScheme</a></code> request. Contains
 /// the status of the newly-configured analysis scheme.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DefineAnalysisSchemeResponse {
+  @_s.JsonKey(name: 'AnalysisScheme')
   final AnalysisSchemeStatus analysisScheme;
 
   DefineAnalysisSchemeResponse({
@@ -1721,7 +1856,13 @@ class DefineAnalysisSchemeResponse {
 
 /// The result of a <code>DefineExpression</code> request. Contains the status
 /// of the newly-configured expression.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DefineExpressionResponse {
+  @_s.JsonKey(name: 'Expression')
   final ExpressionStatus expression;
 
   DefineExpressionResponse({
@@ -1738,7 +1879,13 @@ class DefineExpressionResponse {
 
 /// The result of a <code><a>DefineIndexField</a></code> request. Contains the
 /// status of the newly-configured index field.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DefineIndexFieldResponse {
+  @_s.JsonKey(name: 'IndexField')
   final IndexFieldStatus indexField;
 
   DefineIndexFieldResponse({
@@ -1755,7 +1902,13 @@ class DefineIndexFieldResponse {
 
 /// The result of a <code>DefineSuggester</code> request. Contains the status of
 /// the newly-configured suggester.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DefineSuggesterResponse {
+  @_s.JsonKey(name: 'Suggester')
   final SuggesterStatus suggester;
 
   DefineSuggesterResponse({
@@ -1772,8 +1925,14 @@ class DefineSuggesterResponse {
 
 /// The result of a <code>DeleteAnalysisScheme</code> request. Contains the
 /// status of the deleted analysis scheme.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteAnalysisSchemeResponse {
   /// The status of the analysis scheme being deleted.
+  @_s.JsonKey(name: 'AnalysisScheme')
   final AnalysisSchemeStatus analysisScheme;
 
   DeleteAnalysisSchemeResponse({
@@ -1791,7 +1950,13 @@ class DeleteAnalysisSchemeResponse {
 /// The result of a <code>DeleteDomain</code> request. Contains the status of a
 /// newly deleted domain, or no status if the domain has already been completely
 /// deleted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDomainResponse {
+  @_s.JsonKey(name: 'DomainStatus')
   final DomainStatus domainStatus;
 
   DeleteDomainResponse({
@@ -1808,8 +1973,14 @@ class DeleteDomainResponse {
 
 /// The result of a <code><a>DeleteExpression</a></code> request. Specifies the
 /// expression being deleted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteExpressionResponse {
   /// The status of the expression being deleted.
+  @_s.JsonKey(name: 'Expression')
   final ExpressionStatus expression;
 
   DeleteExpressionResponse({
@@ -1825,8 +1996,14 @@ class DeleteExpressionResponse {
 }
 
 /// The result of a <code><a>DeleteIndexField</a></code> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteIndexFieldResponse {
   /// The status of the index field being deleted.
+  @_s.JsonKey(name: 'IndexField')
   final IndexFieldStatus indexField;
 
   DeleteIndexFieldResponse({
@@ -1843,8 +2020,14 @@ class DeleteIndexFieldResponse {
 
 /// The result of a <code>DeleteSuggester</code> request. Contains the status of
 /// the deleted suggester.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteSuggesterResponse {
   /// The status of the suggester being deleted.
+  @_s.JsonKey(name: 'Suggester')
   final SuggesterStatus suggester;
 
   DeleteSuggesterResponse({
@@ -1861,8 +2044,14 @@ class DeleteSuggesterResponse {
 
 /// The result of a <code>DescribeAnalysisSchemes</code> request. Contains the
 /// analysis schemes configured for the domain specified in the request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAnalysisSchemesResponse {
   /// The analysis scheme descriptions.
+  @_s.JsonKey(name: 'AnalysisSchemes')
   final List<AnalysisSchemeStatus> analysisSchemes;
 
   DescribeAnalysisSchemesResponse({
@@ -1882,9 +2071,15 @@ class DescribeAnalysisSchemesResponse {
 /// The result of a <code>DescribeAvailabilityOptions</code> request. Indicates
 /// whether or not the Multi-AZ option is enabled for the domain specified in
 /// the request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAvailabilityOptionsResponse {
   /// The availability options configured for the domain. Indicates whether
   /// Multi-AZ is enabled for the domain.
+  @_s.JsonKey(name: 'AvailabilityOptions')
   final AvailabilityOptionsStatus availabilityOptions;
 
   DescribeAvailabilityOptionsResponse({
@@ -1901,8 +2096,14 @@ class DescribeAvailabilityOptionsResponse {
 
 /// The result of a <code>DescribeDomainEndpointOptions</code> request. Contains
 /// the status and configuration of a search domain's endpoint options.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDomainEndpointOptionsResponse {
   /// The status and configuration of a search domain's endpoint options.
+  @_s.JsonKey(name: 'DomainEndpointOptions')
   final DomainEndpointOptionsStatus domainEndpointOptions;
 
   DescribeDomainEndpointOptionsResponse({
@@ -1919,7 +2120,13 @@ class DescribeDomainEndpointOptionsResponse {
 
 /// The result of a <code>DescribeDomains</code> request. Contains the status of
 /// the domains specified in the request or all domains owned by the account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDomainsResponse {
+  @_s.JsonKey(name: 'DomainStatusList')
   final List<DomainStatus> domainStatusList;
 
   DescribeDomainsResponse({
@@ -1938,8 +2145,14 @@ class DescribeDomainsResponse {
 
 /// The result of a <code>DescribeExpressions</code> request. Contains the
 /// expressions configured for the domain specified in the request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeExpressionsResponse {
   /// The expressions configured for the domain.
+  @_s.JsonKey(name: 'Expressions')
   final List<ExpressionStatus> expressions;
 
   DescribeExpressionsResponse({
@@ -1957,8 +2170,14 @@ class DescribeExpressionsResponse {
 
 /// The result of a <code>DescribeIndexFields</code> request. Contains the index
 /// fields configured for the domain specified in the request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeIndexFieldsResponse {
   /// The index fields configured for the domain.
+  @_s.JsonKey(name: 'IndexFields')
   final List<IndexFieldStatus> indexFields;
 
   DescribeIndexFieldsResponse({
@@ -1976,7 +2195,13 @@ class DescribeIndexFieldsResponse {
 
 /// The result of a <code>DescribeScalingParameters</code> request. Contains the
 /// scaling parameters configured for the domain specified in the request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeScalingParametersResponse {
+  @_s.JsonKey(name: 'ScalingParameters')
   final ScalingParametersStatus scalingParameters;
 
   DescribeScalingParametersResponse({
@@ -1992,8 +2217,14 @@ class DescribeScalingParametersResponse {
 }
 
 /// The result of a <code>DescribeServiceAccessPolicies</code> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeServiceAccessPoliciesResponse {
   /// The access rules configured for the domain specified in the request.
+  @_s.JsonKey(name: 'AccessPolicies')
   final AccessPoliciesStatus accessPolicies;
 
   DescribeServiceAccessPoliciesResponse({
@@ -2009,8 +2240,14 @@ class DescribeServiceAccessPoliciesResponse {
 }
 
 /// The result of a <code>DescribeSuggesters</code> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeSuggestersResponse {
   /// The suggesters configured for the domain specified in the request.
+  @_s.JsonKey(name: 'Suggesters')
   final List<SuggesterStatus> suggesters;
 
   DescribeSuggestersResponse({
@@ -2027,8 +2264,14 @@ class DescribeSuggestersResponse {
 }
 
 /// Options for a search suggester.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DocumentSuggesterOptions {
   /// The name of the index field you want to use for suggestions.
+  @_s.JsonKey(name: 'SourceField')
   final String sourceField;
 
   /// The level of fuzziness allowed when suggesting matches for a string:
@@ -2036,6 +2279,7 @@ class DocumentSuggesterOptions {
   /// specified string is treated as an exact prefix. With low, suggestions must
   /// differ from the specified string by no more than one character. With high,
   /// suggestions can differ by up to two characters. The default is none.
+  @_s.JsonKey(name: 'FuzzyMatching')
   final SuggesterFuzzyMatching fuzzyMatching;
 
   /// An expression that computes a score for each suggestion to control how they
@@ -2046,6 +2290,7 @@ class DocumentSuggesterOptions {
   /// simply specify the name of the field or expression. If no expression is
   /// configured for the suggester, the suggestions are sorted with the closest
   /// matches listed first.
+  @_s.JsonKey(name: 'SortExpression')
   final String sortExpression;
 
   DocumentSuggesterOptions({
@@ -2062,14 +2307,23 @@ class DocumentSuggesterOptions {
       sortExpression: _s.extractXmlStringValue(elem, 'SortExpression'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DocumentSuggesterOptionsToJson(this);
 }
 
 /// The domain's endpoint options.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DomainEndpointOptions {
   /// Whether the domain is HTTPS only enabled.
+  @_s.JsonKey(name: 'EnforceHTTPS')
   final bool enforceHTTPS;
 
   /// The minimum required TLS version
+  @_s.JsonKey(name: 'TLSSecurityPolicy')
   final TLSSecurityPolicy tLSSecurityPolicy;
 
   DomainEndpointOptions({
@@ -2084,14 +2338,23 @@ class DomainEndpointOptions {
           ?.toTLSSecurityPolicy(),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DomainEndpointOptionsToJson(this);
 }
 
 /// The configuration and status of the domain's endpoint options.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DomainEndpointOptionsStatus {
   /// The domain endpoint options configured for the domain.
+  @_s.JsonKey(name: 'Options')
   final DomainEndpointOptions options;
 
   /// The status of the configured domain endpoint options.
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   DomainEndpointOptionsStatus({
@@ -2111,19 +2374,29 @@ class DomainEndpointOptionsStatus {
 }
 
 /// The current status of the search domain.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DomainStatus {
+  @_s.JsonKey(name: 'DomainId')
   final String domainId;
+  @_s.JsonKey(name: 'DomainName')
   final String domainName;
 
   /// True if <a>IndexDocuments</a> needs to be called to activate the current
   /// domain configuration.
+  @_s.JsonKey(name: 'RequiresIndexDocuments')
   final bool requiresIndexDocuments;
+  @_s.JsonKey(name: 'ARN')
   final String arn;
 
   /// True if the search domain is created. It can take several minutes to
   /// initialize a domain when <a>CreateDomain</a> is called. Newly created search
   /// domains are returned from <a>DescribeDomains</a> with a false value for
   /// Created until domain creation is complete.
+  @_s.JsonKey(name: 'Created')
   final bool created;
 
   /// True if the search domain has been deleted. The system must clean up
@@ -2131,27 +2404,35 @@ class DomainStatus {
   /// Newly deleted search domains are returned from <a>DescribeDomains</a> with a
   /// true value for IsDeleted for several minutes until resource cleanup is
   /// complete.
+  @_s.JsonKey(name: 'Deleted')
   final bool deleted;
 
   /// The service endpoint for updating documents in a search domain.
+  @_s.JsonKey(name: 'DocService')
   final ServiceEndpoint docService;
+  @_s.JsonKey(name: 'Limits')
   final Limits limits;
 
   /// True if processing is being done to activate the current domain
   /// configuration.
+  @_s.JsonKey(name: 'Processing')
   final bool processing;
 
   /// The number of search instances that are available to process search
   /// requests.
+  @_s.JsonKey(name: 'SearchInstanceCount')
   final int searchInstanceCount;
 
   /// The instance type that is being used to process search requests.
+  @_s.JsonKey(name: 'SearchInstanceType')
   final String searchInstanceType;
 
   /// The number of partitions across which the search index is spread.
+  @_s.JsonKey(name: 'SearchPartitionCount')
   final int searchPartitionCount;
 
   /// The service endpoint for requesting search results from a search domain.
+  @_s.JsonKey(name: 'SearchService')
   final ServiceEndpoint searchService;
 
   DomainStatus({
@@ -2197,20 +2478,30 @@ class DomainStatus {
 /// floating point values. Present if <code>IndexFieldType</code> specifies the
 /// field is of type <code>double-array</code>. All options are enabled by
 /// default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DoubleArrayOptions {
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final double defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// A list of source fields to map to the field.
+  @_s.JsonKey(name: 'SourceFields')
   final String sourceFields;
 
   DoubleArrayOptions({
@@ -2229,30 +2520,43 @@ class DoubleArrayOptions {
       sourceFields: _s.extractXmlStringValue(elem, 'SourceFields'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DoubleArrayOptionsToJson(this);
 }
 
 /// Options for a double-precision 64-bit floating point field. Present if
 /// <code>IndexFieldType</code> specifies the field is of type
 /// <code>double</code>. All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DoubleOptions {
   /// A value to use for the field if the field isn't specified for a document.
   /// This can be important if you are using the field in an expression and that
   /// field is not present in every document.
+  @_s.JsonKey(name: 'DefaultValue')
   final double defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// Whether the field can be used to sort the search results.
+  @_s.JsonKey(name: 'SortEnabled')
   final bool sortEnabled;
 
   /// The name of the source field to map to the field.
+  @_s.JsonKey(name: 'SourceField')
   final String sourceField;
 
   DoubleOptions({
@@ -2273,13 +2577,22 @@ class DoubleOptions {
       sourceField: _s.extractXmlStringValue(elem, 'SourceField'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DoubleOptionsToJson(this);
 }
 
 /// A named expression that can be evaluated at search time. Can be used to sort
 /// the search results, define other expressions, or return computed information
 /// in the search results.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Expression {
+  @_s.JsonKey(name: 'ExpressionName')
   final String expressionName;
+  @_s.JsonKey(name: 'ExpressionValue')
   final String expressionValue;
 
   Expression({
@@ -2292,13 +2605,22 @@ class Expression {
       expressionValue: _s.extractXmlStringValue(elem, 'ExpressionValue'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ExpressionToJson(this);
 }
 
 /// The value of an <code>Expression</code> and its current status.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ExpressionStatus {
   /// The expression that is evaluated for sorting while processing a search
   /// request.
+  @_s.JsonKey(name: 'Options')
   final Expression options;
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   ExpressionStatus({
@@ -2319,8 +2641,14 @@ class ExpressionStatus {
 
 /// The result of an <code>IndexDocuments</code> request. Contains the status of
 /// the indexing operation, including the fields being indexed.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IndexDocumentsResponse {
   /// The names of the fields that are currently being indexed.
+  @_s.JsonKey(name: 'FieldNames')
   final List<String> fieldNames;
 
   IndexDocumentsResponse({
@@ -2338,6 +2666,11 @@ class IndexDocumentsResponse {
 /// Configuration information for a field in the index, including its name,
 /// type, and options. The supported options depend on the
 /// <code><a>IndexFieldType</a></code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class IndexField {
   /// A string that represents the name of an index field. CloudSearch supports
   /// regular index fields as well as dynamic fields. A dynamic field's name
@@ -2353,18 +2686,31 @@ class IndexField {
   ///
   /// The name <code>score</code> is reserved and cannot be used as a field name.
   /// To reference a document's ID, you can use the name <code>_id</code>.
+  @_s.JsonKey(name: 'IndexFieldName')
   final String indexFieldName;
+  @_s.JsonKey(name: 'IndexFieldType')
   final IndexFieldType indexFieldType;
+  @_s.JsonKey(name: 'DateArrayOptions')
   final DateArrayOptions dateArrayOptions;
+  @_s.JsonKey(name: 'DateOptions')
   final DateOptions dateOptions;
+  @_s.JsonKey(name: 'DoubleArrayOptions')
   final DoubleArrayOptions doubleArrayOptions;
+  @_s.JsonKey(name: 'DoubleOptions')
   final DoubleOptions doubleOptions;
+  @_s.JsonKey(name: 'IntArrayOptions')
   final IntArrayOptions intArrayOptions;
+  @_s.JsonKey(name: 'IntOptions')
   final IntOptions intOptions;
+  @_s.JsonKey(name: 'LatLonOptions')
   final LatLonOptions latLonOptions;
+  @_s.JsonKey(name: 'LiteralArrayOptions')
   final LiteralArrayOptions literalArrayOptions;
+  @_s.JsonKey(name: 'LiteralOptions')
   final LiteralOptions literalOptions;
+  @_s.JsonKey(name: 'TextArrayOptions')
   final TextArrayOptions textArrayOptions;
+  @_s.JsonKey(name: 'TextOptions')
   final TextOptions textOptions;
 
   IndexField({
@@ -2422,11 +2768,20 @@ class IndexField {
           ?.let((e) => TextOptions.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$IndexFieldToJson(this);
 }
 
 /// The value of an <code>IndexField</code> and its current status.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IndexFieldStatus {
+  @_s.JsonKey(name: 'Options')
   final IndexField options;
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   IndexFieldStatus({
@@ -2451,16 +2806,27 @@ class IndexFieldStatus {
 /// target="_blank">Configuring Index Fields</a> in the <i>Amazon CloudSearch
 /// Developer Guide</i>.
 enum IndexFieldType {
+  @_s.JsonValue('int')
   int,
+  @_s.JsonValue('double')
   double,
+  @_s.JsonValue('literal')
   literal,
+  @_s.JsonValue('text')
   text,
+  @_s.JsonValue('date')
   date,
+  @_s.JsonValue('latlon')
   latlon,
+  @_s.JsonValue('int-array')
   intArray,
+  @_s.JsonValue('double-array')
   doubleArray,
+  @_s.JsonValue('literal-array')
   literalArray,
+  @_s.JsonValue('text-array')
   textArray,
+  @_s.JsonValue('date-array')
   dateArray,
 }
 
@@ -2497,20 +2863,30 @@ extension on String {
 /// Options for a field that contains an array of 64-bit signed integers.
 /// Present if <code>IndexFieldType</code> specifies the field is of type
 /// <code>int-array</code>. All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class IntArrayOptions {
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final int defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// A list of source fields to map to the field.
+  @_s.JsonKey(name: 'SourceFields')
   final String sourceFields;
 
   IntArrayOptions({
@@ -2529,30 +2905,43 @@ class IntArrayOptions {
       sourceFields: _s.extractXmlStringValue(elem, 'SourceFields'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$IntArrayOptionsToJson(this);
 }
 
 /// Options for a 64-bit signed integer field. Present if
 /// <code>IndexFieldType</code> specifies the field is of type <code>int</code>.
 /// All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class IntOptions {
   /// A value to use for the field if the field isn't specified for a document.
   /// This can be important if you are using the field in an expression and that
   /// field is not present in every document.
+  @_s.JsonKey(name: 'DefaultValue')
   final int defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// Whether the field can be used to sort the search results.
+  @_s.JsonKey(name: 'SortEnabled')
   final bool sortEnabled;
 
   /// The name of the source field to map to the field.
+  @_s.JsonKey(name: 'SourceField')
   final String sourceField;
 
   IntOptions({
@@ -2573,27 +2962,40 @@ class IntOptions {
       sourceField: _s.extractXmlStringValue(elem, 'SourceField'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$IntOptionsToJson(this);
 }
 
 /// Options for a latlon field. A latlon field contains a location stored as a
 /// latitude and longitude value pair. Present if <code>IndexFieldType</code>
 /// specifies the field is of type <code>latlon</code>. All options are enabled
 /// by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LatLonOptions {
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// Whether the field can be used to sort the search results.
+  @_s.JsonKey(name: 'SortEnabled')
   final bool sortEnabled;
+  @_s.JsonKey(name: 'SourceField')
   final String sourceField;
 
   LatLonOptions({
@@ -2614,10 +3016,19 @@ class LatLonOptions {
       sourceField: _s.extractXmlStringValue(elem, 'SourceField'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LatLonOptionsToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Limits {
+  @_s.JsonKey(name: 'MaximumPartitionCount')
   final int maximumPartitionCount;
+  @_s.JsonKey(name: 'MaximumReplicationCount')
   final int maximumReplicationCount;
 
   Limits({
@@ -2636,8 +3047,14 @@ class Limits {
 
 /// The result of a <code>ListDomainNames</code> request. Contains a list of the
 /// domains owned by an account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListDomainNamesResponse {
   /// The names of the search domains owned by an account.
+  @_s.JsonKey(name: 'DomainNames')
   final Map<String, String> domainNames;
 
   ListDomainNamesResponse({
@@ -2660,20 +3077,30 @@ class ListDomainNamesResponse {
 /// Options for a field that contains an array of literal strings. Present if
 /// <code>IndexFieldType</code> specifies the field is of type
 /// <code>literal-array</code>. All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LiteralArrayOptions {
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// A list of source fields to map to the field.
+  @_s.JsonKey(name: 'SourceFields')
   final String sourceFields;
 
   LiteralArrayOptions({
@@ -2692,26 +3119,39 @@ class LiteralArrayOptions {
       sourceFields: _s.extractXmlStringValue(elem, 'SourceFields'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LiteralArrayOptionsToJson(this);
 }
 
 /// Options for literal field. Present if <code>IndexFieldType</code> specifies
 /// the field is of type <code>literal</code>. All options are enabled by
 /// default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LiteralOptions {
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Whether facet information can be returned for the field.
+  @_s.JsonKey(name: 'FacetEnabled')
   final bool facetEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the contents of the field are searchable.
+  @_s.JsonKey(name: 'SearchEnabled')
   final bool searchEnabled;
 
   /// Whether the field can be used to sort the search results.
+  @_s.JsonKey(name: 'SortEnabled')
   final bool sortEnabled;
+  @_s.JsonKey(name: 'SourceField')
   final String sourceField;
 
   LiteralOptions({
@@ -2732,6 +3172,8 @@ class LiteralOptions {
       sourceField: _s.extractXmlStringValue(elem, 'SourceField'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LiteralOptionsToJson(this);
 }
 
 /// The state of processing a change to an option. One of:
@@ -2747,9 +3189,13 @@ class LiteralOptions {
 /// value or update or remove the incompatible documents.</li>
 /// </ul>
 enum OptionState {
+  @_s.JsonValue('RequiresIndexDocuments')
   requiresIndexDocuments,
+  @_s.JsonValue('Processing')
   processing,
+  @_s.JsonValue('Active')
   active,
+  @_s.JsonValue('FailedToValidate')
   failedToValidate,
 }
 
@@ -2770,8 +3216,14 @@ extension on String {
 }
 
 /// The status of domain configuration option.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionStatus {
   /// A timestamp for when this option was created.
+  @_s.JsonKey(name: 'CreationDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationDate;
 
   /// The state of processing a change to an option. Possible values:
@@ -2788,15 +3240,19 @@ class OptionStatus {
   /// the domain's data and cannot be used to index the data. You must either
   /// modify the option value or update or remove the incompatible documents.</li>
   /// </ul>
+  @_s.JsonKey(name: 'State')
   final OptionState state;
 
   /// A timestamp for when this option was last updated.
+  @_s.JsonKey(name: 'UpdateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime updateDate;
 
   /// Indicates that the option will be deleted once processing is complete.
+  @_s.JsonKey(name: 'PendingDeletion')
   final bool pendingDeletion;
 
   /// A unique integer that indicates when this option was last updated.
+  @_s.JsonKey(name: 'UpdateVersion')
   final int updateVersion;
 
   OptionStatus({
@@ -2820,13 +3276,21 @@ class OptionStatus {
 /// The instance type (such as <code>search.m1.small</code>) on which an index
 /// partition is hosted.
 enum PartitionInstanceType {
+  @_s.JsonValue('search.m1.small')
   searchM1Small,
+  @_s.JsonValue('search.m1.large')
   searchM1Large,
+  @_s.JsonValue('search.m2.xlarge')
   searchM2Xlarge,
+  @_s.JsonValue('search.m2.2xlarge')
   searchM2_2xlarge,
+  @_s.JsonValue('search.m3.medium')
   searchM3Medium,
+  @_s.JsonValue('search.m3.large')
   searchM3Large,
+  @_s.JsonValue('search.m3.xlarge')
   searchM3Xlarge,
+  @_s.JsonValue('search.m3.2xlarge')
   searchM3_2xlarge,
 }
 
@@ -2856,16 +3320,24 @@ extension on String {
 
 /// The desired instance type and desired number of replicas of each index
 /// partition.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ScalingParameters {
   /// The instance type that you want to preconfigure for your domain. For
   /// example, <code>search.m1.small</code>.
+  @_s.JsonKey(name: 'DesiredInstanceType')
   final PartitionInstanceType desiredInstanceType;
 
   /// The number of partitions you want to preconfigure for your domain. Only
   /// valid when you select <code>m2.2xlarge</code> as the desired instance type.
+  @_s.JsonKey(name: 'DesiredPartitionCount')
   final int desiredPartitionCount;
 
   /// The number of replicas you want to preconfigure for each index partition.
+  @_s.JsonKey(name: 'DesiredReplicationCount')
   final int desiredReplicationCount;
 
   ScalingParameters({
@@ -2884,11 +3356,20 @@ class ScalingParameters {
           _s.extractXmlIntValue(elem, 'DesiredReplicationCount'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ScalingParametersToJson(this);
 }
 
 /// The status and configuration of a search domain's scaling parameters.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ScalingParametersStatus {
+  @_s.JsonKey(name: 'Options')
   final ScalingParameters options;
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   ScalingParametersStatus({
@@ -2908,7 +3389,13 @@ class ScalingParametersStatus {
 }
 
 /// The endpoint to which service requests can be submitted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServiceEndpoint {
+  @_s.JsonKey(name: 'Endpoint')
   final String endpoint;
 
   ServiceEndpoint({
@@ -2925,8 +3412,15 @@ class ServiceEndpoint {
 /// unique name and specifies the text field you want to use for suggestions.
 /// The following options can be configured for a suggester:
 /// <code>FuzzyMatching</code>, <code>SortExpression</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Suggester {
+  @_s.JsonKey(name: 'DocumentSuggesterOptions')
   final DocumentSuggesterOptions documentSuggesterOptions;
+  @_s.JsonKey(name: 'SuggesterName')
   final String suggesterName;
 
   Suggester({
@@ -2941,11 +3435,16 @@ class Suggester {
       suggesterName: _s.extractXmlStringValue(elem, 'SuggesterName'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$SuggesterToJson(this);
 }
 
 enum SuggesterFuzzyMatching {
+  @_s.JsonValue('none')
   none,
+  @_s.JsonValue('low')
   low,
+  @_s.JsonValue('high')
   high,
 }
 
@@ -2964,8 +3463,15 @@ extension on String {
 }
 
 /// The value of a <code>Suggester</code> and its current status.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SuggesterStatus {
+  @_s.JsonKey(name: 'Options')
   final Suggester options;
+  @_s.JsonKey(name: 'Status')
   final OptionStatus status;
 
   SuggesterStatus({
@@ -2985,7 +3491,9 @@ class SuggesterStatus {
 
 /// The minimum required TLS version.
 enum TLSSecurityPolicy {
+  @_s.JsonValue('Policy-Min-TLS-1-0-2019-07')
   policyMinTls_1_0_2019_07,
+  @_s.JsonValue('Policy-Min-TLS-1-2-2019-07')
   policyMinTls_1_2_2019_07,
 }
 
@@ -3005,20 +3513,30 @@ extension on String {
 /// <code>IndexFieldType</code> specifies the field is of type
 /// <code>text-array</code>. A <code>text-array</code> field is always
 /// searchable. All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TextArrayOptions {
   /// The name of an analysis scheme for a <code>text-array</code> field.
+  @_s.JsonKey(name: 'AnalysisScheme')
   final String analysisScheme;
 
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Whether highlights can be returned for the field.
+  @_s.JsonKey(name: 'HighlightEnabled')
   final bool highlightEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// A list of source fields to map to the field.
+  @_s.JsonKey(name: 'SourceFields')
   final String sourceFields;
 
   TextArrayOptions({
@@ -3037,26 +3555,39 @@ class TextArrayOptions {
       sourceFields: _s.extractXmlStringValue(elem, 'SourceFields'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TextArrayOptionsToJson(this);
 }
 
 /// Options for text field. Present if <code>IndexFieldType</code> specifies the
 /// field is of type <code>text</code>. A <code>text</code> field is always
 /// searchable. All options are enabled by default.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TextOptions {
   /// The name of an analysis scheme for a <code>text</code> field.
+  @_s.JsonKey(name: 'AnalysisScheme')
   final String analysisScheme;
 
   /// A value to use for the field if the field isn't specified for a document.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Whether highlights can be returned for the field.
+  @_s.JsonKey(name: 'HighlightEnabled')
   final bool highlightEnabled;
 
   /// Whether the contents of the field can be returned in the search results.
+  @_s.JsonKey(name: 'ReturnEnabled')
   final bool returnEnabled;
 
   /// Whether the field can be used to sort the search results.
+  @_s.JsonKey(name: 'SortEnabled')
   final bool sortEnabled;
+  @_s.JsonKey(name: 'SourceField')
   final String sourceField;
 
   TextOptions({
@@ -3077,13 +3608,21 @@ class TextOptions {
       sourceField: _s.extractXmlStringValue(elem, 'SourceField'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TextOptionsToJson(this);
 }
 
 /// The result of a <code>UpdateAvailabilityOptions</code> request. Contains the
 /// status of the domain's availability options.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateAvailabilityOptionsResponse {
   /// The newly-configured availability options. Indicates whether Multi-AZ is
   /// enabled for the domain.
+  @_s.JsonKey(name: 'AvailabilityOptions')
   final AvailabilityOptionsStatus availabilityOptions;
 
   UpdateAvailabilityOptionsResponse({
@@ -3100,8 +3639,14 @@ class UpdateAvailabilityOptionsResponse {
 
 /// The result of a <code>UpdateDomainEndpointOptions</code> request. Contains
 /// the configuration and status of the domain's endpoint options.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateDomainEndpointOptionsResponse {
   /// The newly-configured domain endpoint options.
+  @_s.JsonKey(name: 'DomainEndpointOptions')
   final DomainEndpointOptionsStatus domainEndpointOptions;
 
   UpdateDomainEndpointOptionsResponse({
@@ -3118,7 +3663,13 @@ class UpdateDomainEndpointOptionsResponse {
 
 /// The result of a <code>UpdateScalingParameters</code> request. Contains the
 /// status of the newly-configured scaling parameters.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateScalingParametersResponse {
+  @_s.JsonKey(name: 'ScalingParameters')
   final ScalingParametersStatus scalingParameters;
 
   UpdateScalingParametersResponse({
@@ -3135,8 +3686,14 @@ class UpdateScalingParametersResponse {
 
 /// The result of an <code>UpdateServiceAccessPolicies</code> request. Contains
 /// the new access policies.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateServiceAccessPoliciesResponse {
   /// The access rules configured for the domain.
+  @_s.JsonKey(name: 'AccessPolicies')
   final AccessPoliciesStatus accessPolicies;
 
   UpdateServiceAccessPoliciesResponse({

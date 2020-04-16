@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'redshift-2012-12-01.g.dart';
 
 /// This is an interface reference for Amazon Redshift. It contains
 /// documentation for one of the programming or command line interfaces you can
@@ -234,7 +244,7 @@ class Redshift {
     return BatchDeleteClusterSnapshotsResult.fromXml($result);
   }
 
-  /// Modifies the settings for a list of snapshots.
+  /// Modifies the settings for a set of cluster snapshots.
   ///
   /// May throw [InvalidRetentionPeriodFault].
   /// May throw [BatchModifyClusterSnapshotsLimitExceededFault].
@@ -281,7 +291,7 @@ class Redshift {
     return BatchModifyClusterSnapshotsOutputMessage.fromXml($result);
   }
 
-  /// Cancels a resize operation.
+  /// Cancels a resize operation for a cluster.
   ///
   /// May throw [ClusterNotFoundFault].
   /// May throw [ResizeNotFoundFault].
@@ -417,7 +427,7 @@ class Redshift {
     return CopyClusterSnapshotResult.fromXml($result);
   }
 
-  /// Creates a new cluster.
+  /// Creates a new cluster with the specified parameters.
   ///
   /// To create a cluster in Virtual Private Cloud (VPC), you must provide a
   /// cluster subnet group name. The cluster subnet group identifies the subnets
@@ -530,9 +540,9 @@ class Redshift {
   /// Guide</i>.
   ///
   /// Valid Values: <code>ds2.xlarge</code> | <code>ds2.8xlarge</code> |
-  /// <code>ds2.xlarge</code> | <code>ds2.8xlarge</code> |
   /// <code>dc1.large</code> | <code>dc1.8xlarge</code> | <code>dc2.large</code>
-  /// | <code>dc2.8xlarge</code>
+  /// | <code>dc2.8xlarge</code> | <code>ra3.4xlarge</code> |
+  /// <code>ra3.16xlarge</code>
   ///
   /// Parameter [additionalInfo] :
   /// Reserved.
@@ -568,7 +578,7 @@ class Redshift {
   /// Default: A random, system-chosen Availability Zone in the region that is
   /// specified by the endpoint.
   ///
-  /// Example: <code>us-east-1d</code>
+  /// Example: <code>us-east-2d</code>
   ///
   /// Constraint: The specified Availability Zone must be in the same region as
   /// the current endpoint.
@@ -1264,7 +1274,7 @@ class Redshift {
   /// source type in order to specify source IDs.
   ///
   /// Valid values: cluster, cluster-parameter-group, cluster-security-group,
-  /// and cluster-snapshot.
+  /// cluster-snapshot, and scheduled-action.
   ///
   /// Parameter [tags] :
   /// A list of tag instances.
@@ -1579,7 +1589,8 @@ class Redshift {
     return CreateSnapshotCopyGrantResult.fromXml($result);
   }
 
-  /// Creates a new snapshot schedule.
+  /// Create a snapshot schedule that can be associated to a cluster and which
+  /// overrides the default system backup schedule.
   ///
   /// May throw [SnapshotScheduleAlreadyExistsFault].
   /// May throw [InvalidScheduleFault].
@@ -1634,7 +1645,7 @@ class Redshift {
     return SnapshotSchedule.fromXml($result);
   }
 
-  /// Adds one or more tags to a specified resource.
+  /// Adds tags to a cluster.
   ///
   /// A resource can have up to 50 tags. If you try to create more than 50 tags
   /// for a resource, you will receive an error and the attempt will fail.
@@ -1648,7 +1659,7 @@ class Redshift {
   ///
   /// Parameter [resourceName] :
   /// The Amazon Resource Name (ARN) to which you want to add the tag or tags.
-  /// For example, <code>arn:aws:redshift:us-east-1:123456789:cluster:t1</code>.
+  /// For example, <code>arn:aws:redshift:us-east-2:123456789:cluster:t1</code>.
   ///
   /// Parameter [tags] :
   /// One or more name/value pairs to add as tags to the specified resource.
@@ -1678,11 +1689,12 @@ class Redshift {
     );
   }
 
-  /// Deletes a previously provisioned cluster. A successful response from the
-  /// web service indicates that the request was received correctly. Use
-  /// <a>DescribeClusters</a> to monitor the status of the deletion. The delete
-  /// operation cannot be canceled or reverted once submitted. For more
-  /// information about managing clusters, go to <a
+  /// Deletes a previously provisioned cluster without its final snapshot being
+  /// created. A successful response from the web service indicates that the
+  /// request was received correctly. Use <a>DescribeClusters</a> to monitor the
+  /// status of the deletion. The delete operation cannot be canceled or
+  /// reverted once submitted. For more information about managing clusters, go
+  /// to <a
   /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html">Amazon
   /// Redshift Clusters</a> in the <i>Amazon Redshift Cluster Management
   /// Guide</i>.
@@ -2084,8 +2096,8 @@ class Redshift {
     );
   }
 
-  /// Deletes a tag or tags from a resource. You must provide the ARN of the
-  /// resource from which you want to delete the tag or tags.
+  /// Deletes tags from a resource. You must provide the ARN of the resource
+  /// from which you want to delete the tag or tags.
   ///
   /// May throw [ResourceNotFoundFault].
   /// May throw [InvalidTagFault].
@@ -2093,7 +2105,7 @@ class Redshift {
   /// Parameter [resourceName] :
   /// The Amazon Resource Name (ARN) from which you want to remove the tag or
   /// tags. For example,
-  /// <code>arn:aws:redshift:us-east-1:123456789:cluster:t1</code>.
+  /// <code>arn:aws:redshift:us-east-2:123456789:cluster:t1</code>.
   ///
   /// Parameter [tagKeys] :
   /// The tag key that you want to delete.
@@ -2976,8 +2988,8 @@ class Redshift {
   /// The source type, such as cluster or parameter group, to which the
   /// described event categories apply.
   ///
-  /// Valid values: cluster, cluster-snapshot, cluster-parameter-group, and
-  /// cluster-security-group.
+  /// Valid values: cluster, cluster-snapshot, cluster-parameter-group,
+  /// cluster-security-group, and scheduled-action.
   Future<EventCategoriesMessage> describeEventCategories({
     String sourceType,
   }) async {
@@ -3426,7 +3438,9 @@ class Redshift {
   /// The action type to evaluate for possible node configurations. Specify
   /// "restore-cluster" to get configuration combinations based on an existing
   /// snapshot. Specify "recommend-node-config" to get configuration
-  /// recommendations based on an existing cluster or snapshot.
+  /// recommendations based on an existing cluster or snapshot. Specify
+  /// "resize-cluster" to get configuration combinations for elastic resize
+  /// based on an existing cluster.
   ///
   /// Parameter [clusterIdentifier] :
   /// The identifier of the cluster to evaluate for possible node
@@ -3922,8 +3936,7 @@ class Redshift {
     return DescribeSnapshotSchedulesOutputMessage.fromXml($result);
   }
 
-  /// Returns the total amount of snapshot usage and provisioned storage in
-  /// megabytes.
+  /// Returns account level backups storage size and provisional storage.
   Future<CustomerStorageMessage> describeStorage() async {
     final $request = <String, dynamic>{
       'Action': 'DescribeStorage',
@@ -4048,7 +4061,7 @@ class Redshift {
   /// Parameter [resourceName] :
   /// The Amazon Resource Name (ARN) for which you want to describe the tag or
   /// tags. For example,
-  /// <code>arn:aws:redshift:us-east-1:123456789:cluster:t1</code>.
+  /// <code>arn:aws:redshift:us-east-2:123456789:cluster:t1</code>.
   ///
   /// Parameter [resourceType] :
   /// The type of resource with which you want to view tags. Valid resource
@@ -4210,6 +4223,7 @@ class Redshift {
   /// May throw [InsufficientS3BucketPolicyFault].
   /// May throw [InvalidS3KeyPrefixFault].
   /// May throw [InvalidS3BucketNameFault].
+  /// May throw [InvalidClusterStateFault].
   ///
   /// Parameter [bucketName] :
   /// The name of an existing S3 bucket where the log files are to be stored.
@@ -4584,19 +4598,20 @@ class Redshift {
     return GetReservedNodeExchangeOfferingsOutputMessage.fromXml($result);
   }
 
-  /// Modifies the settings for a cluster. For example, you can add another
-  /// security or parameter group, update the preferred maintenance window, or
-  /// change the master user password. Resetting a cluster password or modifying
-  /// the security groups associated with a cluster do not need a reboot.
-  /// However, modifying a parameter group requires a reboot for parameters to
-  /// take effect. For more information about managing clusters, go to <a
-  /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html">Amazon
-  /// Redshift Clusters</a> in the <i>Amazon Redshift Cluster Management
-  /// Guide</i>.
+  /// Modifies the settings for a cluster.
   ///
   /// You can also change node type and the number of nodes to scale up or down
   /// the cluster. When resizing a cluster, you must specify both the number of
   /// nodes and the node type even if one of the parameters does not change.
+  ///
+  /// You can add another security or parameter group, or change the master user
+  /// password. Resetting a cluster password or modifying the security groups
+  /// associated with a cluster do not need a reboot. However, modifying a
+  /// parameter group requires a reboot for parameters to take effect. For more
+  /// information about managing clusters, go to <a
+  /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-clusters.html">Amazon
+  /// Redshift Clusters</a> in the <i>Amazon Redshift Cluster Management
+  /// Guide</i>.
   ///
   /// May throw [InvalidClusterStateFault].
   /// May throw [InvalidClusterSecurityGroupStateFault].
@@ -4712,12 +4727,14 @@ class Redshift {
   /// Management Guide.
   ///
   /// Parameter [encrypted] :
-  /// Indicates whether the cluster is encrypted. If the cluster is encrypted
-  /// and you provide a value for the <code>KmsKeyId</code> parameter, we will
+  /// Indicates whether the cluster is encrypted. If the value is encrypted
+  /// (true) and you provide a value for the <code>KmsKeyId</code> parameter, we
   /// encrypt the cluster with the provided <code>KmsKeyId</code>. If you don't
-  /// provide a <code>KmsKeyId</code>, we will encrypt with the default key. In
-  /// the China region we will use legacy encryption if you specify that the
-  /// cluster is encrypted.
+  /// provide a <code>KmsKeyId</code>, we encrypt with the default key. In the
+  /// China region we use legacy encryption if you specify that the cluster is
+  /// encrypted.
+  ///
+  /// If the value is not encrypted (false), then the cluster is decrypted.
   ///
   /// Parameter [enhancedVpcRouting] :
   /// An option that specifies whether to create the cluster with enhanced VPC
@@ -4822,29 +4839,24 @@ class Redshift {
   /// The new node type of the cluster. If you specify a new node type, you must
   /// also specify the number of nodes parameter.
   ///
-  /// When you submit your request to resize a cluster, Amazon Redshift sets
-  /// access permissions for the cluster to read-only. After Amazon Redshift
-  /// provisions a new cluster according to your resize requirements, there will
-  /// be a temporary outage while the old cluster is deleted and your connection
-  /// is switched to the new cluster. When the new connection is complete, the
-  /// original access permissions for the cluster are restored. You can use
-  /// <a>DescribeResize</a> to track the progress of the resize request.
+  /// For more information about resizing clusters, go to <a
+  /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/rs-resize-tutorial.html">Resizing
+  /// Clusters in Amazon Redshift</a> in the <i>Amazon Redshift Cluster
+  /// Management Guide</i>.
   ///
   /// Valid Values: <code>ds2.xlarge</code> | <code>ds2.8xlarge</code> |
   /// <code>dc1.large</code> | <code>dc1.8xlarge</code> | <code>dc2.large</code>
-  /// | <code>dc2.8xlarge</code>
+  /// | <code>dc2.8xlarge</code> | <code>ra3.4xlarge</code> |
+  /// <code>ra3.16xlarge</code>
   ///
   /// Parameter [numberOfNodes] :
   /// The new number of nodes of the cluster. If you specify a new number of
   /// nodes, you must also specify the node type parameter.
   ///
-  /// When you submit your request to resize a cluster, Amazon Redshift sets
-  /// access permissions for the cluster to read-only. After Amazon Redshift
-  /// provisions a new cluster according to your resize requirements, there will
-  /// be a temporary outage while the old cluster is deleted and your connection
-  /// is switched to the new cluster. When the new connection is complete, the
-  /// original access permissions for the cluster are restored. You can use
-  /// <a>DescribeResize</a> to track the progress of the resize request.
+  /// For more information about resizing clusters, go to <a
+  /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/rs-resize-tutorial.html">Resizing
+  /// Clusters in Amazon Redshift</a> in the <i>Amazon Redshift Cluster
+  /// Management Guide</i>.
   ///
   /// Valid Values: Integer greater than <code>0</code>.
   ///
@@ -5025,10 +5037,10 @@ class Redshift {
     return ModifyClusterIamRolesResult.fromXml($result);
   }
 
-  /// Modifies the maintenance settings of a cluster. For example, you can defer
-  /// a maintenance window. You can also update or cancel a deferment.
+  /// Modifies the maintenance settings of a cluster.
   ///
   /// May throw [ClusterNotFoundFault].
+  /// May throw [InvalidClusterStateFault].
   ///
   /// Parameter [clusterIdentifier] :
   /// A unique identifier for the cluster.
@@ -5129,6 +5141,9 @@ class Redshift {
   }
 
   /// Modifies the settings for a snapshot.
+  ///
+  /// This exanmple modifies the manual retention period setting for a cluster
+  /// snapshot.
   ///
   /// May throw [InvalidClusterSnapshotStateFault].
   /// May throw [ClusterSnapshotNotFoundFault].
@@ -5310,7 +5325,7 @@ class Redshift {
   /// source type in order to specify source IDs.
   ///
   /// Valid values: cluster, cluster-parameter-group, cluster-security-group,
-  /// and cluster-snapshot.
+  /// cluster-snapshot, and scheduled-action.
   Future<ModifyEventSubscriptionResult> modifyEventSubscription({
     @_s.required String subscriptionName,
     bool enabled,
@@ -5342,7 +5357,7 @@ class Redshift {
     return ModifyEventSubscriptionResult.fromXml($result);
   }
 
-  /// Modify a scheduled action.
+  /// Modifies a scheduled action.
   ///
   /// May throw [ScheduledActionNotFoundFault].
   /// May throw [ScheduledActionTypeUnsupportedFault].
@@ -5524,6 +5539,32 @@ class Redshift {
     return SnapshotSchedule.fromXml($result);
   }
 
+  /// Pauses a cluster.
+  ///
+  /// May throw [ClusterNotFoundFault].
+  /// May throw [InvalidClusterStateFault].
+  ///
+  /// Parameter [clusterIdentifier] :
+  /// The identifier of the cluster to be paused.
+  Future<PauseClusterResult> pauseCluster({
+    @_s.required String clusterIdentifier,
+  }) async {
+    ArgumentError.checkNotNull(clusterIdentifier, 'clusterIdentifier');
+    final $request = <String, dynamic>{
+      'Action': 'PauseCluster',
+      'Version': '2012-12-01',
+    };
+    $request['ClusterIdentifier'] = clusterIdentifier;
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'PauseClusterResult',
+    );
+    return PauseClusterResult.fromXml($result);
+  }
+
   /// Allows you to purchase reserved nodes. Amazon Redshift offers a predefined
   /// set of reserved node offerings. You can purchase one or more of the
   /// offerings. You can call the <a>DescribeReservedNodeOfferings</a> API to
@@ -5674,6 +5715,12 @@ class Redshift {
   /// <li>
   /// ds2.8xlarge
   /// </li>
+  /// <li>
+  /// ra3.4xlarge
+  /// </li>
+  /// <li>
+  /// ra3.16xlarge
+  /// </li>
   /// </ul> </li>
   /// <li>
   /// The type of nodes that you add must match the node type for the cluster.
@@ -5693,9 +5740,6 @@ class Redshift {
   /// Parameter [clusterIdentifier] :
   /// The unique identifier for the cluster to resize.
   ///
-  /// Parameter [numberOfNodes] :
-  /// The new number of nodes for the cluster.
-  ///
   /// Parameter [classic] :
   /// A boolean value indicating whether the resize operation is using the
   /// classic resize process. If you don't provide this parameter or set the
@@ -5707,24 +5751,26 @@ class Redshift {
   /// Parameter [nodeType] :
   /// The new node type for the nodes you are adding. If not specified, the
   /// cluster's current node type is used.
+  ///
+  /// Parameter [numberOfNodes] :
+  /// The new number of nodes for the cluster.
   Future<ResizeClusterResult> resizeCluster({
     @_s.required String clusterIdentifier,
-    @_s.required int numberOfNodes,
     bool classic,
     String clusterType,
     String nodeType,
+    int numberOfNodes,
   }) async {
     ArgumentError.checkNotNull(clusterIdentifier, 'clusterIdentifier');
-    ArgumentError.checkNotNull(numberOfNodes, 'numberOfNodes');
     final $request = <String, dynamic>{
       'Action': 'ResizeCluster',
       'Version': '2012-12-01',
     };
     $request['ClusterIdentifier'] = clusterIdentifier;
-    $request['NumberOfNodes'] = numberOfNodes;
     classic?.also((arg) => $request['Classic'] = arg);
     clusterType?.also((arg) => $request['ClusterType'] = arg);
     nodeType?.also((arg) => $request['NodeType'] = arg);
+    numberOfNodes?.also((arg) => $request['NumberOfNodes'] = arg);
     final $result = await _protocol.send(
       $request,
       method: 'POST',
@@ -5834,7 +5880,7 @@ class Redshift {
   ///
   /// Default: A random, system-chosen Availability Zone.
   ///
-  /// Example: <code>us-east-1a</code>
+  /// Example: <code>us-east-2a</code>
   ///
   /// Parameter [clusterParameterGroupName] :
   /// The name of the parameter group to be associated with this cluster.
@@ -6156,6 +6202,32 @@ class Redshift {
     return RestoreTableFromClusterSnapshotResult.fromXml($result);
   }
 
+  /// Resumes a paused cluster.
+  ///
+  /// May throw [ClusterNotFoundFault].
+  /// May throw [InvalidClusterStateFault].
+  ///
+  /// Parameter [clusterIdentifier] :
+  /// The identifier of the cluster to be resumed.
+  Future<ResumeClusterResult> resumeCluster({
+    @_s.required String clusterIdentifier,
+  }) async {
+    ArgumentError.checkNotNull(clusterIdentifier, 'clusterIdentifier');
+    final $request = <String, dynamic>{
+      'Action': 'ResumeCluster',
+      'Version': '2012-12-01',
+    };
+    $request['ClusterIdentifier'] = clusterIdentifier;
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'ResumeClusterResult',
+    );
+    return ResumeClusterResult.fromXml($result);
+  }
+
   /// Revokes an ingress rule in an Amazon Redshift security group for a
   /// previously authorized IP range or Amazon EC2 security group. To add an
   /// ingress rule, see <a>AuthorizeClusterSecurityGroupIngress</a>. For
@@ -6302,8 +6374,14 @@ class Redshift {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AcceptReservedNodeExchangeOutputMessage {
   /// <p/>
+  @_s.JsonKey(name: 'ExchangedReservedNode')
   final ReservedNode exchangedReservedNode;
 
   AcceptReservedNodeExchangeOutputMessage({
@@ -6319,11 +6397,18 @@ class AcceptReservedNodeExchangeOutputMessage {
 }
 
 /// A name value pair that describes an aspect of an account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccountAttribute {
   /// The name of the attribute.
+  @_s.JsonKey(name: 'AttributeName')
   final String attributeName;
 
   /// A list of attribute values.
+  @_s.JsonKey(name: 'AttributeValues')
   final List<AttributeValueTarget> attributeValues;
 
   AccountAttribute({
@@ -6342,8 +6427,14 @@ class AccountAttribute {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccountAttributeList {
   /// A list of attributes assigned to an account.
+  @_s.JsonKey(name: 'AccountAttributes')
   final List<AccountAttribute> accountAttributes;
 
   AccountAttributeList({
@@ -6361,12 +6452,19 @@ class AccountAttributeList {
 }
 
 /// Describes an AWS customer account authorized to restore a snapshot.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccountWithRestoreAccess {
   /// The identifier of an AWS support account authorized to restore a snapshot.
   /// For AWS support, the identifier is <code>amazon-redshift-support</code>.
+  @_s.JsonKey(name: 'AccountAlias')
   final String accountAlias;
 
   /// The identifier of an AWS customer account authorized to restore a snapshot.
+  @_s.JsonKey(name: 'AccountId')
   final String accountId;
 
   AccountWithRestoreAccess({
@@ -6382,8 +6480,12 @@ class AccountWithRestoreAccess {
 }
 
 enum ActionType {
+  @_s.JsonValue('restore-cluster')
   restoreCluster,
+  @_s.JsonValue('recommend-node-config')
   recommendNodeConfig,
+  @_s.JsonValue('resize-cluster')
+  resizeCluster,
 }
 
 extension on String {
@@ -6393,14 +6495,22 @@ extension on String {
         return ActionType.restoreCluster;
       case 'recommend-node-config':
         return ActionType.recommendNodeConfig;
+      case 'resize-cluster':
+        return ActionType.resizeCluster;
     }
     throw Exception('Unknown enum value: $this');
   }
 }
 
 /// Describes an attribute value.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AttributeValueTarget {
   /// The value of the attribute.
+  @_s.JsonKey(name: 'AttributeValue')
   final String attributeValue;
 
   AttributeValueTarget({
@@ -6413,7 +6523,13 @@ class AttributeValueTarget {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AuthorizeClusterSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'ClusterSecurityGroup')
   final ClusterSecurityGroup clusterSecurityGroup;
 
   AuthorizeClusterSecurityGroupIngressResult({
@@ -6429,7 +6545,13 @@ class AuthorizeClusterSecurityGroupIngressResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AuthorizeSnapshotAccessResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   AuthorizeSnapshotAccessResult({
@@ -6444,11 +6566,18 @@ class AuthorizeSnapshotAccessResult {
 }
 
 /// Describes an availability zone.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AvailabilityZone {
   /// The name of the availability zone.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// <p/>
+  @_s.JsonKey(name: 'SupportedPlatforms')
   final List<SupportedPlatform> supportedPlatforms;
 
   AvailabilityZone({
@@ -6467,11 +6596,18 @@ class AvailabilityZone {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BatchDeleteClusterSnapshotsResult {
   /// A list of any errors returned.
+  @_s.JsonKey(name: 'Errors')
   final List<SnapshotErrorMessage> errors;
 
   /// A list of the snapshot identifiers that were deleted.
+  @_s.JsonKey(name: 'Resources')
   final List<String> resources;
 
   BatchDeleteClusterSnapshotsResult({
@@ -6491,11 +6627,18 @@ class BatchDeleteClusterSnapshotsResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BatchModifyClusterSnapshotsOutputMessage {
   /// A list of any errors returned.
+  @_s.JsonKey(name: 'Errors')
   final List<SnapshotErrorMessage> errors;
 
   /// A list of the snapshots that were modified.
+  @_s.JsonKey(name: 'Resources')
   final List<String> resources;
 
   BatchModifyClusterSnapshotsOutputMessage({
@@ -6516,16 +6659,24 @@ class BatchModifyClusterSnapshotsOutputMessage {
 }
 
 /// Describes a cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Cluster {
   /// A boolean value that, if <code>true</code>, indicates that major version
   /// upgrades will be applied automatically to the cluster during the maintenance
   /// window.
+  @_s.JsonKey(name: 'AllowVersionUpgrade')
   final bool allowVersionUpgrade;
 
   /// The number of days that automatic cluster snapshots are retained.
+  @_s.JsonKey(name: 'AutomatedSnapshotRetentionPeriod')
   final int automatedSnapshotRetentionPeriod;
 
   /// The name of the Availability Zone in which the cluster is located.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// The availability status of the cluster for queries. Possible values are the
@@ -6550,25 +6701,33 @@ class Cluster {
   /// Failed - The cluster failed and is not available for queries.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ClusterAvailabilityStatus')
   final String clusterAvailabilityStatus;
 
   /// The date and time that the cluster was created.
+  @_s.JsonKey(
+      name: 'ClusterCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime clusterCreateTime;
 
   /// The unique identifier of the cluster.
+  @_s.JsonKey(name: 'ClusterIdentifier')
   final String clusterIdentifier;
 
   /// The nodes in the cluster.
+  @_s.JsonKey(name: 'ClusterNodes')
   final List<ClusterNode> clusterNodes;
 
   /// The list of cluster parameter groups that are associated with this cluster.
   /// Each parameter group in the list is returned with its status.
+  @_s.JsonKey(name: 'ClusterParameterGroups')
   final List<ClusterParameterGroupStatus> clusterParameterGroups;
 
   /// The public key for the cluster.
+  @_s.JsonKey(name: 'ClusterPublicKey')
   final String clusterPublicKey;
 
   /// The specific revision number of the database in the cluster.
+  @_s.JsonKey(name: 'ClusterRevisionNumber')
   final String clusterRevisionNumber;
 
   /// A list of cluster security group that are associated with the cluster. Each
@@ -6580,10 +6739,12 @@ class Cluster {
   /// Amazon Virtual Private Cloud (VPC). Clusters that are created in a VPC use
   /// VPC security groups, which are listed by the <b>VpcSecurityGroups</b>
   /// parameter.
+  @_s.JsonKey(name: 'ClusterSecurityGroups')
   final List<ClusterSecurityGroupMembership> clusterSecurityGroups;
 
   /// A value that returns the destination region and retention period that are
   /// configured for cross-region snapshot copy.
+  @_s.JsonKey(name: 'ClusterSnapshotCopyStatus')
   final ClusterSnapshotCopyStatus clusterSnapshotCopyStatus;
 
   /// The current state of the cluster. Possible values are the following:
@@ -6629,6 +6790,9 @@ class Cluster {
   /// <code>modifying</code>
   /// </li>
   /// <li>
+  /// <code>paused</code>
+  /// </li>
+  /// <li>
   /// <code>rebooting</code>
   /// </li>
   /// <li>
@@ -6647,39 +6811,49 @@ class Cluster {
   /// <code>updating-hsm</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ClusterStatus')
   final String clusterStatus;
 
   /// The name of the subnet group that is associated with the cluster. This
   /// parameter is valid only when the cluster is in a VPC.
+  @_s.JsonKey(name: 'ClusterSubnetGroupName')
   final String clusterSubnetGroupName;
 
   /// The version ID of the Amazon Redshift engine that is running on the cluster.
+  @_s.JsonKey(name: 'ClusterVersion')
   final String clusterVersion;
 
   /// The name of the initial database that was created when the cluster was
   /// created. This same name is returned for the life of the cluster. If an
   /// initial database was not specified, a database named <code>dev</code>dev was
   /// created by default.
+  @_s.JsonKey(name: 'DBName')
   final String dBName;
 
   /// <p/>
+  @_s.JsonKey(name: 'DataTransferProgress')
   final DataTransferProgress dataTransferProgress;
 
   /// Describes a group of <code>DeferredMaintenanceWindow</code> objects.
+  @_s.JsonKey(name: 'DeferredMaintenanceWindows')
   final List<DeferredMaintenanceWindow> deferredMaintenanceWindows;
 
   /// The status of the elastic IP (EIP) address.
+  @_s.JsonKey(name: 'ElasticIpStatus')
   final ElasticIpStatus elasticIpStatus;
 
   /// The number of nodes that you can resize the cluster to with the elastic
   /// resize method.
+  @_s.JsonKey(name: 'ElasticResizeNumberOfNodeOptions')
   final String elasticResizeNumberOfNodeOptions;
 
   /// A boolean value that, if <code>true</code>, indicates that data in the
   /// cluster is encrypted at rest.
+  @_s.JsonKey(name: 'Encrypted')
   final bool encrypted;
 
   /// The connection endpoint.
+  @_s.JsonKey(name: 'Endpoint')
   final Endpoint endpoint;
 
   /// An option that specifies whether to create the cluster with enhanced VPC
@@ -6691,10 +6865,15 @@ class Cluster {
   /// If this option is <code>true</code>, enhanced VPC routing is enabled.
   ///
   /// Default: false
+  @_s.JsonKey(name: 'EnhancedVpcRouting')
   final bool enhancedVpcRouting;
 
   /// The date and time when the next snapshot is expected to be taken for
   /// clusters with a valid snapshot schedule and backups enabled.
+  @_s.JsonKey(
+      name: 'ExpectedNextSnapshotScheduleTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime expectedNextSnapshotScheduleTime;
 
   /// The status of next expected snapshot for clusters having a valid snapshot
@@ -6708,6 +6887,7 @@ class Cluster {
   /// Pending - The next snapshot is pending to be taken.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ExpectedNextSnapshotScheduleTimeStatus')
   final String expectedNextSnapshotScheduleTimeStatus;
 
   /// A value that reports whether the Amazon Redshift cluster has finished
@@ -6715,17 +6895,21 @@ class Cluster {
   /// modify cluster command.
   ///
   /// Values: active, applying
+  @_s.JsonKey(name: 'HsmStatus')
   final HsmStatus hsmStatus;
 
   /// A list of AWS Identity and Access Management (IAM) roles that can be used by
   /// the cluster to access other AWS services.
+  @_s.JsonKey(name: 'IamRoles')
   final List<ClusterIamRole> iamRoles;
 
   /// The AWS Key Management Service (AWS KMS) key ID of the encryption key used
   /// to encrypt data in the cluster.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// The name of the maintenance track for the cluster.
+  @_s.JsonKey(name: 'MaintenanceTrackName')
   final String maintenanceTrackName;
 
   /// The default number of days to retain a manual snapshot. If the value is -1,
@@ -6733,37 +6917,50 @@ class Cluster {
   /// retention period of existing snapshots.
   ///
   /// The value must be either -1 or an integer between 1 and 3,653.
+  @_s.JsonKey(name: 'ManualSnapshotRetentionPeriod')
   final int manualSnapshotRetentionPeriod;
 
   /// The master user name for the cluster. This name is used to connect to the
   /// database that is specified in the <b>DBName</b> parameter.
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
 
   /// The status of a modify operation, if any, initiated for the cluster.
+  @_s.JsonKey(name: 'ModifyStatus')
   final String modifyStatus;
 
   /// The date and time in UTC when system maintenance can begin.
+  @_s.JsonKey(
+      name: 'NextMaintenanceWindowStartTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime nextMaintenanceWindowStartTime;
 
   /// The node type for the nodes in the cluster.
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
 
   /// The number of compute nodes in the cluster.
+  @_s.JsonKey(name: 'NumberOfNodes')
   final int numberOfNodes;
 
   /// Cluster operations that are waiting to be started.
+  @_s.JsonKey(name: 'PendingActions')
   final List<String> pendingActions;
 
   /// A value that, if present, indicates that changes to the cluster are pending.
   /// Specific pending changes are identified by subelements.
+  @_s.JsonKey(name: 'PendingModifiedValues')
   final PendingModifiedValues pendingModifiedValues;
 
   /// The weekly time range, in Universal Coordinated Time (UTC), during which
   /// system maintenance can occur.
+  @_s.JsonKey(name: 'PreferredMaintenanceWindow')
   final String preferredMaintenanceWindow;
 
   /// A boolean value that, if <code>true</code>, indicates that the cluster can
   /// be accessed from a public network.
+  @_s.JsonKey(name: 'PubliclyAccessible')
   final bool publiclyAccessible;
 
   /// Returns the following:
@@ -6777,28 +6974,35 @@ class Cluster {
   /// ResizeType: Returns ClassicResize
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ResizeInfo')
   final ResizeInfo resizeInfo;
 
   /// A value that describes the status of a cluster restore action. This
   /// parameter returns null if the cluster was not created by restoring a
   /// snapshot.
+  @_s.JsonKey(name: 'RestoreStatus')
   final RestoreStatus restoreStatus;
 
   /// A unique identifier for the cluster snapshot schedule.
+  @_s.JsonKey(name: 'SnapshotScheduleIdentifier')
   final String snapshotScheduleIdentifier;
 
   /// The current state of the cluster snapshot schedule.
+  @_s.JsonKey(name: 'SnapshotScheduleState')
   final ScheduleState snapshotScheduleState;
 
   /// The list of tags for the cluster.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// The identifier of the VPC the cluster is in, if the cluster is in a VPC.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   /// A list of Amazon Virtual Private Cloud (Amazon VPC) security groups that are
   /// associated with the cluster. This parameter is returned only if the cluster
   /// is in a VPC.
+  @_s.JsonKey(name: 'VpcSecurityGroups')
   final List<VpcSecurityGroupMembership> vpcSecurityGroups;
 
   Cluster({
@@ -6958,11 +7162,18 @@ class Cluster {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterAssociatedToSchedule {
   /// <p/>
+  @_s.JsonKey(name: 'ClusterIdentifier')
   final String clusterIdentifier;
 
   /// <p/>
+  @_s.JsonKey(name: 'ScheduleAssociationState')
   final ScheduleState scheduleAssociationState;
 
   ClusterAssociatedToSchedule({
@@ -6981,9 +7192,15 @@ class ClusterAssociatedToSchedule {
 
 /// Temporary credentials with authorization to log on to an Amazon Redshift
 /// database.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterCredentials {
   /// A temporary password that authorizes the user name returned by
   /// <code>DbUser</code> to log on to the database <code>DbName</code>.
+  @_s.JsonKey(name: 'DbPassword')
   final String dbPassword;
 
   /// A database user name that is authorized to log on to the database
@@ -6993,9 +7210,11 @@ class ClusterCredentials {
   /// added to PUBLIC. If the <code>DbGroups</code> parameter is specifed,
   /// <code>DbUser</code> is added to the listed groups for any sessions created
   /// using these credentials.
+  @_s.JsonKey(name: 'DbUser')
   final String dbUser;
 
   /// The date and time the password in <code>DbPassword</code> expires.
+  @_s.JsonKey(name: 'Expiration', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime expiration;
 
   ClusterCredentials({
@@ -7013,18 +7232,30 @@ class ClusterCredentials {
 }
 
 /// Describes a <code>ClusterDbRevision</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterDbRevision {
   /// The unique identifier of the cluster.
+  @_s.JsonKey(name: 'ClusterIdentifier')
   final String clusterIdentifier;
 
   /// A string representing the current cluster version.
+  @_s.JsonKey(name: 'CurrentDatabaseRevision')
   final String currentDatabaseRevision;
 
   /// The date on which the database revision was released.
+  @_s.JsonKey(
+      name: 'DatabaseRevisionReleaseDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime databaseRevisionReleaseDate;
 
   /// A list of <code>RevisionTarget</code> objects, where each object describes
   /// the database revision that a cluster can be updated to.
+  @_s.JsonKey(name: 'RevisionTargets')
   final List<RevisionTarget> revisionTargets;
 
   ClusterDbRevision({
@@ -7049,8 +7280,14 @@ class ClusterDbRevision {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterDbRevisionsMessage {
   /// A list of revisions.
+  @_s.JsonKey(name: 'ClusterDbRevisions')
   final List<ClusterDbRevision> clusterDbRevisions;
 
   /// A string representing the starting point for the next set of revisions. If a
@@ -7058,6 +7295,7 @@ class ClusterDbRevisionsMessage {
   /// by providing the value in the <code>marker</code> parameter and retrying the
   /// command. If the <code>marker</code> field is empty, all revisions have
   /// already been returned.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ClusterDbRevisionsMessage({
@@ -7078,6 +7316,11 @@ class ClusterDbRevisionsMessage {
 
 /// An AWS Identity and Access Management (IAM) role that can be used by the
 /// associated Amazon Redshift cluster to access other AWS services.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterIamRole {
   /// A value that describes the status of the IAM role's association with an
   /// Amazon Redshift cluster.
@@ -7097,10 +7340,12 @@ class ClusterIamRole {
   /// with the cluster.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ApplyStatus')
   final String applyStatus;
 
   /// The Amazon Resource Name (ARN) of the IAM role, for example,
   /// <code>arn:aws:iam::123456789012:role/RedshiftCopyUnload</code>.
+  @_s.JsonKey(name: 'IamRoleArn')
   final String iamRoleArn;
 
   ClusterIamRole({
@@ -7116,14 +7361,22 @@ class ClusterIamRole {
 }
 
 /// The identifier of a node in a cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterNode {
   /// Whether the node is a leader node or a compute node.
+  @_s.JsonKey(name: 'NodeRole')
   final String nodeRole;
 
   /// The private IP address of a node within a cluster.
+  @_s.JsonKey(name: 'PrivateIPAddress')
   final String privateIPAddress;
 
   /// The public IP address of a node within a cluster.
+  @_s.JsonKey(name: 'PublicIPAddress')
   final String publicIPAddress;
 
   ClusterNode({
@@ -7141,18 +7394,27 @@ class ClusterNode {
 }
 
 /// Describes a parameter group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterParameterGroup {
   /// The description of the parameter group.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The name of the cluster parameter group family that this cluster parameter
   /// group is compatible with.
+  @_s.JsonKey(name: 'ParameterGroupFamily')
   final String parameterGroupFamily;
 
   /// The name of the cluster parameter group.
+  @_s.JsonKey(name: 'ParameterGroupName')
   final String parameterGroupName;
 
   /// The list of tags for the cluster parameter group.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   ClusterParameterGroup({
@@ -7174,6 +7436,11 @@ class ClusterParameterGroup {
 }
 
 /// Contains the output from the <a>DescribeClusterParameters</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterParameterGroupDetails {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -7181,10 +7448,12 @@ class ClusterParameterGroupDetails {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of <a>Parameter</a> instances. Each instance lists the parameters of
   /// one cluster parameter group.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   ClusterParameterGroupDetails({
@@ -7203,13 +7472,20 @@ class ClusterParameterGroupDetails {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterParameterGroupNameMessage {
   /// The name of the cluster parameter group.
+  @_s.JsonKey(name: 'ParameterGroupName')
   final String parameterGroupName;
 
   /// The status of the parameter group. For example, if you made a change to a
   /// parameter group name-value pair, then the change could be pending a reboot
   /// of an associated cluster.
+  @_s.JsonKey(name: 'ParameterGroupStatus')
   final String parameterGroupStatus;
 
   ClusterParameterGroupNameMessage({
@@ -7226,6 +7502,11 @@ class ClusterParameterGroupNameMessage {
 }
 
 /// Describes the status of a parameter group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterParameterGroupStatus {
   /// The list of parameter statuses.
   ///
@@ -7233,12 +7514,15 @@ class ClusterParameterGroupStatus {
   /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-parameter-groups.html">Amazon
   /// Redshift Parameter Groups</a> in the <i>Amazon Redshift Cluster Management
   /// Guide</i>.
+  @_s.JsonKey(name: 'ClusterParameterStatusList')
   final List<ClusterParameterStatus> clusterParameterStatusList;
 
   /// The status of parameter updates.
+  @_s.JsonKey(name: 'ParameterApplyStatus')
   final String parameterApplyStatus;
 
   /// The name of the cluster parameter group.
+  @_s.JsonKey(name: 'ParameterGroupName')
   final String parameterGroupName;
 
   ClusterParameterGroupStatus({
@@ -7262,6 +7546,11 @@ class ClusterParameterGroupStatus {
 }
 
 /// Contains the output from the <a>DescribeClusterParameterGroups</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterParameterGroupsMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -7269,10 +7558,12 @@ class ClusterParameterGroupsMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of <a>ClusterParameterGroup</a> instances. Each instance describes
   /// one cluster parameter group.
+  @_s.JsonKey(name: 'ParameterGroups')
   final List<ClusterParameterGroup> parameterGroups;
 
   ClusterParameterGroupsMessage({
@@ -7292,8 +7583,14 @@ class ClusterParameterGroupsMessage {
 }
 
 /// Describes the status of a parameter group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterParameterStatus {
   /// The error that prevented the parameter from being applied to the database.
+  @_s.JsonKey(name: 'ParameterApplyErrorDescription')
   final String parameterApplyErrorDescription;
 
   /// The status of the parameter that indicates whether the parameter is in sync
@@ -7330,9 +7627,11 @@ class ClusterParameterStatus {
   /// change will be applied after the cluster reboots.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ParameterApplyStatus')
   final String parameterApplyStatus;
 
   /// The name of the parameter.
+  @_s.JsonKey(name: 'ParameterName')
   final String parameterName;
 
   ClusterParameterStatus({
@@ -7352,22 +7651,32 @@ class ClusterParameterStatus {
 }
 
 /// Describes a security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterSecurityGroup {
   /// The name of the cluster security group to which the operation was applied.
+  @_s.JsonKey(name: 'ClusterSecurityGroupName')
   final String clusterSecurityGroupName;
 
   /// A description of the security group.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// A list of EC2 security groups that are permitted to access clusters
   /// associated with this cluster security group.
+  @_s.JsonKey(name: 'EC2SecurityGroups')
   final List<EC2SecurityGroup> eC2SecurityGroups;
 
   /// A list of IP ranges (CIDR blocks) that are permitted to access clusters
   /// associated with this cluster security group.
+  @_s.JsonKey(name: 'IPRanges')
   final List<IPRange> iPRanges;
 
   /// The list of tags for the cluster security group.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   ClusterSecurityGroup({
@@ -7396,11 +7705,18 @@ class ClusterSecurityGroup {
 }
 
 /// Describes a cluster security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterSecurityGroupMembership {
   /// The name of the cluster security group.
+  @_s.JsonKey(name: 'ClusterSecurityGroupName')
   final String clusterSecurityGroupName;
 
   /// The status of the cluster security group.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   ClusterSecurityGroupMembership({
@@ -7417,8 +7733,14 @@ class ClusterSecurityGroupMembership {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterSecurityGroupMessage {
   /// A list of <a>ClusterSecurityGroup</a> instances.
+  @_s.JsonKey(name: 'ClusterSecurityGroups')
   final List<ClusterSecurityGroup> clusterSecurityGroups;
 
   /// A value that indicates the starting point for the next set of response
@@ -7427,6 +7749,7 @@ class ClusterSecurityGroupMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ClusterSecurityGroupMessage({
@@ -7448,9 +7771,15 @@ class ClusterSecurityGroupMessage {
 
 /// Returns the destination region and retention period that are configured for
 /// cross-region snapshot copy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterSnapshotCopyStatus {
   /// The destination region that snapshots are automatically copied to when
   /// cross-region snapshot copy is enabled.
+  @_s.JsonKey(name: 'DestinationRegion')
   final String destinationRegion;
 
   /// The number of days that automated snapshots are retained in the destination
@@ -7458,13 +7787,16 @@ class ClusterSnapshotCopyStatus {
   /// manual snapshot is retained indefinitely.
   ///
   /// The value must be either -1 or an integer between 1 and 3,653.
+  @_s.JsonKey(name: 'ManualSnapshotRetentionPeriod')
   final int manualSnapshotRetentionPeriod;
 
   /// The number of days that automated snapshots are retained in the destination
   /// region after they are copied from a source region.
+  @_s.JsonKey(name: 'RetentionPeriod')
   final int retentionPeriod;
 
   /// The name of the snapshot copy grant.
+  @_s.JsonKey(name: 'SnapshotCopyGrantName')
   final String snapshotCopyGrantName;
 
   ClusterSnapshotCopyStatus({
@@ -7486,24 +7818,35 @@ class ClusterSnapshotCopyStatus {
 }
 
 /// Describes a subnet group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterSubnetGroup {
   /// The name of the cluster subnet group.
+  @_s.JsonKey(name: 'ClusterSubnetGroupName')
   final String clusterSubnetGroupName;
 
   /// The description of the cluster subnet group.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The status of the cluster subnet group. Possible values are
   /// <code>Complete</code>, <code>Incomplete</code> and <code>Invalid</code>.
+  @_s.JsonKey(name: 'SubnetGroupStatus')
   final String subnetGroupStatus;
 
   /// A list of the VPC <a>Subnet</a> elements.
+  @_s.JsonKey(name: 'Subnets')
   final List<Subnet> subnets;
 
   /// The list of tags for the cluster subnet group.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// The VPC ID of the cluster subnet group.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   ClusterSubnetGroup({
@@ -7530,8 +7873,14 @@ class ClusterSubnetGroup {
 }
 
 /// Contains the output from the <a>DescribeClusterSubnetGroups</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterSubnetGroupMessage {
   /// A list of <a>ClusterSubnetGroup</a> instances.
+  @_s.JsonKey(name: 'ClusterSubnetGroups')
   final List<ClusterSubnetGroup> clusterSubnetGroups;
 
   /// A value that indicates the starting point for the next set of response
@@ -7540,6 +7889,7 @@ class ClusterSubnetGroupMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ClusterSubnetGroupMessage({
@@ -7560,14 +7910,22 @@ class ClusterSubnetGroupMessage {
 
 /// Describes a cluster version, including the parameter group family and
 /// description of the version.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterVersion {
   /// The name of the cluster parameter group family for the cluster.
+  @_s.JsonKey(name: 'ClusterParameterGroupFamily')
   final String clusterParameterGroupFamily;
 
   /// The version number used by the cluster.
+  @_s.JsonKey(name: 'ClusterVersion')
   final String clusterVersion;
 
   /// The description of the cluster version.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   ClusterVersion({
@@ -7586,8 +7944,14 @@ class ClusterVersion {
 }
 
 /// Contains the output from the <a>DescribeClusterVersions</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClusterVersionsMessage {
   /// A list of <code>Version</code> elements.
+  @_s.JsonKey(name: 'ClusterVersions')
   final List<ClusterVersion> clusterVersions;
 
   /// A value that indicates the starting point for the next set of response
@@ -7596,6 +7960,7 @@ class ClusterVersionsMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ClusterVersionsMessage({
@@ -7615,9 +7980,15 @@ class ClusterVersionsMessage {
 }
 
 /// Contains the output from the <a>DescribeClusters</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ClustersMessage {
   /// A list of <code>Cluster</code> objects, where each object describes one
   /// cluster.
+  @_s.JsonKey(name: 'Clusters')
   final List<Cluster> clusters;
 
   /// A value that indicates the starting point for the next set of response
@@ -7626,6 +7997,7 @@ class ClustersMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ClustersMessage({
@@ -7641,7 +8013,13 @@ class ClustersMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyClusterSnapshotResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   CopyClusterSnapshotResult({
@@ -7655,7 +8033,13 @@ class CopyClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateClusterParameterGroupResult {
+  @_s.JsonKey(name: 'ClusterParameterGroup')
   final ClusterParameterGroup clusterParameterGroup;
 
   CreateClusterParameterGroupResult({
@@ -7670,7 +8054,13 @@ class CreateClusterParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateClusterResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   CreateClusterResult({
@@ -7684,7 +8074,13 @@ class CreateClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateClusterSecurityGroupResult {
+  @_s.JsonKey(name: 'ClusterSecurityGroup')
   final ClusterSecurityGroup clusterSecurityGroup;
 
   CreateClusterSecurityGroupResult({
@@ -7699,7 +8095,13 @@ class CreateClusterSecurityGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateClusterSnapshotResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   CreateClusterSnapshotResult({
@@ -7713,7 +8115,13 @@ class CreateClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateClusterSubnetGroupResult {
+  @_s.JsonKey(name: 'ClusterSubnetGroup')
   final ClusterSubnetGroup clusterSubnetGroup;
 
   CreateClusterSubnetGroupResult({
@@ -7728,7 +8136,13 @@ class CreateClusterSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   CreateEventSubscriptionResult({
@@ -7743,7 +8157,13 @@ class CreateEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateHsmClientCertificateResult {
+  @_s.JsonKey(name: 'HsmClientCertificate')
   final HsmClientCertificate hsmClientCertificate;
 
   CreateHsmClientCertificateResult({
@@ -7758,7 +8178,13 @@ class CreateHsmClientCertificateResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateHsmConfigurationResult {
+  @_s.JsonKey(name: 'HsmConfiguration')
   final HsmConfiguration hsmConfiguration;
 
   CreateHsmConfigurationResult({
@@ -7773,7 +8199,13 @@ class CreateHsmConfigurationResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateSnapshotCopyGrantResult {
+  @_s.JsonKey(name: 'SnapshotCopyGrant')
   final SnapshotCopyGrant snapshotCopyGrant;
 
   CreateSnapshotCopyGrantResult({
@@ -7788,11 +8220,18 @@ class CreateSnapshotCopyGrantResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CustomerStorageMessage {
   /// The total amount of storage currently used for snapshots.
+  @_s.JsonKey(name: 'TotalBackupSizeInMegaBytes')
   final double totalBackupSizeInMegaBytes;
 
   /// The total amount of storage currently provisioned.
+  @_s.JsonKey(name: 'TotalProvisionedStorageInMegaBytes')
   final double totalProvisionedStorageInMegaBytes;
 
   CustomerStorageMessage({
@@ -7811,25 +8250,36 @@ class CustomerStorageMessage {
 
 /// Describes the status of a cluster while it is in the process of resizing
 /// with an incremental resize.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DataTransferProgress {
   /// Describes the data transfer rate in MB's per second.
+  @_s.JsonKey(name: 'CurrentRateInMegaBytesPerSecond')
   final double currentRateInMegaBytesPerSecond;
 
   /// Describes the total amount of data that has been transfered in MB's.
+  @_s.JsonKey(name: 'DataTransferredInMegaBytes')
   final int dataTransferredInMegaBytes;
 
   /// Describes the number of seconds that have elapsed during the data transfer.
+  @_s.JsonKey(name: 'ElapsedTimeInSeconds')
   final int elapsedTimeInSeconds;
 
   /// Describes the estimated number of seconds remaining to complete the
   /// transfer.
+  @_s.JsonKey(name: 'EstimatedTimeToCompletionInSeconds')
   final int estimatedTimeToCompletionInSeconds;
 
   /// Describes the status of the cluster. While the transfer is in progress the
   /// status is <code>transferringdata</code>.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// Describes the total amount of data to be transfered in megabytes.
+  @_s.JsonKey(name: 'TotalDataInMegaBytes')
   final int totalDataInMegaBytes;
 
   DataTransferProgress({
@@ -7856,6 +8306,11 @@ class DataTransferProgress {
 }
 
 /// Describes the default cluster parameters for a parameter group family.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DefaultClusterParameters {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -7863,13 +8318,16 @@ class DefaultClusterParameters {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// The name of the cluster parameter group family to which the engine default
   /// parameters apply.
+  @_s.JsonKey(name: 'ParameterGroupFamily')
   final String parameterGroupFamily;
 
   /// The list of cluster default parameters.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   DefaultClusterParameters({
@@ -7891,14 +8349,28 @@ class DefaultClusterParameters {
 }
 
 /// Describes a deferred maintenance window
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeferredMaintenanceWindow {
   /// A timestamp for the end of the time period when we defer maintenance.
+  @_s.JsonKey(
+      name: 'DeferMaintenanceEndTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime deferMaintenanceEndTime;
 
   /// A unique identifier for the maintenance window.
+  @_s.JsonKey(name: 'DeferMaintenanceIdentifier')
   final String deferMaintenanceIdentifier;
 
   /// A timestamp for the beginning of the time period when we defer maintenance.
+  @_s.JsonKey(
+      name: 'DeferMaintenanceStartTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime deferMaintenanceStartTime;
 
   DeferredMaintenanceWindow({
@@ -7918,7 +8390,13 @@ class DeferredMaintenanceWindow {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteClusterResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   DeleteClusterResult({
@@ -7933,12 +8411,18 @@ class DeleteClusterResult {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DeleteClusterSnapshotMessage {
   /// The unique identifier of the manual snapshot to be deleted.
   ///
   /// Constraints: Must be the name of an existing snapshot that is in the
   /// <code>available</code>, <code>failed</code>, or <code>cancelled</code>
   /// state.
+  @_s.JsonKey(name: 'SnapshotIdentifier')
   final String snapshotIdentifier;
 
   /// The unique identifier of the cluster the snapshot was created from. This
@@ -7946,15 +8430,23 @@ class DeleteClusterSnapshotMessage {
   /// resource element that specifies anything other than * for the cluster name.
   ///
   /// Constraints: Must be the name of valid cluster.
+  @_s.JsonKey(name: 'SnapshotClusterIdentifier')
   final String snapshotClusterIdentifier;
 
   DeleteClusterSnapshotMessage({
     @_s.required this.snapshotIdentifier,
     this.snapshotClusterIdentifier,
   });
+  Map<String, dynamic> toJson() => _$DeleteClusterSnapshotMessageToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteClusterSnapshotResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   DeleteClusterSnapshotResult({
@@ -7968,7 +8460,13 @@ class DeleteClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDefaultClusterParametersResult {
+  @_s.JsonKey(name: 'DefaultClusterParameters')
   final DefaultClusterParameters defaultClusterParameters;
 
   DescribeDefaultClusterParametersResult({
@@ -7983,6 +8481,11 @@ class DescribeDefaultClusterParametersResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeSnapshotSchedulesOutputMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -7990,9 +8493,11 @@ class DescribeSnapshotSchedulesOutputMessage {
   /// in the <code>marker</code> parameter and retrying the command. If the
   /// <code>marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of SnapshotSchedules.
+  @_s.JsonKey(name: 'SnapshotSchedules')
   final List<SnapshotSchedule> snapshotSchedules;
 
   DescribeSnapshotSchedulesOutputMessage({
@@ -8011,7 +8516,13 @@ class DescribeSnapshotSchedulesOutputMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DisableSnapshotCopyResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   DisableSnapshotCopyResult({
@@ -8026,18 +8537,27 @@ class DisableSnapshotCopyResult {
 }
 
 /// Describes an Amazon EC2 security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EC2SecurityGroup {
   /// The name of the EC2 Security Group.
+  @_s.JsonKey(name: 'EC2SecurityGroupName')
   final String eC2SecurityGroupName;
 
   /// The AWS ID of the owner of the EC2 security group specified in the
   /// <code>EC2SecurityGroupName</code> field.
+  @_s.JsonKey(name: 'EC2SecurityGroupOwnerId')
   final String eC2SecurityGroupOwnerId;
 
   /// The status of the EC2 security group.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The list of tags for the EC2 security group.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   EC2SecurityGroup({
@@ -8060,11 +8580,18 @@ class EC2SecurityGroup {
 }
 
 /// Describes the status of the elastic IP (EIP) address.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ElasticIpStatus {
   /// The elastic IP (EIP) address for the cluster.
+  @_s.JsonKey(name: 'ElasticIp')
   final String elasticIp;
 
   /// The status of the elastic IP (EIP) address.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   ElasticIpStatus({
@@ -8079,7 +8606,13 @@ class ElasticIpStatus {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnableSnapshotCopyResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   EnableSnapshotCopyResult({
@@ -8094,11 +8627,18 @@ class EnableSnapshotCopyResult {
 }
 
 /// Describes a connection endpoint.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Endpoint {
   /// The DNS address of the Cluster.
+  @_s.JsonKey(name: 'Address')
   final String address;
 
   /// The port that the database engine is listening on.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   Endpoint({
@@ -8114,30 +8654,42 @@ class Endpoint {
 }
 
 /// Describes an event.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Event {
   /// The date and time of the event.
+  @_s.JsonKey(name: 'Date', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime date;
 
   /// A list of the event categories.
   ///
   /// Values: Configuration, Management, Monitoring, Security
+  @_s.JsonKey(name: 'EventCategories')
   final List<String> eventCategories;
 
   /// The identifier of the event.
+  @_s.JsonKey(name: 'EventId')
   final String eventId;
 
   /// The text of this event.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// The severity of the event.
   ///
   /// Values: ERROR, INFO
+  @_s.JsonKey(name: 'Severity')
   final String severity;
 
   /// The identifier for the source of the event.
+  @_s.JsonKey(name: 'SourceIdentifier')
   final String sourceIdentifier;
 
   /// The source type for this event.
+  @_s.JsonKey(name: 'SourceType')
   final SourceType sourceType;
 
   Event({
@@ -8165,12 +8717,19 @@ class Event {
 }
 
 /// Describes event categories.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventCategoriesMap {
   /// The events in the event category.
+  @_s.JsonKey(name: 'Events')
   final List<EventInfoMap> events;
 
   /// The source type, such as cluster or cluster-snapshot, that the returned
   /// categories belong to.
+  @_s.JsonKey(name: 'SourceType')
   final String sourceType;
 
   EventCategoriesMap({
@@ -8189,8 +8748,14 @@ class EventCategoriesMap {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventCategoriesMessage {
   /// A list of event categories descriptions.
+  @_s.JsonKey(name: 'EventCategoriesMapList')
   final List<EventCategoriesMap> eventCategoriesMapList;
 
   EventCategoriesMessage({
@@ -8209,19 +8774,28 @@ class EventCategoriesMessage {
 }
 
 /// Describes event information.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventInfoMap {
   /// The category of an Amazon Redshift event.
+  @_s.JsonKey(name: 'EventCategories')
   final List<String> eventCategories;
 
   /// The description of an Amazon Redshift event.
+  @_s.JsonKey(name: 'EventDescription')
   final String eventDescription;
 
   /// The identifier of an Amazon Redshift event.
+  @_s.JsonKey(name: 'EventId')
   final String eventId;
 
   /// The severity of the event.
   ///
   /// Values: ERROR, INFO
+  @_s.JsonKey(name: 'Severity')
   final String severity;
 
   EventInfoMap({
@@ -8243,40 +8817,54 @@ class EventInfoMap {
 }
 
 /// Describes event subscriptions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventSubscription {
   /// The name of the Amazon Redshift event notification subscription.
+  @_s.JsonKey(name: 'CustSubscriptionId')
   final String custSubscriptionId;
 
   /// The AWS customer account associated with the Amazon Redshift event
   /// notification subscription.
+  @_s.JsonKey(name: 'CustomerAwsId')
   final String customerAwsId;
 
   /// A boolean value indicating whether the subscription is enabled;
   /// <code>true</code> indicates that the subscription is enabled.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// The list of Amazon Redshift event categories specified in the event
   /// notification subscription.
   ///
   /// Values: Configuration, Management, Monitoring, Security
+  @_s.JsonKey(name: 'EventCategoriesList')
   final List<String> eventCategoriesList;
 
   /// The event severity specified in the Amazon Redshift event notification
   /// subscription.
   ///
   /// Values: ERROR, INFO
+  @_s.JsonKey(name: 'Severity')
   final String severity;
 
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic used by the event
   /// notification subscription.
+  @_s.JsonKey(name: 'SnsTopicArn')
   final String snsTopicArn;
 
   /// A list of the sources that publish events to the Amazon Redshift event
   /// notification subscription.
+  @_s.JsonKey(name: 'SourceIdsList')
   final List<String> sourceIdsList;
 
-  /// The source type of the events returned the Amazon Redshift event
-  /// notification, such as cluster, or cluster-snapshot.
+  /// The source type of the events returned by the Amazon Redshift event
+  /// notification, such as cluster, cluster-snapshot, cluster-parameter-group,
+  /// cluster-security-group, or scheduled-action.
+  @_s.JsonKey(name: 'SourceType')
   final String sourceType;
 
   /// The status of the Amazon Redshift event notification subscription.
@@ -8293,13 +8881,19 @@ class EventSubscription {
   /// indicates that the topic was deleted after the subscription was created.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The date and time the Amazon Redshift event notification subscription was
   /// created.
+  @_s.JsonKey(
+      name: 'SubscriptionCreationTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime subscriptionCreationTime;
 
   /// The list of tags for the event subscription.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   EventSubscription({
@@ -8339,8 +8933,14 @@ class EventSubscription {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventSubscriptionsMessage {
   /// A list of event subscriptions.
+  @_s.JsonKey(name: 'EventSubscriptionsList')
   final List<EventSubscription> eventSubscriptionsList;
 
   /// A value that indicates the starting point for the next set of response
@@ -8349,6 +8949,7 @@ class EventSubscriptionsMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   EventSubscriptionsMessage({
@@ -8369,8 +8970,14 @@ class EventSubscriptionsMessage {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventsMessage {
   /// A list of <code>Event</code> instances.
+  @_s.JsonKey(name: 'Events')
   final List<Event> events;
 
   /// A value that indicates the starting point for the next set of response
@@ -8379,6 +8986,7 @@ class EventsMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   EventsMessage({
@@ -8394,6 +9002,11 @@ class EventsMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetReservedNodeExchangeOfferingsOutputMessage {
   /// An optional parameter that specifies the starting point for returning a set
   /// of response records. When the results of a
@@ -8402,9 +9015,11 @@ class GetReservedNodeExchangeOfferingsOutputMessage {
   /// of the response. You can retrieve the next set of response records by
   /// providing the returned marker value in the marker parameter and retrying the
   /// request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// Returns an array of <a>ReservedNodeOffering</a> objects.
+  @_s.JsonKey(name: 'ReservedNodeOfferings')
   final List<ReservedNodeOffering> reservedNodeOfferings;
 
   GetReservedNodeExchangeOfferingsOutputMessage({
@@ -8428,15 +9043,23 @@ class GetReservedNodeExchangeOfferingsOutputMessage {
 /// Returns information about an HSM client certificate. The certificate is
 /// stored in a secure Hardware Storage Module (HSM), and used by the Amazon
 /// Redshift cluster to encrypt data files.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class HsmClientCertificate {
   /// The identifier of the HSM client certificate.
+  @_s.JsonKey(name: 'HsmClientCertificateIdentifier')
   final String hsmClientCertificateIdentifier;
 
   /// The public key that the Amazon Redshift cluster will use to connect to the
   /// HSM. You must register the public key in the HSM.
+  @_s.JsonKey(name: 'HsmClientCertificatePublicKey')
   final String hsmClientCertificatePublicKey;
 
   /// The list of tags for the HSM client certificate.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   HsmClientCertificate({
@@ -8457,10 +9080,16 @@ class HsmClientCertificate {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class HsmClientCertificateMessage {
   /// A list of the identifiers for one or more HSM client certificates used by
   /// Amazon Redshift clusters to store and retrieve database encryption keys in
   /// an HSM.
+  @_s.JsonKey(name: 'HsmClientCertificates')
   final List<HsmClientCertificate> hsmClientCertificates;
 
   /// A value that indicates the starting point for the next set of response
@@ -8469,6 +9098,7 @@ class HsmClientCertificateMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   HsmClientCertificateMessage({
@@ -8491,21 +9121,31 @@ class HsmClientCertificateMessage {
 /// Returns information about an HSM configuration, which is an object that
 /// describes to Amazon Redshift clusters the information they require to
 /// connect to an HSM where they can store database encryption keys.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class HsmConfiguration {
   /// A text description of the HSM configuration.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The name of the Amazon Redshift HSM configuration.
+  @_s.JsonKey(name: 'HsmConfigurationIdentifier')
   final String hsmConfigurationIdentifier;
 
   /// The IP address that the Amazon Redshift cluster must use to access the HSM.
+  @_s.JsonKey(name: 'HsmIpAddress')
   final String hsmIpAddress;
 
   /// The name of the partition in the HSM where the Amazon Redshift clusters will
   /// store their database encryption keys.
+  @_s.JsonKey(name: 'HsmPartitionName')
   final String hsmPartitionName;
 
   /// The list of tags for the HSM configuration.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   HsmConfiguration({
@@ -8529,8 +9169,14 @@ class HsmConfiguration {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class HsmConfigurationMessage {
   /// A list of <code>HsmConfiguration</code> objects.
+  @_s.JsonKey(name: 'HsmConfigurations')
   final List<HsmConfiguration> hsmConfigurations;
 
   /// A value that indicates the starting point for the next set of response
@@ -8539,6 +9185,7 @@ class HsmConfigurationMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   HsmConfigurationMessage({
@@ -8558,19 +9205,27 @@ class HsmConfigurationMessage {
 }
 
 /// Describes the status of changes to HSM settings.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class HsmStatus {
   /// Specifies the name of the HSM client certificate the Amazon Redshift cluster
   /// uses to retrieve the data encryption keys stored in an HSM.
+  @_s.JsonKey(name: 'HsmClientCertificateIdentifier')
   final String hsmClientCertificateIdentifier;
 
   /// Specifies the name of the HSM configuration that contains the information
   /// the Amazon Redshift cluster can use to retrieve and store keys in an HSM.
+  @_s.JsonKey(name: 'HsmConfigurationIdentifier')
   final String hsmConfigurationIdentifier;
 
   /// Reports whether the Amazon Redshift cluster has finished applying any HSM
   /// settings changes specified in a modify cluster command.
   ///
   /// Values: active, applying
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   HsmStatus({
@@ -8590,14 +9245,22 @@ class HsmStatus {
 }
 
 /// Describes an IP range used in a security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IPRange {
   /// The IP range in Classless Inter-Domain Routing (CIDR) notation.
+  @_s.JsonKey(name: 'CIDRIP')
   final String cidrip;
 
   /// The status of the IP range, for example, "authorized".
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The list of tags for the IP range.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   IPRange({
@@ -8616,23 +9279,38 @@ class IPRange {
 }
 
 /// Describes the status of logging for a cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoggingStatus {
   /// The name of the S3 bucket where the log files are stored.
+  @_s.JsonKey(name: 'BucketName')
   final String bucketName;
 
   /// The message indicating that logs failed to be delivered.
+  @_s.JsonKey(name: 'LastFailureMessage')
   final String lastFailureMessage;
 
   /// The last time when logs failed to be delivered.
+  @_s.JsonKey(
+      name: 'LastFailureTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastFailureTime;
 
   /// The last time that logs were delivered.
+  @_s.JsonKey(
+      name: 'LastSuccessfulDeliveryTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime lastSuccessfulDeliveryTime;
 
   /// <code>true</code> if logging is on, <code>false</code> if logging is off.
+  @_s.JsonKey(name: 'LoggingEnabled')
   final bool loggingEnabled;
 
   /// The prefix applied to the log file names.
+  @_s.JsonKey(name: 'S3KeyPrefix')
   final String s3KeyPrefix;
 
   LoggingStatus({
@@ -8662,16 +9340,24 @@ class LoggingStatus {
 /// updated to the most recently certified maintenance release. If the value is
 /// <code>trailing</code>, the cluster is updated to the previously certified
 /// maintenance release.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MaintenanceTrack {
   /// The version number for the cluster release.
+  @_s.JsonKey(name: 'DatabaseVersion')
   final String databaseVersion;
 
   /// The name of the maintenance track. Possible values are <code>current</code>
   /// and <code>trailing</code>.
+  @_s.JsonKey(name: 'MaintenanceTrackName')
   final String maintenanceTrackName;
 
   /// An array of <a>UpdateTarget</a> objects to update with the maintenance
   /// track.
+  @_s.JsonKey(name: 'UpdateTargets')
   final List<UpdateTarget> updateTargets;
 
   MaintenanceTrack({
@@ -8694,7 +9380,9 @@ class MaintenanceTrack {
 }
 
 enum Mode {
+  @_s.JsonValue('standard')
   standard,
+  @_s.JsonValue('high-performance')
   highPerformance,
 }
 
@@ -8710,7 +9398,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyClusterDbRevisionResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   ModifyClusterDbRevisionResult({
@@ -8724,7 +9418,13 @@ class ModifyClusterDbRevisionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyClusterIamRolesResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   ModifyClusterIamRolesResult({
@@ -8738,7 +9438,13 @@ class ModifyClusterIamRolesResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyClusterMaintenanceResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   ModifyClusterMaintenanceResult({
@@ -8752,7 +9458,13 @@ class ModifyClusterMaintenanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyClusterResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   ModifyClusterResult({
@@ -8766,7 +9478,13 @@ class ModifyClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyClusterSnapshotResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   ModifyClusterSnapshotResult({
@@ -8780,7 +9498,13 @@ class ModifyClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyClusterSubnetGroupResult {
+  @_s.JsonKey(name: 'ClusterSubnetGroup')
   final ClusterSubnetGroup clusterSubnetGroup;
 
   ModifyClusterSubnetGroupResult({
@@ -8795,7 +9519,13 @@ class ModifyClusterSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   ModifyEventSubscriptionResult({
@@ -8810,7 +9540,13 @@ class ModifyEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifySnapshotCopyRetentionPeriodResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   ModifySnapshotCopyRetentionPeriodResult({
@@ -8825,17 +9561,26 @@ class ModifySnapshotCopyRetentionPeriodResult {
 }
 
 /// A list of node configurations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NodeConfigurationOption {
   /// The estimated disk utilizaton percentage.
+  @_s.JsonKey(name: 'EstimatedDiskUtilizationPercent')
   final double estimatedDiskUtilizationPercent;
 
   /// The category of the node configuration recommendation.
+  @_s.JsonKey(name: 'Mode')
   final Mode mode;
 
   /// The node type, such as, "ds2.8xlarge".
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
 
   /// The number of nodes.
+  @_s.JsonKey(name: 'NumberOfNodes')
   final int numberOfNodes;
 
   NodeConfigurationOption({
@@ -8856,20 +9601,28 @@ class NodeConfigurationOption {
 }
 
 /// A set of elements to filter the returned node configurations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class NodeConfigurationOptionsFilter {
   /// The name of the element to filter.
+  @_s.JsonKey(name: 'Name')
   final NodeConfigurationOptionsFilterName name;
 
   /// The filter operator. If filter Name is NodeType only the 'in' operator is
   /// supported. Provide one value to evaluate for 'eq', 'lt', 'le', 'gt', and
   /// 'ge'. Provide two values to evaluate for 'between'. Provide a list of values
   /// for 'in'.
+  @_s.JsonKey(name: 'Operator')
   final OperatorType operator;
 
   /// List of values. Compare Name using Operator to Values. If filter Name is
   /// NumberOfNodes, then values can range from 0 to 200. If filter Name is
   /// EstimatedDiskUtilizationPercent, then values can range from 0 to 100. For
   /// example, filter NumberOfNodes (name) GT (operator) 3 (values).
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   NodeConfigurationOptionsFilter({
@@ -8877,12 +9630,17 @@ class NodeConfigurationOptionsFilter {
     this.operator,
     this.values,
   });
+  Map<String, dynamic> toJson() => _$NodeConfigurationOptionsFilterToJson(this);
 }
 
 enum NodeConfigurationOptionsFilterName {
+  @_s.JsonValue('NodeType')
   nodeType,
+  @_s.JsonValue('NumberOfNodes')
   numberOfNodes,
+  @_s.JsonValue('EstimatedDiskUtilizationPercent')
   estimatedDiskUtilizationPercent,
+  @_s.JsonValue('Mode')
   mode,
 }
 
@@ -8903,6 +9661,11 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NodeConfigurationOptionsMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -8910,9 +9673,11 @@ class NodeConfigurationOptionsMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of valid node configurations.
+  @_s.JsonKey(name: 'NodeConfigurationOptionList')
   final List<NodeConfigurationOption> nodeConfigurationOptionList;
 
   NodeConfigurationOptionsMessage({
@@ -8933,12 +9698,19 @@ class NodeConfigurationOptionsMessage {
 }
 
 enum OperatorType {
+  @_s.JsonValue('eq')
   eq,
+  @_s.JsonValue('lt')
   lt,
+  @_s.JsonValue('gt')
   gt,
+  @_s.JsonValue('le')
   le,
+  @_s.JsonValue('ge')
   ge,
+  @_s.JsonValue('in')
   $in,
+  @_s.JsonValue('between')
   between,
 }
 
@@ -8965,17 +9737,26 @@ extension on String {
 }
 
 /// Describes an orderable cluster option.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OrderableClusterOption {
   /// A list of availability zones for the orderable cluster.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<AvailabilityZone> availabilityZones;
 
   /// The cluster type, for example <code>multi-node</code>.
+  @_s.JsonKey(name: 'ClusterType')
   final String clusterType;
 
   /// The version of the orderable cluster.
+  @_s.JsonKey(name: 'ClusterVersion')
   final String clusterVersion;
 
   /// The node type for the orderable cluster.
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
 
   OrderableClusterOption({
@@ -8999,6 +9780,11 @@ class OrderableClusterOption {
 }
 
 /// Contains the output from the <a>DescribeOrderableClusterOptions</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OrderableClusterOptionsMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -9006,10 +9792,12 @@ class OrderableClusterOptionsMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// An <code>OrderableClusterOption</code> structure containing information
   /// about orderable options for the cluster.
+  @_s.JsonKey(name: 'OrderableClusterOptions')
   final List<OrderableClusterOption> orderableClusterOptions;
 
   OrderableClusterOptionsMessage({
@@ -9030,8 +9818,14 @@ class OrderableClusterOptionsMessage {
 }
 
 /// Describes a parameter in a cluster parameter group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Parameter {
   /// The valid range of values for the parameter.
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
 
   /// Specifies how to apply the WLM configuration parameter. Some properties can
@@ -9041,28 +9835,36 @@ class Parameter {
   /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-parameter-groups.html">Amazon
   /// Redshift Parameter Groups</a> in the <i>Amazon Redshift Cluster Management
   /// Guide</i>.
+  @_s.JsonKey(name: 'ApplyType')
   final ParameterApplyType applyType;
 
   /// The data type of the parameter.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// A description of the parameter.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// If <code>true</code>, the parameter can be modified. Some parameters have
   /// security or operational implications that prevent them from being changed.
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
 
   /// The earliest engine version to which the parameter can apply.
+  @_s.JsonKey(name: 'MinimumEngineVersion')
   final String minimumEngineVersion;
 
   /// The name of the parameter.
+  @_s.JsonKey(name: 'ParameterName')
   final String parameterName;
 
   /// The value of the parameter.
+  @_s.JsonKey(name: 'ParameterValue')
   final String parameterValue;
 
   /// The source of the parameter value, such as "engine-default" or "user".
+  @_s.JsonKey(name: 'Source')
   final String source;
 
   Parameter({
@@ -9091,10 +9893,14 @@ class Parameter {
       source: _s.extractXmlStringValue(elem, 'Source'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ParameterToJson(this);
 }
 
 enum ParameterApplyType {
+  @_s.JsonValue('static')
   static,
+  @_s.JsonValue('dynamic')
   dynamic,
 }
 
@@ -9110,24 +9916,76 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
+class PauseClusterMessage {
+  /// The identifier of the cluster to be paused.
+  @_s.JsonKey(name: 'ClusterIdentifier')
+  final String clusterIdentifier;
+
+  PauseClusterMessage({
+    @_s.required this.clusterIdentifier,
+  });
+  factory PauseClusterMessage.fromXml(_s.XmlElement elem) {
+    return PauseClusterMessage(
+      clusterIdentifier: _s.extractXmlStringValue(elem, 'ClusterIdentifier'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => _$PauseClusterMessageToJson(this);
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class PauseClusterResult {
+  @_s.JsonKey(name: 'Cluster')
+  final Cluster cluster;
+
+  PauseClusterResult({
+    this.cluster,
+  });
+  factory PauseClusterResult.fromXml(_s.XmlElement elem) {
+    return PauseClusterResult(
+      cluster:
+          _s.extractXmlChild(elem, 'Cluster')?.let((e) => Cluster.fromXml(e)),
+    );
+  }
+}
+
 /// Describes cluster attributes that are in a pending state. A change to one or
 /// more the attributes was requested and is in progress or will be applied.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PendingModifiedValues {
   /// The pending or in-progress change of the automated snapshot retention
   /// period.
+  @_s.JsonKey(name: 'AutomatedSnapshotRetentionPeriod')
   final int automatedSnapshotRetentionPeriod;
 
   /// The pending or in-progress change of the new identifier for the cluster.
+  @_s.JsonKey(name: 'ClusterIdentifier')
   final String clusterIdentifier;
 
   /// The pending or in-progress change of the cluster type.
+  @_s.JsonKey(name: 'ClusterType')
   final String clusterType;
 
   /// The pending or in-progress change of the service version.
+  @_s.JsonKey(name: 'ClusterVersion')
   final String clusterVersion;
 
   /// The encryption type for a cluster. Possible values are: KMS and None. For
   /// the China region the possible values are None, and Legacy.
+  @_s.JsonKey(name: 'EncryptionType')
   final String encryptionType;
 
   /// An option that specifies whether to create the cluster with enhanced VPC
@@ -9139,24 +9997,30 @@ class PendingModifiedValues {
   /// If this option is <code>true</code>, enhanced VPC routing is enabled.
   ///
   /// Default: false
+  @_s.JsonKey(name: 'EnhancedVpcRouting')
   final bool enhancedVpcRouting;
 
   /// The name of the maintenance track that the cluster will change to during the
   /// next maintenance window.
+  @_s.JsonKey(name: 'MaintenanceTrackName')
   final String maintenanceTrackName;
 
   /// The pending or in-progress change of the master user password for the
   /// cluster.
+  @_s.JsonKey(name: 'MasterUserPassword')
   final String masterUserPassword;
 
   /// The pending or in-progress change of the cluster's node type.
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
 
   /// The pending or in-progress change of the number of nodes in the cluster.
+  @_s.JsonKey(name: 'NumberOfNodes')
   final int numberOfNodes;
 
   /// The pending or in-progress change of the ability to connect to the cluster
   /// from the public network.
+  @_s.JsonKey(name: 'PubliclyAccessible')
   final bool publiclyAccessible;
 
   PendingModifiedValues({
@@ -9191,7 +10055,13 @@ class PendingModifiedValues {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PurchaseReservedNodeOfferingResult {
+  @_s.JsonKey(name: 'ReservedNode')
   final ReservedNode reservedNode;
 
   PurchaseReservedNodeOfferingResult({
@@ -9206,7 +10076,13 @@ class PurchaseReservedNodeOfferingResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RebootClusterResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   RebootClusterResult({
@@ -9221,12 +10097,19 @@ class RebootClusterResult {
 }
 
 /// Describes a recurring charge.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RecurringCharge {
   /// The amount charged per the period of time specified by the recurring charge
   /// frequency.
+  @_s.JsonKey(name: 'RecurringChargeAmount')
   final double recurringChargeAmount;
 
   /// The frequency at which the recurring charge amount is applied.
+  @_s.JsonKey(name: 'RecurringChargeFrequency')
   final String recurringChargeFrequency;
 
   RecurringCharge({
@@ -9246,40 +10129,56 @@ class RecurringCharge {
 /// Describes a reserved node. You can call the
 /// <a>DescribeReservedNodeOfferings</a> API to obtain the available reserved
 /// node offerings.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedNode {
   /// The currency code for the reserved cluster.
+  @_s.JsonKey(name: 'CurrencyCode')
   final String currencyCode;
 
   /// The duration of the node reservation in seconds.
+  @_s.JsonKey(name: 'Duration')
   final int duration;
 
   /// The fixed cost Amazon Redshift charges you for this reserved node.
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
 
   /// The number of reserved compute nodes.
+  @_s.JsonKey(name: 'NodeCount')
   final int nodeCount;
 
   /// The node type of the reserved node.
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
 
   /// The anticipated utilization of the reserved node, as defined in the reserved
   /// node offering.
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
 
   /// The recurring charges for the reserved node.
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
 
   /// The unique identifier for the reservation.
+  @_s.JsonKey(name: 'ReservedNodeId')
   final String reservedNodeId;
 
   /// The identifier for the reserved node offering.
+  @_s.JsonKey(name: 'ReservedNodeOfferingId')
   final String reservedNodeOfferingId;
 
   /// <p/>
+  @_s.JsonKey(name: 'ReservedNodeOfferingType')
   final ReservedNodeOfferingType reservedNodeOfferingType;
 
   /// The time the reservation started. You purchase a reserved node offering for
   /// a duration. This is the start time of that duration.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   /// The state of the reserved compute node.
@@ -9305,9 +10204,11 @@ class ReservedNode {
   /// node.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'State')
   final String state;
 
   /// The hourly rate Amazon Redshift charges you for this reserved node.
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedNode({
@@ -9352,37 +10253,51 @@ class ReservedNode {
 }
 
 /// Describes a reserved node offering.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedNodeOffering {
   /// The currency code for the compute nodes offering.
+  @_s.JsonKey(name: 'CurrencyCode')
   final String currencyCode;
 
   /// The duration, in seconds, for which the offering will reserve the node.
+  @_s.JsonKey(name: 'Duration')
   final int duration;
 
   /// The upfront fixed charge you will pay to purchase the specific reserved node
   /// offering.
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
 
   /// The node type offered by the reserved node offering.
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
 
   /// The anticipated utilization of the reserved node, as defined in the reserved
   /// node offering.
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
 
   /// The charge to your account regardless of whether you are creating any
   /// clusters using the node offering. Recurring charges are only in effect for
   /// heavy-utilization reserved nodes.
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
 
   /// The offering identifier.
+  @_s.JsonKey(name: 'ReservedNodeOfferingId')
   final String reservedNodeOfferingId;
 
   /// <p/>
+  @_s.JsonKey(name: 'ReservedNodeOfferingType')
   final ReservedNodeOfferingType reservedNodeOfferingType;
 
   /// The rate you are charged for each hour the cluster that is using the
   /// offering is running.
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedNodeOffering({
@@ -9419,7 +10334,9 @@ class ReservedNodeOffering {
 }
 
 enum ReservedNodeOfferingType {
+  @_s.JsonValue('Regular')
   regular,
+  @_s.JsonValue('Upgradable')
   upgradable,
 }
 
@@ -9436,6 +10353,11 @@ extension on String {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedNodeOfferingsMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -9443,9 +10365,11 @@ class ReservedNodeOfferingsMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of <code>ReservedNodeOffering</code> objects.
+  @_s.JsonKey(name: 'ReservedNodeOfferings')
   final List<ReservedNodeOffering> reservedNodeOfferings;
 
   ReservedNodeOfferingsMessage({
@@ -9466,6 +10390,11 @@ class ReservedNodeOfferingsMessage {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedNodesMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -9473,9 +10402,11 @@ class ReservedNodesMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// The list of <code>ReservedNode</code> objects.
+  @_s.JsonKey(name: 'ReservedNodes')
   final List<ReservedNode> reservedNodes;
 
   ReservedNodesMessage({
@@ -9494,44 +10425,62 @@ class ReservedNodesMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ResizeClusterMessage {
   /// The unique identifier for the cluster to resize.
+  @_s.JsonKey(name: 'ClusterIdentifier')
   final String clusterIdentifier;
-
-  /// The new number of nodes for the cluster.
-  final int numberOfNodes;
 
   /// A boolean value indicating whether the resize operation is using the classic
   /// resize process. If you don't provide this parameter or set the value to
   /// <code>false</code>, the resize type is elastic.
+  @_s.JsonKey(name: 'Classic')
   final bool classic;
 
   /// The new cluster type for the specified cluster.
+  @_s.JsonKey(name: 'ClusterType')
   final String clusterType;
 
   /// The new node type for the nodes you are adding. If not specified, the
   /// cluster's current node type is used.
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
+
+  /// The new number of nodes for the cluster.
+  @_s.JsonKey(name: 'NumberOfNodes')
+  final int numberOfNodes;
 
   ResizeClusterMessage({
     @_s.required this.clusterIdentifier,
-    @_s.required this.numberOfNodes,
     this.classic,
     this.clusterType,
     this.nodeType,
+    this.numberOfNodes,
   });
   factory ResizeClusterMessage.fromXml(_s.XmlElement elem) {
     return ResizeClusterMessage(
       clusterIdentifier: _s.extractXmlStringValue(elem, 'ClusterIdentifier'),
-      numberOfNodes: _s.extractXmlIntValue(elem, 'NumberOfNodes'),
       classic: _s.extractXmlBoolValue(elem, 'Classic'),
       clusterType: _s.extractXmlStringValue(elem, 'ClusterType'),
       nodeType: _s.extractXmlStringValue(elem, 'NodeType'),
+      numberOfNodes: _s.extractXmlIntValue(elem, 'NumberOfNodes'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ResizeClusterMessageToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResizeClusterResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   ResizeClusterResult({
@@ -9546,11 +10495,18 @@ class ResizeClusterResult {
 }
 
 /// Describes a resize operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResizeInfo {
   /// A boolean value indicating if the resize operation can be cancelled.
+  @_s.JsonKey(name: 'AllowCancelResize')
   final bool allowCancelResize;
 
   /// Returns the value <code>ClassicResize</code>.
+  @_s.JsonKey(name: 'ResizeType')
   final String resizeType;
 
   ResizeInfo({
@@ -9566,42 +10522,55 @@ class ResizeInfo {
 }
 
 /// Describes the result of a cluster resize operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResizeProgressMessage {
   /// The average rate of the resize operation over the last few minutes, measured
   /// in megabytes per second. After the resize operation completes, this value
   /// shows the average rate of the entire resize operation.
+  @_s.JsonKey(name: 'AvgResizeRateInMegaBytesPerSecond')
   final double avgResizeRateInMegaBytesPerSecond;
 
   /// The percent of data transferred from source cluster to target cluster.
+  @_s.JsonKey(name: 'DataTransferProgressPercent')
   final double dataTransferProgressPercent;
 
   /// The amount of seconds that have elapsed since the resize operation began.
   /// After the resize operation completes, this value shows the total actual
   /// time, in seconds, for the resize operation.
+  @_s.JsonKey(name: 'ElapsedTimeInSeconds')
   final int elapsedTimeInSeconds;
 
   /// The estimated time remaining, in seconds, until the resize operation is
   /// complete. This value is calculated based on the average resize rate and the
   /// estimated amount of data remaining to be processed. Once the resize
   /// operation is complete, this value will be 0.
+  @_s.JsonKey(name: 'EstimatedTimeToCompletionInSeconds')
   final int estimatedTimeToCompletionInSeconds;
 
   /// The names of tables that have been completely imported .
   ///
   /// Valid Values: List of table names.
+  @_s.JsonKey(name: 'ImportTablesCompleted')
   final List<String> importTablesCompleted;
 
   /// The names of tables that are being currently imported.
   ///
   /// Valid Values: List of table names.
+  @_s.JsonKey(name: 'ImportTablesInProgress')
   final List<String> importTablesInProgress;
 
   /// The names of tables that have not been yet imported.
   ///
   /// Valid Values: List of table names
+  @_s.JsonKey(name: 'ImportTablesNotStarted')
   final List<String> importTablesNotStarted;
 
   /// An optional string to provide additional details about the resize action.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// While the resize operation is in progress, this value shows the current
@@ -9610,40 +10579,48 @@ class ResizeProgressMessage {
   /// megabytes, on the cluster, which may be more or less than
   /// TotalResizeDataInMegaBytes (the estimated total amount of data before
   /// resize).
+  @_s.JsonKey(name: 'ProgressInMegaBytes')
   final int progressInMegaBytes;
 
   /// An enum with possible values of <code>ClassicResize</code> and
   /// <code>ElasticResize</code>. These values describe the type of resize
   /// operation being performed.
+  @_s.JsonKey(name: 'ResizeType')
   final String resizeType;
 
   /// The status of the resize operation.
   ///
   /// Valid Values: <code>NONE</code> | <code>IN_PROGRESS</code> |
   /// <code>FAILED</code> | <code>SUCCEEDED</code> | <code>CANCELLING</code>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The cluster type after the resize operation is complete.
   ///
   /// Valid Values: <code>multi-node</code> | <code>single-node</code>
+  @_s.JsonKey(name: 'TargetClusterType')
   final String targetClusterType;
 
   /// The type of encryption for the cluster after the resize is complete.
   ///
   /// Possible values are <code>KMS</code> and <code>None</code>. In the China
   /// region possible values are: <code>Legacy</code> and <code>None</code>.
+  @_s.JsonKey(name: 'TargetEncryptionType')
   final String targetEncryptionType;
 
   /// The node type that the cluster will have after the resize operation is
   /// complete.
+  @_s.JsonKey(name: 'TargetNodeType')
   final String targetNodeType;
 
   /// The number of nodes that the cluster will have after the resize operation is
   /// complete.
+  @_s.JsonKey(name: 'TargetNumberOfNodes')
   final int targetNumberOfNodes;
 
   /// The estimated total amount of data, in megabytes, on the cluster before the
   /// resize operation began.
+  @_s.JsonKey(name: 'TotalResizeDataInMegaBytes')
   final int totalResizeDataInMegaBytes;
 
   ResizeProgressMessage({
@@ -9700,7 +10677,13 @@ class ResizeProgressMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreFromClusterSnapshotResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   RestoreFromClusterSnapshotResult({
@@ -9716,32 +10699,43 @@ class RestoreFromClusterSnapshotResult {
 
 /// Describes the status of a cluster restore action. Returns null if the
 /// cluster was not created by restoring a snapshot.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreStatus {
   /// The number of megabytes per second being transferred from the backup
   /// storage. Returns the average rate for a completed backup. This field is only
   /// updated when you restore to DC2 and DS2 node types.
+  @_s.JsonKey(name: 'CurrentRestoreRateInMegaBytesPerSecond')
   final double currentRestoreRateInMegaBytesPerSecond;
 
   /// The amount of time an in-progress restore has been running, or the amount of
   /// time it took a completed restore to finish. This field is only updated when
   /// you restore to DC2 and DS2 node types.
+  @_s.JsonKey(name: 'ElapsedTimeInSeconds')
   final int elapsedTimeInSeconds;
 
   /// The estimate of the time remaining before the restore will complete. Returns
   /// 0 for a completed restore. This field is only updated when you restore to
   /// DC2 and DS2 node types.
+  @_s.JsonKey(name: 'EstimatedTimeToCompletionInSeconds')
   final int estimatedTimeToCompletionInSeconds;
 
   /// The number of megabytes that have been transferred from snapshot storage.
   /// This field is only updated when you restore to DC2 and DS2 node types.
+  @_s.JsonKey(name: 'ProgressInMegaBytes')
   final int progressInMegaBytes;
 
   /// The size of the set of snapshot data used to restore the cluster. This field
   /// is only updated when you restore to DC2 and DS2 node types.
+  @_s.JsonKey(name: 'SnapshotSizeInMegaBytes')
   final int snapshotSizeInMegaBytes;
 
   /// The status of the restore action. Returns starting, restoring, completed, or
   /// failed.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   RestoreStatus({
@@ -9767,7 +10761,13 @@ class RestoreStatus {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreTableFromClusterSnapshotResult {
+  @_s.JsonKey(name: 'TableRestoreStatus')
   final TableRestoreStatus tableRestoreStatus;
 
   RestoreTableFromClusterSnapshotResult({
@@ -9782,17 +10782,70 @@ class RestoreTableFromClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
+class ResumeClusterMessage {
+  /// The identifier of the cluster to be resumed.
+  @_s.JsonKey(name: 'ClusterIdentifier')
+  final String clusterIdentifier;
+
+  ResumeClusterMessage({
+    @_s.required this.clusterIdentifier,
+  });
+  factory ResumeClusterMessage.fromXml(_s.XmlElement elem) {
+    return ResumeClusterMessage(
+      clusterIdentifier: _s.extractXmlStringValue(elem, 'ClusterIdentifier'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => _$ResumeClusterMessageToJson(this);
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class ResumeClusterResult {
+  @_s.JsonKey(name: 'Cluster')
+  final Cluster cluster;
+
+  ResumeClusterResult({
+    this.cluster,
+  });
+  factory ResumeClusterResult.fromXml(_s.XmlElement elem) {
+    return ResumeClusterResult(
+      cluster:
+          _s.extractXmlChild(elem, 'Cluster')?.let((e) => Cluster.fromXml(e)),
+    );
+  }
+}
+
 /// Describes a <code>RevisionTarget</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RevisionTarget {
   /// A unique string that identifies the version to update the cluster to. You
   /// can use this value in <a>ModifyClusterDbRevision</a>.
+  @_s.JsonKey(name: 'DatabaseRevision')
   final String databaseRevision;
 
   /// The date on which the database revision was released.
+  @_s.JsonKey(
+      name: 'DatabaseRevisionReleaseDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime databaseRevisionReleaseDate;
 
   /// A string that describes the changes and features that will be applied to the
   /// cluster when it is updated to the corresponding <a>ClusterDbRevision</a>.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   RevisionTarget({
@@ -9810,7 +10863,13 @@ class RevisionTarget {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RevokeClusterSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'ClusterSecurityGroup')
   final ClusterSecurityGroup clusterSecurityGroup;
 
   RevokeClusterSecurityGroupIngressResult({
@@ -9825,7 +10884,13 @@ class RevokeClusterSecurityGroupIngressResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RevokeSnapshotAccessResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   RevokeSnapshotAccessResult({
@@ -9839,7 +10904,13 @@ class RevokeSnapshotAccessResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RotateEncryptionKeyResult {
+  @_s.JsonKey(name: 'Cluster')
   final Cluster cluster;
 
   RotateEncryptionKeyResult({
@@ -9854,8 +10925,11 @@ class RotateEncryptionKeyResult {
 }
 
 enum ScheduleState {
+  @_s.JsonValue('MODIFYING')
   modifying,
+  @_s.JsonValue('ACTIVE')
   active,
+  @_s.JsonValue('FAILED')
   failed,
 }
 
@@ -9876,9 +10950,15 @@ extension on String {
 /// Describes a scheduled action. You can use a scheduled action to trigger some
 /// Amazon Redshift API operations on a schedule. For information about which
 /// API operations can be scheduled, see <a>ScheduledActionType</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ScheduledAction {
   /// The end time in UTC when the schedule is no longer active. After this time,
   /// the scheduled action does not trigger.
+  @_s.JsonKey(name: 'EndTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTime;
 
   /// The IAM role to assume to run the scheduled action. This IAM role must have
@@ -9890,9 +10970,11 @@ class ScheduledAction {
   /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/redshift-iam-access-control-identity-based.html">Using
   /// Identity-Based Policies for Amazon Redshift</a> in the <i>Amazon Redshift
   /// Cluster Management Guide</i>.
+  @_s.JsonKey(name: 'IamRole')
   final String iamRole;
 
   /// List of times when the scheduled action will run.
+  @_s.JsonKey(name: 'NextInvocations')
   final List<DateTime> nextInvocations;
 
   /// The schedule for a one-time (at format) or recurring (cron format) scheduled
@@ -9902,29 +10984,35 @@ class ScheduledAction {
   /// example, "<code>at(2016-03-04T17:27:00)</code>".
   ///
   /// Format of cron expressions is "<code>cron(Minutes Hours Day-of-month Month
-  /// Day-of-week Year)</code>". For example, "<code>cron(0, 10, *, *, MON,
-  /// *)</code>". For more information, see <a
+  /// Day-of-week Year)</code>". For example, "<code>cron(0 10 ? * MON *)</code>".
+  /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions">Cron
   /// Expressions</a> in the <i>Amazon CloudWatch Events User Guide</i>.
+  @_s.JsonKey(name: 'Schedule')
   final String schedule;
 
   /// The description of the scheduled action.
+  @_s.JsonKey(name: 'ScheduledActionDescription')
   final String scheduledActionDescription;
 
   /// The name of the scheduled action.
+  @_s.JsonKey(name: 'ScheduledActionName')
   final String scheduledActionName;
 
   /// The start time in UTC when the schedule is active. Before this time, the
   /// scheduled action does not trigger.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   /// The state of the scheduled action. For example, <code>DISABLED</code>.
+  @_s.JsonKey(name: 'State')
   final ScheduledActionState state;
 
   /// A JSON format string of the Amazon Redshift API operation with input
   /// parameters.
   ///
   /// "<code>{\"ResizeCluster\":{\"NodeType\":\"ds2.8xlarge\",\"ClusterIdentifier\":\"my-test-cluster\",\"NumberOfNodes\":3}}</code>".
+  @_s.JsonKey(name: 'TargetAction')
   final ScheduledActionType targetAction;
 
   ScheduledAction({
@@ -9960,22 +11048,32 @@ class ScheduledAction {
 }
 
 /// A set of elements to filter the returned scheduled actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ScheduledActionFilter {
   /// The type of element to filter.
+  @_s.JsonKey(name: 'Name')
   final ScheduledActionFilterName name;
 
   /// List of values. Compare if the value (of type defined by <code>Name</code>)
   /// equals an item in the list of scheduled actions.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   ScheduledActionFilter({
     @_s.required this.name,
     @_s.required this.values,
   });
+  Map<String, dynamic> toJson() => _$ScheduledActionFilterToJson(this);
 }
 
 enum ScheduledActionFilterName {
+  @_s.JsonValue('cluster-identifier')
   clusterIdentifier,
+  @_s.JsonValue('iam-role')
   iamRole,
 }
 
@@ -9992,7 +11090,9 @@ extension on String {
 }
 
 enum ScheduledActionState {
+  @_s.JsonValue('ACTIVE')
   active,
+  @_s.JsonValue('DISABLED')
   disabled,
 }
 
@@ -10010,24 +11110,53 @@ extension on String {
 
 /// The action type that specifies an Amazon Redshift API operation that is
 /// supported by the Amazon Redshift scheduler.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ScheduledActionType {
+  /// An action that runs a <code>PauseCluster</code> API operation.
+  @_s.JsonKey(name: 'PauseCluster')
+  final PauseClusterMessage pauseCluster;
+
   /// An action that runs a <code>ResizeCluster</code> API operation.
+  @_s.JsonKey(name: 'ResizeCluster')
   final ResizeClusterMessage resizeCluster;
 
+  /// An action that runs a <code>ResumeCluster</code> API operation.
+  @_s.JsonKey(name: 'ResumeCluster')
+  final ResumeClusterMessage resumeCluster;
+
   ScheduledActionType({
+    this.pauseCluster,
     this.resizeCluster,
+    this.resumeCluster,
   });
   factory ScheduledActionType.fromXml(_s.XmlElement elem) {
     return ScheduledActionType(
+      pauseCluster: _s
+          .extractXmlChild(elem, 'PauseCluster')
+          ?.let((e) => PauseClusterMessage.fromXml(e)),
       resizeCluster: _s
           .extractXmlChild(elem, 'ResizeCluster')
           ?.let((e) => ResizeClusterMessage.fromXml(e)),
+      resumeCluster: _s
+          .extractXmlChild(elem, 'ResumeCluster')
+          ?.let((e) => ResumeClusterMessage.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ScheduledActionTypeToJson(this);
 }
 
 enum ScheduledActionTypeValues {
+  @_s.JsonValue('ResizeCluster')
   resizeCluster,
+  @_s.JsonValue('PauseCluster')
+  pauseCluster,
+  @_s.JsonValue('ResumeCluster')
+  resumeCluster,
 }
 
 extension on String {
@@ -10035,11 +11164,20 @@ extension on String {
     switch (this) {
       case 'ResizeCluster':
         return ScheduledActionTypeValues.resizeCluster;
+      case 'PauseCluster':
+        return ScheduledActionTypeValues.pauseCluster;
+      case 'ResumeCluster':
+        return ScheduledActionTypeValues.resumeCluster;
     }
     throw Exception('Unknown enum value: $this');
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ScheduledActionsMessage {
   /// An optional parameter that specifies the starting point to return a set of
   /// response records. When the results of a <a>DescribeScheduledActions</a>
@@ -10047,9 +11185,11 @@ class ScheduledActionsMessage {
   /// value in the <code>Marker</code> field of the response. You can retrieve the
   /// next set of response records by providing the returned marker value in the
   /// <code>Marker</code> parameter and retrying the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// List of retrieved scheduled actions.
+  @_s.JsonKey(name: 'ScheduledActions')
   final List<ScheduledAction> scheduledActions;
 
   ScheduledActionsMessage({
@@ -10069,47 +11209,65 @@ class ScheduledActionsMessage {
 }
 
 /// Describes a snapshot.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Snapshot {
   /// A list of the AWS customer accounts authorized to restore the snapshot.
   /// Returns <code>null</code> if no accounts are authorized. Visible only to the
   /// snapshot owner.
+  @_s.JsonKey(name: 'AccountsWithRestoreAccess')
   final List<AccountWithRestoreAccess> accountsWithRestoreAccess;
 
   /// The size of the incremental backup.
+  @_s.JsonKey(name: 'ActualIncrementalBackupSizeInMegaBytes')
   final double actualIncrementalBackupSizeInMegaBytes;
 
   /// The Availability Zone in which the cluster was created.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// The number of megabytes that have been transferred to the snapshot backup.
+  @_s.JsonKey(name: 'BackupProgressInMegaBytes')
   final double backupProgressInMegaBytes;
 
   /// The time (UTC) when the cluster was originally created.
+  @_s.JsonKey(
+      name: 'ClusterCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime clusterCreateTime;
 
   /// The identifier of the cluster for which the snapshot was taken.
+  @_s.JsonKey(name: 'ClusterIdentifier')
   final String clusterIdentifier;
 
   /// The version ID of the Amazon Redshift engine that is running on the cluster.
+  @_s.JsonKey(name: 'ClusterVersion')
   final String clusterVersion;
 
   /// The number of megabytes per second being transferred to the snapshot backup.
   /// Returns <code>0</code> for a completed backup.
+  @_s.JsonKey(name: 'CurrentBackupRateInMegaBytesPerSecond')
   final double currentBackupRateInMegaBytesPerSecond;
 
   /// The name of the database that was created when the cluster was created.
+  @_s.JsonKey(name: 'DBName')
   final String dBName;
 
   /// The amount of time an in-progress snapshot backup has been running, or the
   /// amount of time it took a completed backup to finish.
+  @_s.JsonKey(name: 'ElapsedTimeInSeconds')
   final int elapsedTimeInSeconds;
 
   /// If <code>true</code>, the data in the snapshot is encrypted at rest.
+  @_s.JsonKey(name: 'Encrypted')
   final bool encrypted;
 
   /// A boolean that indicates whether the snapshot data is encrypted using the
   /// HSM keys of the source cluster. <code>true</code> indicates that the data is
   /// encrypted using HSM keys.
+  @_s.JsonKey(name: 'EncryptedWithHSM')
   final bool encryptedWithHSM;
 
   /// An option that specifies whether to create the cluster with enhanced VPC
@@ -10121,63 +11279,84 @@ class Snapshot {
   /// If this option is <code>true</code>, enhanced VPC routing is enabled.
   ///
   /// Default: false
+  @_s.JsonKey(name: 'EnhancedVpcRouting')
   final bool enhancedVpcRouting;
 
   /// The estimate of the time remaining before the snapshot backup will complete.
   /// Returns <code>0</code> for a completed backup.
+  @_s.JsonKey(name: 'EstimatedSecondsToCompletion')
   final int estimatedSecondsToCompletion;
 
   /// The AWS Key Management Service (KMS) key ID of the encryption key that was
   /// used to encrypt data in the cluster from which the snapshot was taken.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// The name of the maintenance track for the snapshot.
+  @_s.JsonKey(name: 'MaintenanceTrackName')
   final String maintenanceTrackName;
 
   /// The number of days until a manual snapshot will pass its retention period.
+  @_s.JsonKey(name: 'ManualSnapshotRemainingDays')
   final int manualSnapshotRemainingDays;
 
   /// The number of days that a manual snapshot is retained. If the value is -1,
   /// the manual snapshot is retained indefinitely.
   ///
   /// The value must be either -1 or an integer between 1 and 3,653.
+  @_s.JsonKey(name: 'ManualSnapshotRetentionPeriod')
   final int manualSnapshotRetentionPeriod;
 
   /// The master user name for the cluster.
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
 
   /// The node type of the nodes in the cluster.
+  @_s.JsonKey(name: 'NodeType')
   final String nodeType;
 
   /// The number of nodes in the cluster.
+  @_s.JsonKey(name: 'NumberOfNodes')
   final int numberOfNodes;
 
   /// For manual snapshots, the AWS customer account used to create or copy the
   /// snapshot. For automatic snapshots, the owner of the cluster. The owner can
   /// perform all snapshot actions, such as sharing a manual snapshot.
+  @_s.JsonKey(name: 'OwnerAccount')
   final String ownerAccount;
 
   /// The port that the cluster is listening on.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The list of node types that this cluster snapshot is able to restore into.
+  @_s.JsonKey(name: 'RestorableNodeTypes')
   final List<String> restorableNodeTypes;
 
   /// The time (in UTC format) when Amazon Redshift began the snapshot. A snapshot
   /// contains a copy of the cluster data as of this exact time.
+  @_s.JsonKey(
+      name: 'SnapshotCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime snapshotCreateTime;
 
   /// The snapshot identifier that is provided in the request.
+  @_s.JsonKey(name: 'SnapshotIdentifier')
   final String snapshotIdentifier;
 
   /// A timestamp representing the start of the retention period for the snapshot.
+  @_s.JsonKey(
+      name: 'SnapshotRetentionStartTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime snapshotRetentionStartTime;
 
   /// The snapshot type. Snapshots created using <a>CreateClusterSnapshot</a> and
   /// <a>CopyClusterSnapshot</a> are of type "manual".
+  @_s.JsonKey(name: 'SnapshotType')
   final String snapshotType;
 
   /// The source region from which the snapshot was copied.
+  @_s.JsonKey(name: 'SourceRegion')
   final String sourceRegion;
 
   /// The snapshot status. The value of the status depends on the API operation
@@ -10196,17 +11375,21 @@ class Snapshot {
   /// <a>DeleteClusterSnapshot</a> returns status as "deleted".
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The list of tags for the cluster snapshot.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// The size of the complete set of backup data that would be used to restore
   /// the cluster.
+  @_s.JsonKey(name: 'TotalBackupSizeInMegaBytes')
   final double totalBackupSizeInMegaBytes;
 
   /// The VPC identifier of the cluster if the snapshot is from a cluster in a
   /// VPC. Otherwise, this field is not in the output.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   Snapshot({
@@ -10302,8 +11485,11 @@ class Snapshot {
 }
 
 enum SnapshotAttributeToSortBy {
+  @_s.JsonValue('SOURCE_TYPE')
   sourceType,
+  @_s.JsonValue('TOTAL_SIZE')
   totalSize,
+  @_s.JsonValue('CREATE_TIME')
   createTime,
 }
 
@@ -10329,15 +11515,23 @@ extension on String {
 /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/working-with-db-encryption.html">Amazon
 /// Redshift Database Encryption</a> in the <i>Amazon Redshift Cluster
 /// Management Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SnapshotCopyGrant {
   /// The unique identifier of the customer master key (CMK) in AWS KMS to which
   /// Amazon Redshift is granted permission.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// The name of the snapshot copy grant.
+  @_s.JsonKey(name: 'SnapshotCopyGrantName')
   final String snapshotCopyGrantName;
 
   /// A list of tag instances.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   SnapshotCopyGrant({
@@ -10357,6 +11551,11 @@ class SnapshotCopyGrant {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SnapshotCopyGrantMessage {
   /// An optional parameter that specifies the starting point to return a set of
   /// response records. When the results of a
@@ -10368,9 +11567,11 @@ class SnapshotCopyGrantMessage {
   ///
   /// Constraints: You can specify either the <b>SnapshotCopyGrantName</b>
   /// parameter or the <b>Marker</b> parameter, but not both.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// The list of <code>SnapshotCopyGrant</code> objects.
+  @_s.JsonKey(name: 'SnapshotCopyGrants')
   final List<SnapshotCopyGrant> snapshotCopyGrants;
 
   SnapshotCopyGrantMessage({
@@ -10390,17 +11591,26 @@ class SnapshotCopyGrantMessage {
 }
 
 /// Describes the errors returned by a snapshot.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SnapshotErrorMessage {
   /// The failure code for the error.
+  @_s.JsonKey(name: 'FailureCode')
   final String failureCode;
 
   /// The text message describing the error.
+  @_s.JsonKey(name: 'FailureReason')
   final String failureReason;
 
   /// A unique identifier for the cluster.
+  @_s.JsonKey(name: 'SnapshotClusterIdentifier')
   final String snapshotClusterIdentifier;
 
   /// A unique identifier for the snapshot returning the error.
+  @_s.JsonKey(name: 'SnapshotIdentifier')
   final String snapshotIdentifier;
 
   SnapshotErrorMessage({
@@ -10421,6 +11631,11 @@ class SnapshotErrorMessage {
 }
 
 /// Contains the output from the <a>DescribeClusterSnapshots</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SnapshotMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -10428,9 +11643,11 @@ class SnapshotMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of <a>Snapshot</a> instances.
+  @_s.JsonKey(name: 'Snapshots')
   final List<Snapshot> snapshots;
 
   SnapshotMessage({
@@ -10450,27 +11667,39 @@ class SnapshotMessage {
 
 /// Describes a snapshot schedule. You can set a regular interval for creating
 /// snapshots of a cluster. You can also schedule snapshots for specific dates.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SnapshotSchedule {
   /// The number of clusters associated with the schedule.
+  @_s.JsonKey(name: 'AssociatedClusterCount')
   final int associatedClusterCount;
 
   /// A list of clusters associated with the schedule. A maximum of 100 clusters
   /// is returned.
+  @_s.JsonKey(name: 'AssociatedClusters')
   final List<ClusterAssociatedToSchedule> associatedClusters;
 
   /// <p/>
+  @_s.JsonKey(name: 'NextInvocations')
   final List<DateTime> nextInvocations;
 
   /// A list of ScheduleDefinitions.
+  @_s.JsonKey(name: 'ScheduleDefinitions')
   final List<String> scheduleDefinitions;
 
   /// The description of the schedule.
+  @_s.JsonKey(name: 'ScheduleDescription')
   final String scheduleDescription;
 
   /// A unique identifier for the schedule.
+  @_s.JsonKey(name: 'ScheduleIdentifier')
   final String scheduleIdentifier;
 
   /// An optional set of tags describing the schedule.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   SnapshotSchedule({
@@ -10505,21 +11734,31 @@ class SnapshotSchedule {
 }
 
 /// Describes a sorting entity
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SnapshotSortingEntity {
   /// The category for sorting the snapshots.
+  @_s.JsonKey(name: 'Attribute')
   final SnapshotAttributeToSortBy attribute;
 
   /// The order for listing the attributes.
+  @_s.JsonKey(name: 'SortOrder')
   final SortByOrder sortOrder;
 
   SnapshotSortingEntity({
     @_s.required this.attribute,
     this.sortOrder,
   });
+  Map<String, dynamic> toJson() => _$SnapshotSortingEntityToJson(this);
 }
 
 enum SortByOrder {
+  @_s.JsonValue('ASC')
   asc,
+  @_s.JsonValue('DESC')
   desc,
 }
 
@@ -10536,10 +11775,15 @@ extension on String {
 }
 
 enum SourceType {
+  @_s.JsonValue('cluster')
   cluster,
+  @_s.JsonValue('cluster-parameter-group')
   clusterParameterGroup,
+  @_s.JsonValue('cluster-security-group')
   clusterSecurityGroup,
+  @_s.JsonValue('cluster-snapshot')
   clusterSnapshot,
+  @_s.JsonValue('scheduled-action')
   scheduledAction,
 }
 
@@ -10562,14 +11806,22 @@ extension on String {
 }
 
 /// Describes a subnet.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Subnet {
   /// <p/>
+  @_s.JsonKey(name: 'SubnetAvailabilityZone')
   final AvailabilityZone subnetAvailabilityZone;
 
   /// The identifier of the subnet.
+  @_s.JsonKey(name: 'SubnetIdentifier')
   final String subnetIdentifier;
 
   /// The status of the subnet.
+  @_s.JsonKey(name: 'SubnetStatus')
   final String subnetStatus;
 
   Subnet({
@@ -10589,8 +11841,14 @@ class Subnet {
 }
 
 /// Describes the operations that are allowed on a maintenance track.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SupportedOperation {
   /// A list of the supported operations.
+  @_s.JsonKey(name: 'OperationName')
   final String operationName;
 
   SupportedOperation({
@@ -10604,8 +11862,14 @@ class SupportedOperation {
 }
 
 /// A list of supported platforms for orderable clusters.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SupportedPlatform {
   /// <p/>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   SupportedPlatform({
@@ -10619,54 +11883,73 @@ class SupportedPlatform {
 }
 
 /// Describes the status of a <a>RestoreTableFromClusterSnapshot</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TableRestoreStatus {
   /// The identifier of the Amazon Redshift cluster that the table is being
   /// restored to.
+  @_s.JsonKey(name: 'ClusterIdentifier')
   final String clusterIdentifier;
 
   /// A description of the status of the table restore request. Status values
   /// include <code>SUCCEEDED</code>, <code>FAILED</code>, <code>CANCELED</code>,
   /// <code>PENDING</code>, <code>IN_PROGRESS</code>.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// The name of the table to create as a result of the table restore request.
+  @_s.JsonKey(name: 'NewTableName')
   final String newTableName;
 
   /// The amount of data restored to the new table so far, in megabytes (MB).
+  @_s.JsonKey(name: 'ProgressInMegaBytes')
   final int progressInMegaBytes;
 
   /// The time that the table restore request was made, in Universal Coordinated
   /// Time (UTC).
+  @_s.JsonKey(name: 'RequestTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime requestTime;
 
   /// The identifier of the snapshot that the table is being restored from.
+  @_s.JsonKey(name: 'SnapshotIdentifier')
   final String snapshotIdentifier;
 
   /// The name of the source database that contains the table being restored.
+  @_s.JsonKey(name: 'SourceDatabaseName')
   final String sourceDatabaseName;
 
   /// The name of the source schema that contains the table being restored.
+  @_s.JsonKey(name: 'SourceSchemaName')
   final String sourceSchemaName;
 
   /// The name of the source table being restored.
+  @_s.JsonKey(name: 'SourceTableName')
   final String sourceTableName;
 
   /// A value that describes the current state of the table restore request.
   ///
   /// Valid Values: <code>SUCCEEDED</code>, <code>FAILED</code>,
   /// <code>CANCELED</code>, <code>PENDING</code>, <code>IN_PROGRESS</code>
+  @_s.JsonKey(name: 'Status')
   final TableRestoreStatusType status;
 
   /// The unique identifier for the table restore request.
+  @_s.JsonKey(name: 'TableRestoreRequestId')
   final String tableRestoreRequestId;
 
   /// The name of the database to restore the table to.
+  @_s.JsonKey(name: 'TargetDatabaseName')
   final String targetDatabaseName;
 
   /// The name of the schema to restore the table to.
+  @_s.JsonKey(name: 'TargetSchemaName')
   final String targetSchemaName;
 
   /// The total amount of data to restore to the new table, in megabytes (MB).
+  @_s.JsonKey(name: 'TotalDataInMegaBytes')
   final int totalDataInMegaBytes;
 
   TableRestoreStatus({
@@ -10708,12 +11991,19 @@ class TableRestoreStatus {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TableRestoreStatusMessage {
   /// A pagination token that can be used in a subsequent
   /// <a>DescribeTableRestoreStatus</a> request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of status details for one or more table restore requests.
+  @_s.JsonKey(name: 'TableRestoreStatusDetails')
   final List<TableRestoreStatus> tableRestoreStatusDetails;
 
   TableRestoreStatusMessage({
@@ -10734,10 +12024,15 @@ class TableRestoreStatusMessage {
 }
 
 enum TableRestoreStatusType {
+  @_s.JsonValue('PENDING')
   pending,
+  @_s.JsonValue('IN_PROGRESS')
   inProgress,
+  @_s.JsonValue('SUCCEEDED')
   succeeded,
+  @_s.JsonValue('FAILED')
   failed,
+  @_s.JsonValue('CANCELED')
   canceled,
 }
 
@@ -10760,11 +12055,18 @@ extension on String {
 }
 
 /// A tag consisting of a name/value pair for a resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The key, or name, for the resource tag.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value for the resource tag.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -10777,12 +12079,20 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// A tag and its associated resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TaggedResource {
   /// The Amazon Resource Name (ARN) with which the tag is associated, for
-  /// example: <code>arn:aws:redshift:us-east-1:123456789:cluster:t1</code>.
+  /// example: <code>arn:aws:redshift:us-east-2:123456789:cluster:t1</code>.
+  @_s.JsonKey(name: 'ResourceName')
   final String resourceName;
 
   /// The type of resource with which the tag is associated. Valid resource types
@@ -10822,9 +12132,11 @@ class TaggedResource {
   /// href="https://docs.aws.amazon.com/redshift/latest/mgmt/redshift-iam-access-control-overview.html#redshift-iam-access-control-specify-actions">Constructing
   /// an Amazon Redshift Amazon Resource Name (ARN)</a> in the Amazon Redshift
   /// Cluster Management Guide.
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// The tag for the resource.
+  @_s.JsonKey(name: 'Tag')
   final Tag tag;
 
   TaggedResource({
@@ -10842,6 +12154,11 @@ class TaggedResource {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TaggedResourceListMessage {
   /// A value that indicates the starting point for the next set of response
   /// records in a subsequent request. If a value is returned in a response, you
@@ -10849,9 +12166,11 @@ class TaggedResourceListMessage {
   /// in the <code>Marker</code> parameter and retrying the command. If the
   /// <code>Marker</code> field is empty, all response records have been retrieved
   /// for the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of tags with their associated resources.
+  @_s.JsonKey(name: 'TaggedResources')
   final List<TaggedResource> taggedResources;
 
   TaggedResourceListMessage({
@@ -10870,14 +12189,21 @@ class TaggedResourceListMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TrackListMessage {
   /// A list of maintenance tracks output by the
   /// <code>DescribeClusterTracks</code> operation.
+  @_s.JsonKey(name: 'MaintenanceTracks')
   final List<MaintenanceTrack> maintenanceTracks;
 
   /// The starting point to return a set of response tracklist records. You can
   /// retrieve the next set of response records by providing the returned marker
   /// value in the <code>Marker</code> parameter and retrying the request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   TrackListMessage({
@@ -10897,14 +12223,22 @@ class TrackListMessage {
 }
 
 /// A maintenance track that you can switch the current track to.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateTarget {
   /// The cluster version for the new maintenance track.
+  @_s.JsonKey(name: 'DatabaseVersion')
   final String databaseVersion;
 
   /// The name of the new maintenance track.
+  @_s.JsonKey(name: 'MaintenanceTrackName')
   final String maintenanceTrackName;
 
   /// A list of operations supported by the maintenance track.
+  @_s.JsonKey(name: 'SupportedOperations')
   final List<SupportedOperation> supportedOperations;
 
   UpdateTarget({
@@ -10927,11 +12261,18 @@ class UpdateTarget {
 }
 
 /// Describes the members of a VPC security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VpcSecurityGroupMembership {
   /// The status of the VPC security group.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The identifier of the VPC security group.
+  @_s.JsonKey(name: 'VpcSecurityGroupId')
   final String vpcSecurityGroupId;
 
   VpcSecurityGroupMembership({

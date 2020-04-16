@@ -164,8 +164,7 @@ class Lambda {
   /// <code>Principal</code>. For AWS services, the principal is a domain-style
   /// identifier defined by the service, like <code>s3.amazonaws.com</code> or
   /// <code>sns.amazonaws.com</code>. For AWS services, you can also specify the
-  /// ARN or owning account of the associated resource as the
-  /// <code>SourceArn</code> or <code>SourceAccount</code>. If you grant
+  /// ARN of the associated resource as the <code>SourceArn</code>. If you grant
   /// permission to a service principal without specifying the source, other
   /// accounts could potentially configure resources in their account to invoke
   /// your Lambda function.
@@ -231,12 +230,10 @@ class Lambda {
   /// last read it.
   ///
   /// Parameter [sourceAccount] :
-  /// For AWS services, the ID of the account that owns the resource. Use this
-  /// instead of <code>SourceArn</code> to grant permission to resources that
-  /// are owned by another account (for example, all of an account's Amazon S3
-  /// buckets). Or use it together with <code>SourceArn</code> to ensure that
-  /// the resource is owned by the specified account. For example, an Amazon S3
-  /// bucket could be deleted by its owner and recreated by another account.
+  /// For Amazon S3, the ID of the account that owns the resource. Use this
+  /// together with <code>SourceArn</code> to ensure that the resource is owned
+  /// by the specified account. It is possible for an Amazon S3 bucket to be
+  /// deleted by its owner and recreated by another account.
   ///
   /// Parameter [sourceArn] :
   /// For AWS services, the ARN of the AWS resource that invokes the function.
@@ -491,6 +488,10 @@ class Lambda {
   /// <code>MaximumRetryAttempts</code> - Discard records after the specified
   /// number of retries.
   /// </li>
+  /// <li>
+  /// <code>ParallelizationFactor</code> - Process multiple batches from each
+  /// shard concurrently.
+  /// </li>
   /// </ul>
   ///
   /// May throw [ServiceException].
@@ -564,8 +565,8 @@ class Lambda {
   /// Disables the event source mapping to pause polling and invocation.
   ///
   /// Parameter [maximumBatchingWindowInSeconds] :
-  /// The maximum amount of time to gather records before invoking the function,
-  /// in seconds.
+  /// (Streams) The maximum amount of time to gather records before invoking the
+  /// function, in seconds.
   ///
   /// Parameter [maximumRecordAgeInSeconds] :
   /// (Streams) The maximum age of a record that Lambda sends to a function for
@@ -1505,8 +1506,9 @@ class Lambda {
     throw UnimplementedError();
   }
 
-  /// Returns details about the concurrency configuration for a function. To set
-  /// a concurrency limit for a function, use <a>PutFunctionConcurrency</a>.
+  /// Returns details about the reserved concurrency configuration for a
+  /// function. To set a concurrency limit for a function, use
+  /// <a>PutFunctionConcurrency</a>.
   ///
   /// May throw [InvalidParameterValueException].
   /// May throw [ResourceNotFoundException].
@@ -2435,7 +2437,7 @@ class Lambda {
   }
 
   /// Returns a list of Lambda functions, with the version-specific
-  /// configuration of each.
+  /// configuration of each. Lambda returns up to 50 functions per call.
   ///
   /// Set <code>FunctionVersion</code> to <code>ALL</code> to include all
   /// published versions of each function in addition to the unpublished
@@ -2456,12 +2458,13 @@ class Lambda {
   ///
   /// Parameter [masterRegion] :
   /// For Lambda@Edge functions, the AWS Region of the master function. For
-  /// example, <code>us-east-2</code> or <code>ALL</code>. If specified, you
-  /// must set <code>FunctionVersion</code> to <code>ALL</code>.
+  /// example, <code>us-east-1</code> filters the list of functions to only
+  /// include Lambda@Edge functions replicated from a master function in US East
+  /// (N. Virginia). If specified, you must set <code>FunctionVersion</code> to
+  /// <code>ALL</code>.
   ///
   /// Parameter [maxItems] :
-  /// Specify a value between 1 and 50 to limit the number of functions in the
-  /// response.
+  /// The maximum number of functions to return.
   Future<ListFunctionsResponse> listFunctions({
     FunctionVersion functionVersion,
     String marker,
@@ -2687,7 +2690,8 @@ class Lambda {
 
   /// Returns a list of <a
   /// href="https://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">versions</a>,
-  /// with the version-specific configuration of each.
+  /// with the version-specific configuration of each. Lambda returns up to 50
+  /// versions per call.
   ///
   /// May throw [ServiceException].
   /// May throw [ResourceNotFoundException].
@@ -2718,7 +2722,7 @@ class Lambda {
   /// retrieve the next page of results.
   ///
   /// Parameter [maxItems] :
-  /// Limit the number of versions that are returned.
+  /// The maximum number of versions to return.
   Future<ListVersionsByFunctionResponse> listVersionsByFunction({
     @_s.required String functionName,
     String marker,
@@ -3022,7 +3026,11 @@ class Lambda {
 
   /// Configures options for <a
   /// href="https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html">asynchronous
-  /// invocation</a> on a function, version, or alias.
+  /// invocation</a> on a function, version, or alias. If a configuration
+  /// already exists for a function, version, or alias, this operation
+  /// overwrites it. If you exclude any settings, they are removed. To set one
+  /// option without affecting existing settings for other options, use
+  /// <a>PutFunctionEventInvokeConfig</a>.
   ///
   /// By default, Lambda retries an asynchronous invocation twice if the
   /// function returns an error. It retains events in a queue for up to six
@@ -3030,6 +3038,14 @@ class Lambda {
   /// asynchronous invocation queue for too long, Lambda discards it. To retain
   /// discarded events, configure a dead-letter queue with
   /// <a>UpdateFunctionConfiguration</a>.
+  ///
+  /// To send an invocation record to a queue, topic, function, or event bus,
+  /// specify a <a
+  /// href="https://docs.aws.amazon.com/lambda/latest/dg/invocation-async.html#invocation-async-destinations">destination</a>.
+  /// You can configure separate destinations for successful invocations
+  /// (on-success) and events that fail all processing attempts (on-failure).
+  /// You can configure destinations in addition to or instead of a dead-letter
+  /// queue.
   ///
   /// May throw [ServiceException].
   /// May throw [ResourceNotFoundException].
@@ -3396,6 +3412,7 @@ class Lambda {
   /// May throw [ResourceNotFoundException].
   /// May throw [InvalidParameterValueException].
   /// May throw [TooManyRequestsException].
+  /// May throw [ResourceConflictException].
   ///
   /// Parameter [resource] :
   /// The function's Amazon Resource Name (ARN).
@@ -3434,6 +3451,7 @@ class Lambda {
   /// May throw [ResourceNotFoundException].
   /// May throw [InvalidParameterValueException].
   /// May throw [TooManyRequestsException].
+  /// May throw [ResourceConflictException].
   ///
   /// Parameter [resource] :
   /// The function's Amazon Resource Name (ARN).
@@ -3598,6 +3616,10 @@ class Lambda {
   /// <code>MaximumRetryAttempts</code> - Discard records after the specified
   /// number of retries.
   /// </li>
+  /// <li>
+  /// <code>ParallelizationFactor</code> - Process multiple batches from each
+  /// shard concurrently.
+  /// </li>
   /// </ul>
   ///
   /// May throw [ServiceException].
@@ -3660,8 +3682,8 @@ class Lambda {
   /// the function name, it's limited to 64 characters in length.
   ///
   /// Parameter [maximumBatchingWindowInSeconds] :
-  /// The maximum amount of time to gather records before invoking the function,
-  /// in seconds.
+  /// (Streams) The maximum amount of time to gather records before invoking the
+  /// function, in seconds.
   ///
   /// Parameter [maximumRecordAgeInSeconds] :
   /// (Streams) The maximum age of a record that Lambda sends to a function for
@@ -4544,8 +4566,8 @@ class EventSourceMappingConfiguration {
   @_s.JsonKey(name: 'LastProcessingResult')
   final String lastProcessingResult;
 
-  /// The maximum amount of time to gather records before invoking the function,
-  /// in seconds.
+  /// (Streams) The maximum amount of time to gather records before invoking the
+  /// function, in seconds.
   @_s.JsonKey(name: 'MaximumBatchingWindowInSeconds')
   final int maximumBatchingWindowInSeconds;
 
@@ -4717,7 +4739,8 @@ class FunctionConfiguration {
   @_s.JsonKey(name: 'LastModified')
   final String lastModified;
 
-  /// The status of the last update that was performed on the function.
+  /// The status of the last update that was performed on the function. This is
+  /// first set to <code>Successful</code> after function creation completes.
   @_s.JsonKey(name: 'LastUpdateStatus')
   final LastUpdateStatus lastUpdateStatus;
 
@@ -5107,17 +5130,6 @@ class InvocationResponse {
 
   /// If present, indicates that an error occurred during function execution.
   /// Details about the error are included in the response payload.
-  ///
-  /// <ul>
-  /// <li>
-  /// <code>Handled</code> - The runtime caught an error thrown by the function
-  /// and formatted it into a JSON document.
-  /// </li>
-  /// <li>
-  /// <code>Unhandled</code> - The runtime didn't handle the error. For example,
-  /// the function ran out of memory or timed out.
-  /// </li>
-  /// </ul>
   @_s.JsonKey(name: 'FunctionError')
   final String functionError;
 
@@ -5195,6 +5207,12 @@ enum LastUpdateStatusReasonCode {
   invalidConfiguration,
   @_s.JsonValue('InternalError')
   internalError,
+  @_s.JsonValue('SubnetOutOfIPAddresses')
+  subnetOutOfIPAddresses,
+  @_s.JsonValue('InvalidSubnet')
+  invalidSubnet,
+  @_s.JsonValue('InvalidSecurityGroup')
+  invalidSecurityGroup,
 }
 
 /// An <a
@@ -5802,12 +5820,16 @@ enum Runtime {
   dotnetcore2_0,
   @_s.JsonValue('dotnetcore2.1')
   dotnetcore2_1,
+  @_s.JsonValue('dotnetcore3.1')
+  dotnetcore3_1,
   @_s.JsonValue('nodejs4.3-edge')
   nodejs4_3Edge,
   @_s.JsonValue('go1.x')
   go1X,
   @_s.JsonValue('ruby2.5')
   ruby2_5,
+  @_s.JsonValue('ruby2.7')
+  ruby2_7,
   @_s.JsonValue('provided')
   provided,
 }
@@ -5840,9 +5862,14 @@ enum StateReasonCode {
   internalError,
   @_s.JsonValue('SubnetOutOfIPAddresses')
   subnetOutOfIPAddresses,
+  @_s.JsonValue('InvalidSubnet')
+  invalidSubnet,
+  @_s.JsonValue('InvalidSecurityGroup')
+  invalidSecurityGroup,
 }
 
-/// The function's AWS X-Ray tracing configuration.
+/// The function's AWS X-Ray tracing configuration. To sample and record
+/// incoming requests, set <code>Mode</code> to <code>Active</code>.
 @_s.JsonSerializable(
     includeIfNull: false,
     explicitToJson: true,

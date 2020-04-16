@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'sdb-2009-04-15.g.dart';
 
 /// Amazon SimpleDB is a web service providing the core database functions of
 /// data indexing and querying in the cloud. By offloading the time and effort
@@ -585,17 +595,26 @@ class SimpleDB {
 }
 
 ///
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Attribute {
   /// The name of the attribute.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the attribute.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   ///
+  @_s.JsonKey(name: 'AlternateNameEncoding')
   final String alternateNameEncoding;
 
   ///
+  @_s.JsonKey(name: 'AlternateValueEncoding')
   final String alternateValueEncoding;
 
   Attribute({
@@ -617,7 +636,13 @@ class Attribute {
 }
 
 /// The specified attribute does not exist.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AttributeDoesNotExist implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   AttributeDoesNotExist({
@@ -631,49 +656,77 @@ class AttributeDoesNotExist implements _s.AwsException {
 }
 
 ///
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DeletableAttribute {
   /// The name of the attribute.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the attribute.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   DeletableAttribute({
     @_s.required this.name,
     this.value,
   });
+  Map<String, dynamic> toJson() => _$DeletableAttributeToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DeletableItem {
+  @_s.JsonKey(name: 'Name')
   final String name;
+  @_s.JsonKey(name: 'Attributes')
   final List<DeletableAttribute> attributes;
 
   DeletableItem({
     @_s.required this.name,
     this.attributes,
   });
+  Map<String, dynamic> toJson() => _$DeletableItemToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DomainMetadataResult {
   /// The number of unique attribute names in the domain.
+  @_s.JsonKey(name: 'AttributeNameCount')
   final int attributeNameCount;
 
   /// The total size of all unique attribute names in the domain, in bytes.
+  @_s.JsonKey(name: 'AttributeNamesSizeBytes')
   final int attributeNamesSizeBytes;
 
   /// The number of all attribute name/value pairs in the domain.
+  @_s.JsonKey(name: 'AttributeValueCount')
   final int attributeValueCount;
 
   /// The total size of all attribute values in the domain, in bytes.
+  @_s.JsonKey(name: 'AttributeValuesSizeBytes')
   final int attributeValuesSizeBytes;
 
   /// The number of all items in the domain.
+  @_s.JsonKey(name: 'ItemCount')
   final int itemCount;
 
   /// The total size of all item names in the domain, in bytes.
+  @_s.JsonKey(name: 'ItemNamesSizeBytes')
   final int itemNamesSizeBytes;
 
   /// The data and time when metadata was calculated, in Epoch (UNIX) seconds.
+  @_s.JsonKey(name: 'Timestamp')
   final int timestamp;
 
   DomainMetadataResult({
@@ -701,7 +754,13 @@ class DomainMetadataResult {
 }
 
 /// The item name was specified more than once.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DuplicateItemName implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   DuplicateItemName({
@@ -714,8 +773,14 @@ class DuplicateItemName implements _s.AwsException {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetAttributesResult {
   /// The list of attributes returned by the operation.
+  @_s.JsonKey(name: 'Attributes')
   final List<Attribute> attributes;
 
   GetAttributesResult({
@@ -732,7 +797,13 @@ class GetAttributesResult {
 }
 
 /// The specified NextToken is not valid.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidNextToken implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   InvalidNextToken({
@@ -746,7 +817,13 @@ class InvalidNextToken implements _s.AwsException {
 }
 
 /// Too many predicates exist in the query expression.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidNumberPredicates implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   InvalidNumberPredicates({
@@ -760,7 +837,13 @@ class InvalidNumberPredicates implements _s.AwsException {
 }
 
 /// Too many predicates exist in the query expression.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidNumberValueTests implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   InvalidNumberValueTests({
@@ -774,7 +857,13 @@ class InvalidNumberValueTests implements _s.AwsException {
 }
 
 /// The value for a parameter is invalid.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidParameterValue implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   InvalidParameterValue({
@@ -788,7 +877,13 @@ class InvalidParameterValue implements _s.AwsException {
 }
 
 /// The specified query expression syntax is not valid.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidQueryExpression implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   InvalidQueryExpression({
@@ -802,14 +897,22 @@ class InvalidQueryExpression implements _s.AwsException {
 }
 
 ///
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Item {
   /// A list of attributes.
+  @_s.JsonKey(name: 'Attributes')
   final List<Attribute> attributes;
 
   /// The name of the item.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   ///
+  @_s.JsonKey(name: 'AlternateNameEncoding')
   final String alternateNameEncoding;
 
   Item({
@@ -830,12 +933,19 @@ class Item {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListDomainsResult {
   /// A list of domain names that match the expression.
+  @_s.JsonKey(name: 'DomainNames')
   final List<String> domainNames;
 
   /// An opaque token indicating that there are more domains than the specified
   /// <code>MaxNumberOfDomains</code> still available.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListDomainsResult({
@@ -851,7 +961,13 @@ class ListDomainsResult {
 }
 
 /// The request must contain the specified missing parameter.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MissingParameter implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   MissingParameter({
@@ -865,7 +981,13 @@ class MissingParameter implements _s.AwsException {
 }
 
 /// The specified domain does not exist.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NoSuchDomain implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   NoSuchDomain({
@@ -879,7 +1001,13 @@ class NoSuchDomain implements _s.AwsException {
 }
 
 /// Too many attributes in this domain.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NumberDomainAttributesExceeded implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   NumberDomainAttributesExceeded({
@@ -893,7 +1021,13 @@ class NumberDomainAttributesExceeded implements _s.AwsException {
 }
 
 /// Too many bytes in this domain.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NumberDomainBytesExceeded implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   NumberDomainBytesExceeded({
@@ -907,7 +1041,13 @@ class NumberDomainBytesExceeded implements _s.AwsException {
 }
 
 /// Too many domains exist per this account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NumberDomainsExceeded implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   NumberDomainsExceeded({
@@ -921,7 +1061,13 @@ class NumberDomainsExceeded implements _s.AwsException {
 }
 
 /// Too many attributes in this item.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NumberItemAttributesExceeded implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   NumberItemAttributesExceeded({
@@ -935,7 +1081,13 @@ class NumberItemAttributesExceeded implements _s.AwsException {
 }
 
 /// Too many attributes exist in a single call.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NumberSubmittedAttributesExceeded implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   NumberSubmittedAttributesExceeded({
@@ -949,7 +1101,13 @@ class NumberSubmittedAttributesExceeded implements _s.AwsException {
 }
 
 /// Too many items exist in a single call.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NumberSubmittedItemsExceeded implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   NumberSubmittedItemsExceeded({
@@ -963,15 +1121,23 @@ class NumberSubmittedItemsExceeded implements _s.AwsException {
 }
 
 ///
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ReplaceableAttribute {
   /// The name of the replaceable attribute.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the replaceable attribute.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   /// A flag specifying whether or not to replace the attribute/value pair or to
   /// add a new attribute/value pair. The default setting is <code>false</code>.
+  @_s.JsonKey(name: 'Replace')
   final bool replace;
 
   ReplaceableAttribute({
@@ -979,25 +1145,40 @@ class ReplaceableAttribute {
     @_s.required this.value,
     this.replace,
   });
+  Map<String, dynamic> toJson() => _$ReplaceableAttributeToJson(this);
 }
 
 ///
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ReplaceableItem {
   /// The list of attributes for a replaceable item.
+  @_s.JsonKey(name: 'Attributes')
   final List<ReplaceableAttribute> attributes;
 
   /// The name of the replaceable item.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   ReplaceableItem({
     @_s.required this.attributes,
     @_s.required this.name,
   });
+  Map<String, dynamic> toJson() => _$ReplaceableItemToJson(this);
 }
 
 /// A timeout occurred when attempting to query the specified domain with
 /// specified query expression.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RequestTimeout implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   RequestTimeout({
@@ -1010,13 +1191,20 @@ class RequestTimeout implements _s.AwsException {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SelectResult {
   /// A list of items that match the select expression.
+  @_s.JsonKey(name: 'Items')
   final List<Item> items;
 
   /// An opaque token indicating that more items than
   /// <code>MaxNumberOfItems</code> were matched, the response size exceeded 1
   /// megabyte, or the execution time exceeded 5 seconds.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   SelectResult({
@@ -1032,7 +1220,13 @@ class SelectResult {
 }
 
 /// Too many attributes requested.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TooManyRequestedAttributes implements _s.AwsException {
+  @_s.JsonKey(name: 'BoxUsage')
   final double boxUsage;
 
   TooManyRequestedAttributes({
@@ -1049,19 +1243,27 @@ class TooManyRequestedAttributes implements _s.AwsException {
 /// condition is specified for a request, the data will only be updated if the
 /// condition is satisfied. For example, if an attribute with a specific name
 /// and value exists, or if a specific attribute doesn't exist.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class UpdateCondition {
   /// A value specifying whether or not the specified attribute must exist with
   /// the specified value in order for the update condition to be satisfied.
   /// Specify <code>true</code> if the attribute must exist for the update
   /// condition to be satisfied. Specify <code>false</code> if the attribute
   /// should not exist in order for the update condition to be satisfied.
+  @_s.JsonKey(name: 'Exists')
   final bool exists;
 
   /// The name of the attribute involved in the condition.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of an attribute. This value can only be specified when the
   /// <code>Exists</code> parameter is equal to <code>true</code>.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   UpdateCondition({
@@ -1069,6 +1271,7 @@ class UpdateCondition {
     this.name,
     this.value,
   });
+  Map<String, dynamic> toJson() => _$UpdateConditionToJson(this);
 }
 
 final _exceptionFns = <String, _s.AwsExceptionFn>{

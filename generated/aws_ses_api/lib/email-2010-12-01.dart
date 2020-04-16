@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'email-2010-12-01.g.dart';
 
 /// This document contains reference information for the <a
 /// href="https://aws.amazon.com/ses/">Amazon Simple Email Service</a> (Amazon
@@ -3574,14 +3584,21 @@ class SES {
 /// For information about adding a header using a receipt rule, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-add-header.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AddHeaderAction {
   /// The name of the header to add. Must be between 1 and 50 characters,
   /// inclusive, and consist of alphanumeric (a-z, A-Z, 0-9) characters and dashes
   /// only.
+  @_s.JsonKey(name: 'HeaderName')
   final String headerName;
 
   /// Must be less than 2048 characters, and must not contain newline characters
   /// ("\r" or "\n").
+  @_s.JsonKey(name: 'HeaderValue')
   final String headerValue;
 
   AddHeaderAction({
@@ -3594,10 +3611,14 @@ class AddHeaderAction {
       headerValue: _s.extractXmlStringValue(elem, 'HeaderValue'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$AddHeaderActionToJson(this);
 }
 
 enum BehaviorOnMXFailure {
+  @_s.JsonValue('UseDefaultValue')
   useDefaultValue,
+  @_s.JsonValue('RejectMessage')
   rejectMessage,
 }
 
@@ -3616,20 +3637,28 @@ extension on String {
 /// Represents the body of the message. You can specify text, HTML, or both. If
 /// you use both, then the message should display correctly in the widest
 /// variety of email clients.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Body {
   /// The content of the message, in HTML format. Use this for email clients that
   /// can process HTML. You can include clickable links, formatted text, and much
   /// more in an HTML message.
+  @_s.JsonKey(name: 'Html')
   final Content html;
 
   /// The content of the message, in text format. Use this for text-based email
   /// clients, or clients on high-latency networks (such as mobile devices).
+  @_s.JsonKey(name: 'Text')
   final Content text;
 
   Body({
     this.html,
     this.text,
   });
+  Map<String, dynamic> toJson() => _$BodyToJson(this);
 }
 
 /// When included in a receipt rule, this action rejects the received email by
@@ -3640,20 +3669,29 @@ class Body {
 /// email, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-bounce.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class BounceAction {
   /// Human-readable text to include in the bounce message.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// The email address of the sender of the bounced email. This is the address
   /// from which the bounce message will be sent.
+  @_s.JsonKey(name: 'Sender')
   final String sender;
 
   /// The SMTP reply code, as defined by <a
   /// href="https://tools.ietf.org/html/rfc5321">RFC 5321</a>.
+  @_s.JsonKey(name: 'SmtpReplyCode')
   final String smtpReplyCode;
 
   /// The SMTP enhanced status code, as defined by <a
   /// href="https://tools.ietf.org/html/rfc3463">RFC 3463</a>.
+  @_s.JsonKey(name: 'StatusCode')
   final String statusCode;
 
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic to notify when the
@@ -3662,6 +3700,7 @@ class BounceAction {
   /// information about Amazon SNS topics, see the <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Amazon SNS
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   BounceAction({
@@ -3680,14 +3719,22 @@ class BounceAction {
       topicArn: _s.extractXmlStringValue(elem, 'TopicArn'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$BounceActionToJson(this);
 }
 
 enum BounceType {
+  @_s.JsonValue('DoesNotExist')
   doesNotExist,
+  @_s.JsonValue('MessageTooLarge')
   messageTooLarge,
+  @_s.JsonValue('ExceededQuota')
   exceededQuota,
+  @_s.JsonValue('ContentRejected')
   contentRejected,
+  @_s.JsonValue('Undefined')
   undefined,
+  @_s.JsonValue('TemporaryFailure')
   temporaryFailure,
 }
 
@@ -3717,12 +3764,19 @@ extension on String {
 /// For information about receiving email through Amazon SES, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class BouncedRecipientInfo {
   /// The email address of the recipient of the bounced email.
+  @_s.JsonKey(name: 'Recipient')
   final String recipient;
 
   /// The reason for the bounce. You must provide either this parameter or
   /// <code>RecipientDsnFields</code>.
+  @_s.JsonKey(name: 'BounceType')
   final BounceType bounceType;
 
   /// This parameter is used only for sending authorization. It is the ARN of the
@@ -3731,11 +3785,13 @@ class BouncedRecipientInfo {
   /// more information about sending authorization, see the <a
   /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-authorization.html">Amazon
   /// SES Developer Guide</a>.
+  @_s.JsonKey(name: 'RecipientArn')
   final String recipientArn;
 
   /// Recipient-related DSN fields, most of which would normally be filled in
   /// automatically when provided with a <code>BounceType</code>. You must provide
   /// either this parameter or <code>BounceType</code>.
+  @_s.JsonKey(name: 'RecipientDsnFields')
   final RecipientDsnFields recipientDsnFields;
 
   BouncedRecipientInfo({
@@ -3744,22 +3800,31 @@ class BouncedRecipientInfo {
     this.recipientArn,
     this.recipientDsnFields,
   });
+  Map<String, dynamic> toJson() => _$BouncedRecipientInfoToJson(this);
 }
 
 /// An array that contains one or more Destinations, as well as the tags and
 /// replacement data associated with each of those Destinations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class BulkEmailDestination {
+  @_s.JsonKey(name: 'Destination')
   final Destination destination;
 
   /// A list of tags, in the form of name/value pairs, to apply to an email that
   /// you send using <code>SendBulkTemplatedEmail</code>. Tags correspond to
   /// characteristics of the email that you define, so that you can publish email
   /// sending events.
+  @_s.JsonKey(name: 'ReplacementTags')
   final List<MessageTag> replacementTags;
 
   /// A list of replacement values to apply to the template. This parameter is a
   /// JSON object, typically consisting of key-value pairs in which the keys
   /// correspond to replacement tags in the email template.
+  @_s.JsonKey(name: 'ReplacementTemplateData')
   final String replacementTemplateData;
 
   BulkEmailDestination({
@@ -3767,17 +3832,25 @@ class BulkEmailDestination {
     this.replacementTags,
     this.replacementTemplateData,
   });
+  Map<String, dynamic> toJson() => _$BulkEmailDestinationToJson(this);
 }
 
 /// An object that contains the response from the
 /// <code>SendBulkTemplatedEmail</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BulkEmailDestinationStatus {
   /// A description of an error that prevented a message being sent using the
   /// <code>SendBulkTemplatedEmail</code> operation.
+  @_s.JsonKey(name: 'Error')
   final String error;
 
   /// The unique message identifier returned from the
   /// <code>SendBulkTemplatedEmail</code> operation.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   /// The status of a message sent using the <code>SendBulkTemplatedEmail</code>
@@ -3845,6 +3918,7 @@ class BulkEmailDestinationStatus {
   /// error message for additional information.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final BulkEmailStatus status;
 
   BulkEmailDestinationStatus({
@@ -3862,19 +3936,33 @@ class BulkEmailDestinationStatus {
 }
 
 enum BulkEmailStatus {
+  @_s.JsonValue('Success')
   success,
+  @_s.JsonValue('MessageRejected')
   messageRejected,
+  @_s.JsonValue('MailFromDomainNotVerified')
   mailFromDomainNotVerified,
+  @_s.JsonValue('ConfigurationSetDoesNotExist')
   configurationSetDoesNotExist,
+  @_s.JsonValue('TemplateDoesNotExist')
   templateDoesNotExist,
+  @_s.JsonValue('AccountSuspended')
   accountSuspended,
+  @_s.JsonValue('AccountThrottled')
   accountThrottled,
+  @_s.JsonValue('AccountDailyQuotaExceeded')
   accountDailyQuotaExceeded,
+  @_s.JsonValue('InvalidSendingPoolName')
   invalidSendingPoolName,
+  @_s.JsonValue('AccountSendingPaused')
   accountSendingPaused,
+  @_s.JsonValue('ConfigurationSetSendingPaused')
   configurationSetSendingPaused,
+  @_s.JsonValue('InvalidParameterValue')
   invalidParameterValue,
+  @_s.JsonValue('TransientFailure')
   transientFailure,
+  @_s.JsonValue('Failed')
   failed,
 }
 
@@ -3915,6 +4003,11 @@ extension on String {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CloneReceiptRuleSetResponse {
   CloneReceiptRuleSetResponse();
   factory CloneReceiptRuleSetResponse.fromXml(
@@ -3932,9 +4025,15 @@ class CloneReceiptRuleSetResponse {
 /// information about using configuration sets, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class CloudWatchDestination {
   /// A list of dimensions upon which to categorize your emails when you publish
   /// email sending events to Amazon CloudWatch.
+  @_s.JsonKey(name: 'DimensionConfigurations')
   final List<CloudWatchDimensionConfiguration> dimensionConfigurations;
 
   CloudWatchDestination({
@@ -3950,6 +4049,8 @@ class CloudWatchDestination {
               .toList()),
     );
   }
+
+  Map<String, dynamic> toJson() => _$CloudWatchDestinationToJson(this);
 }
 
 /// Contains the dimension configuration to use when you publish email sending
@@ -3959,6 +4060,11 @@ class CloudWatchDestination {
 /// see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class CloudWatchDimensionConfiguration {
   /// The default value of the dimension that is published to Amazon CloudWatch if
   /// you do not provide the value of the dimension when you send an email. The
@@ -3973,6 +4079,7 @@ class CloudWatchDimensionConfiguration {
   /// Contain less than 256 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DefaultDimensionValue')
   final String defaultDimensionValue;
 
   /// The name of an Amazon CloudWatch dimension associated with an email sending
@@ -3987,6 +4094,7 @@ class CloudWatchDimensionConfiguration {
   /// Contain less than 256 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DimensionName')
   final String dimensionName;
 
   /// The place where Amazon SES finds the value of a dimension to publish to
@@ -3995,6 +4103,7 @@ class CloudWatchDimensionConfiguration {
   /// the <code>SendEmail</code>/<code>SendRawEmail</code> API, choose
   /// <code>messageTag</code>. If you want Amazon SES to use your own email
   /// headers, choose <code>emailHeader</code>.
+  @_s.JsonKey(name: 'DimensionValueSource')
   final DimensionValueSource dimensionValueSource;
 
   CloudWatchDimensionConfiguration({
@@ -4012,6 +4121,9 @@ class CloudWatchDimensionConfiguration {
           ?.toDimensionValueSource(),
     );
   }
+
+  Map<String, dynamic> toJson() =>
+      _$CloudWatchDimensionConfigurationToJson(this);
 }
 
 /// The name of the configuration set.
@@ -4023,6 +4135,11 @@ class CloudWatchDimensionConfiguration {
 /// Amazon SES Configuration Sets</a> in the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/">Amazon SES
 /// Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ConfigurationSet {
   /// The name of the configuration set. The name must meet the following
   /// requirements:
@@ -4036,6 +4153,7 @@ class ConfigurationSet {
   /// Contain 64 characters or fewer.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   ConfigurationSet({
@@ -4046,12 +4164,18 @@ class ConfigurationSet {
       name: _s.extractXmlStringValue(elem, 'Name'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ConfigurationSetToJson(this);
 }
 
 enum ConfigurationSetAttribute {
+  @_s.JsonValue('eventDestinations')
   eventDestinations,
+  @_s.JsonValue('trackingOptions')
   trackingOptions,
+  @_s.JsonValue('deliveryOptions')
   deliveryOptions,
+  @_s.JsonValue('reputationOptions')
   reputationOptions,
 }
 
@@ -4076,20 +4200,33 @@ extension on String {
 /// By default, the text must be 7-bit ASCII, due to the constraints of the SMTP
 /// protocol. If the text must contain any other characters, then you must also
 /// specify a character set. Examples include UTF-8, ISO-8859-1, and Shift_JIS.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Content {
   /// The textual data of the content.
+  @_s.JsonKey(name: 'Data')
   final String data;
 
   /// The character set of the content.
+  @_s.JsonKey(name: 'Charset')
   final String charset;
 
   Content({
     @_s.required this.data,
     this.charset,
   });
+  Map<String, dynamic> toJson() => _$ContentToJson(this);
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateConfigurationSetEventDestinationResponse {
   CreateConfigurationSetEventDestinationResponse();
   factory CreateConfigurationSetEventDestinationResponse.fromXml(
@@ -4100,6 +4237,11 @@ class CreateConfigurationSetEventDestinationResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateConfigurationSetResponse {
   CreateConfigurationSetResponse();
   factory CreateConfigurationSetResponse.fromXml(
@@ -4110,6 +4252,11 @@ class CreateConfigurationSetResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateConfigurationSetTrackingOptionsResponse {
   CreateConfigurationSetTrackingOptionsResponse();
   factory CreateConfigurationSetTrackingOptionsResponse.fromXml(
@@ -4120,6 +4267,11 @@ class CreateConfigurationSetTrackingOptionsResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateReceiptFilterResponse {
   CreateReceiptFilterResponse();
   factory CreateReceiptFilterResponse.fromXml(
@@ -4130,6 +4282,11 @@ class CreateReceiptFilterResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateReceiptRuleResponse {
   CreateReceiptRuleResponse();
   factory CreateReceiptRuleResponse.fromXml(
@@ -4140,6 +4297,11 @@ class CreateReceiptRuleResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateReceiptRuleSetResponse {
   CreateReceiptRuleSetResponse();
   factory CreateReceiptRuleSetResponse.fromXml(
@@ -4149,6 +4311,11 @@ class CreateReceiptRuleSetResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateTemplateResponse {
   CreateTemplateResponse();
   factory CreateTemplateResponse.fromXml(
@@ -4159,9 +4326,13 @@ class CreateTemplateResponse {
 }
 
 enum CustomMailFromStatus {
+  @_s.JsonValue('Pending')
   pending,
+  @_s.JsonValue('Success')
   success,
+  @_s.JsonValue('Failed')
   failed,
+  @_s.JsonValue('TemporaryFailure')
   temporaryFailure,
 }
 
@@ -4182,22 +4353,32 @@ extension on String {
 }
 
 /// Contains information about a custom verification email template.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CustomVerificationEmailTemplate {
   /// The URL that the recipient of the verification email is sent to if his or
   /// her address is not successfully verified.
+  @_s.JsonKey(name: 'FailureRedirectionURL')
   final String failureRedirectionURL;
 
   /// The email address that the custom verification email is sent from.
+  @_s.JsonKey(name: 'FromEmailAddress')
   final String fromEmailAddress;
 
   /// The URL that the recipient of the verification email is sent to if his or
   /// her address is successfully verified.
+  @_s.JsonKey(name: 'SuccessRedirectionURL')
   final String successRedirectionURL;
 
   /// The name of the custom verification email template.
+  @_s.JsonKey(name: 'TemplateName')
   final String templateName;
 
   /// The subject line of the custom verification email.
+  @_s.JsonKey(name: 'TemplateSubject')
   final String templateSubject;
 
   CustomVerificationEmailTemplate({
@@ -4221,6 +4402,11 @@ class CustomVerificationEmailTemplate {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteConfigurationSetEventDestinationResponse {
   DeleteConfigurationSetEventDestinationResponse();
   factory DeleteConfigurationSetEventDestinationResponse.fromXml(
@@ -4231,6 +4417,11 @@ class DeleteConfigurationSetEventDestinationResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteConfigurationSetResponse {
   DeleteConfigurationSetResponse();
   factory DeleteConfigurationSetResponse.fromXml(
@@ -4241,6 +4432,11 @@ class DeleteConfigurationSetResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteConfigurationSetTrackingOptionsResponse {
   DeleteConfigurationSetTrackingOptionsResponse();
   factory DeleteConfigurationSetTrackingOptionsResponse.fromXml(
@@ -4251,6 +4447,11 @@ class DeleteConfigurationSetTrackingOptionsResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteIdentityPolicyResponse {
   DeleteIdentityPolicyResponse();
   factory DeleteIdentityPolicyResponse.fromXml(
@@ -4261,6 +4462,11 @@ class DeleteIdentityPolicyResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteIdentityResponse {
   DeleteIdentityResponse();
   factory DeleteIdentityResponse.fromXml(
@@ -4271,6 +4477,11 @@ class DeleteIdentityResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteReceiptFilterResponse {
   DeleteReceiptFilterResponse();
   factory DeleteReceiptFilterResponse.fromXml(
@@ -4281,6 +4492,11 @@ class DeleteReceiptFilterResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteReceiptRuleResponse {
   DeleteReceiptRuleResponse();
   factory DeleteReceiptRuleResponse.fromXml(
@@ -4291,6 +4507,11 @@ class DeleteReceiptRuleResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteReceiptRuleSetResponse {
   DeleteReceiptRuleSetResponse();
   factory DeleteReceiptRuleSetResponse.fromXml(
@@ -4300,6 +4521,11 @@ class DeleteReceiptRuleSetResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteTemplateResponse {
   DeleteTemplateResponse();
   factory DeleteTemplateResponse.fromXml(
@@ -4311,12 +4537,18 @@ class DeleteTemplateResponse {
 
 /// Specifies whether messages that use the configuration set are required to
 /// use Transport Layer Security (TLS).
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DeliveryOptions {
   /// Specifies whether messages that use the configuration set are required to
   /// use Transport Layer Security (TLS). If the value is <code>Require</code>,
   /// messages are only delivered if a TLS connection can be established. If the
   /// value is <code>Optional</code>, messages can be delivered in plain text if a
   /// TLS connection can't be established.
+  @_s.JsonKey(name: 'TlsPolicy')
   final TlsPolicy tlsPolicy;
 
   DeliveryOptions({
@@ -4327,17 +4559,26 @@ class DeliveryOptions {
       tlsPolicy: _s.extractXmlStringValue(elem, 'TlsPolicy')?.toTlsPolicy(),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DeliveryOptionsToJson(this);
 }
 
 /// Represents the metadata and receipt rules for the receipt rule set that is
 /// currently active.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeActiveReceiptRuleSetResponse {
   /// The metadata for the currently active receipt rule set. The metadata
   /// consists of the rule set name and a timestamp of when the rule set was
   /// created.
+  @_s.JsonKey(name: 'Metadata')
   final ReceiptRuleSetMetadata metadata;
 
   /// The receipt rules that belong to the active rule set.
+  @_s.JsonKey(name: 'Rules')
   final List<ReceiptRule> rules;
 
   DescribeActiveReceiptRuleSetResponse({
@@ -4362,20 +4603,30 @@ class DescribeActiveReceiptRuleSetResponse {
 /// sets, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeConfigurationSetResponse {
   /// The configuration set object associated with the specified configuration
   /// set.
+  @_s.JsonKey(name: 'ConfigurationSet')
   final ConfigurationSet configurationSet;
+  @_s.JsonKey(name: 'DeliveryOptions')
   final DeliveryOptions deliveryOptions;
 
   /// A list of event destinations associated with the configuration set.
+  @_s.JsonKey(name: 'EventDestinations')
   final List<EventDestination> eventDestinations;
 
   /// An object that represents the reputation settings for the configuration set.
+  @_s.JsonKey(name: 'ReputationOptions')
   final ReputationOptions reputationOptions;
 
   /// The name of the custom open and click tracking domain associated with the
   /// configuration set.
+  @_s.JsonKey(name: 'TrackingOptions')
   final TrackingOptions trackingOptions;
 
   DescribeConfigurationSetResponse({
@@ -4409,10 +4660,16 @@ class DescribeConfigurationSetResponse {
 }
 
 /// Represents the details of a receipt rule.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeReceiptRuleResponse {
   /// A data structure that contains the specified receipt rule's name, actions,
   /// recipients, domains, enabled status, scan status, and Transport Layer
   /// Security (TLS) policy.
+  @_s.JsonKey(name: 'Rule')
   final ReceiptRule rule;
 
   DescribeReceiptRuleResponse({
@@ -4427,12 +4684,19 @@ class DescribeReceiptRuleResponse {
 }
 
 /// Represents the details of the specified receipt rule set.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeReceiptRuleSetResponse {
   /// The metadata for the receipt rule set, which consists of the rule set name
   /// and the timestamp of when the rule set was created.
+  @_s.JsonKey(name: 'Metadata')
   final ReceiptRuleSetMetadata metadata;
 
   /// A list of the receipt rules that belong to the specified receipt rule set.
+  @_s.JsonKey(name: 'Rules')
   final List<ReceiptRule> rules;
 
   DescribeReceiptRuleSetResponse({
@@ -4465,14 +4729,22 @@ class DescribeReceiptRuleSetResponse {
 /// as described in <a
 /// href="https://tools.ietf.org/html/rfc3492.html">RFC3492</a>.
 /// </note>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Destination {
   /// The recipients to place on the BCC: line of the message.
+  @_s.JsonKey(name: 'BccAddresses')
   final List<String> bccAddresses;
 
   /// The recipients to place on the CC: line of the message.
+  @_s.JsonKey(name: 'CcAddresses')
   final List<String> ccAddresses;
 
   /// The recipients to place on the To: line of the message.
+  @_s.JsonKey(name: 'ToAddresses')
   final List<String> toAddresses;
 
   Destination({
@@ -4480,11 +4752,15 @@ class Destination {
     this.ccAddresses,
     this.toAddresses,
   });
+  Map<String, dynamic> toJson() => _$DestinationToJson(this);
 }
 
 enum DimensionValueSource {
+  @_s.JsonValue('messageTag')
   messageTag,
+  @_s.JsonValue('emailHeader')
   emailHeader,
+  @_s.JsonValue('linkTag')
   linkTag,
 }
 
@@ -4503,10 +4779,15 @@ extension on String {
 }
 
 enum DsnAction {
+  @_s.JsonValue('failed')
   failed,
+  @_s.JsonValue('delayed')
   delayed,
+  @_s.JsonValue('delivered')
   delivered,
+  @_s.JsonValue('relayed')
   relayed,
+  @_s.JsonValue('expanded')
   expanded,
 }
 
@@ -4541,8 +4822,14 @@ extension on String {
 /// information about using configuration sets, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class EventDestination {
   /// The type of email sending events to publish to the event destination.
+  @_s.JsonKey(name: 'MatchingEventTypes')
   final List<String> matchingEventTypes;
 
   /// The name of the event destination. The name must:
@@ -4556,24 +4843,29 @@ class EventDestination {
   /// Contain less than 64 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// An object that contains the names, default values, and sources of the
   /// dimensions associated with an Amazon CloudWatch event destination.
+  @_s.JsonKey(name: 'CloudWatchDestination')
   final CloudWatchDestination cloudWatchDestination;
 
   /// Sets whether Amazon SES publishes events to this destination when you send
   /// an email with the associated configuration set. Set to <code>true</code> to
   /// enable publishing to this destination; set to <code>false</code> to prevent
   /// publishing to this destination. The default value is <code>false</code>.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// An object that contains the delivery stream ARN and the IAM role ARN
   /// associated with an Amazon Kinesis Firehose event destination.
+  @_s.JsonKey(name: 'KinesisFirehoseDestination')
   final KinesisFirehoseDestination kinesisFirehoseDestination;
 
   /// An object that contains the topic ARN associated with an Amazon Simple
   /// Notification Service (Amazon SNS) event destination.
+  @_s.JsonKey(name: 'SNSDestination')
   final SNSDestination sNSDestination;
 
   EventDestination({
@@ -4601,16 +4893,26 @@ class EventDestination {
           ?.let((e) => SNSDestination.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$EventDestinationToJson(this);
 }
 
 enum EventType {
+  @_s.JsonValue('send')
   send,
+  @_s.JsonValue('reject')
   reject,
+  @_s.JsonValue('bounce')
   bounce,
+  @_s.JsonValue('complaint')
   complaint,
+  @_s.JsonValue('delivery')
   delivery,
+  @_s.JsonValue('open')
   open,
+  @_s.JsonValue('click')
   click,
+  @_s.JsonValue('renderingFailure')
   renderingFailure,
 }
 
@@ -4644,27 +4946,41 @@ extension on String {
 /// For information about receiving email through Amazon SES, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ExtensionField {
   /// The name of the header to add. Must be between 1 and 50 characters,
   /// inclusive, and consist of alphanumeric (a-z, A-Z, 0-9) characters and dashes
   /// only.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the header to add. Must be less than 2048 characters, and must
   /// not contain newline characters ("\r" or "\n").
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   ExtensionField({
     @_s.required this.name,
     @_s.required this.value,
   });
+  Map<String, dynamic> toJson() => _$ExtensionFieldToJson(this);
 }
 
 /// Represents a request to return the email sending status for your Amazon SES
 /// account in the current AWS Region.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetAccountSendingEnabledResponse {
   /// Describes whether email sending is enabled or disabled for your Amazon SES
   /// account in the current AWS Region.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   GetAccountSendingEnabledResponse({
@@ -4678,25 +4994,36 @@ class GetAccountSendingEnabledResponse {
 }
 
 /// The content of the custom verification email template.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetCustomVerificationEmailTemplateResponse {
   /// The URL that the recipient of the verification email is sent to if his or
   /// her address is not successfully verified.
+  @_s.JsonKey(name: 'FailureRedirectionURL')
   final String failureRedirectionURL;
 
   /// The email address that the custom verification email is sent from.
+  @_s.JsonKey(name: 'FromEmailAddress')
   final String fromEmailAddress;
 
   /// The URL that the recipient of the verification email is sent to if his or
   /// her address is successfully verified.
+  @_s.JsonKey(name: 'SuccessRedirectionURL')
   final String successRedirectionURL;
 
   /// The content of the custom verification email.
+  @_s.JsonKey(name: 'TemplateContent')
   final String templateContent;
 
   /// The name of the custom verification email template.
+  @_s.JsonKey(name: 'TemplateName')
   final String templateName;
 
   /// The subject line of the custom verification email.
+  @_s.JsonKey(name: 'TemplateSubject')
   final String templateSubject;
 
   GetCustomVerificationEmailTemplateResponse({
@@ -4726,8 +5053,14 @@ class GetCustomVerificationEmailTemplateResponse {
 /// domain identities, this response also contains the DKIM tokens that are
 /// required for Easy DKIM signing, and whether Amazon SES successfully verified
 /// that these tokens were published.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetIdentityDkimAttributesResponse {
   /// The DKIM attributes for an email address or a domain.
+  @_s.JsonKey(name: 'DkimAttributes')
   final Map<String, IdentityDkimAttributes> dkimAttributes;
 
   GetIdentityDkimAttributesResponse({
@@ -4750,8 +5083,14 @@ class GetIdentityDkimAttributesResponse {
 }
 
 /// Represents the custom MAIL FROM attributes for a list of identities.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetIdentityMailFromDomainAttributesResponse {
   /// A map of identities to custom MAIL FROM attributes.
+  @_s.JsonKey(name: 'MailFromDomainAttributes')
   final Map<String, IdentityMailFromDomainAttributes> mailFromDomainAttributes;
 
   GetIdentityMailFromDomainAttributesResponse({
@@ -4775,8 +5114,14 @@ class GetIdentityMailFromDomainAttributesResponse {
 }
 
 /// Represents the notification attributes for a list of identities.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetIdentityNotificationAttributesResponse {
   /// A map of Identity to IdentityNotificationAttributes.
+  @_s.JsonKey(name: 'NotificationAttributes')
   final Map<String, IdentityNotificationAttributes> notificationAttributes;
 
   GetIdentityNotificationAttributesResponse({
@@ -4800,8 +5145,14 @@ class GetIdentityNotificationAttributesResponse {
 }
 
 /// Represents the requested sending authorization policies.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetIdentityPoliciesResponse {
   /// A map of policy names to policies.
+  @_s.JsonKey(name: 'Policies')
   final Map<String, String> policies;
 
   GetIdentityPoliciesResponse({
@@ -4823,8 +5174,14 @@ class GetIdentityPoliciesResponse {
 
 /// The Amazon SES verification status of a list of identities. For domain
 /// identities, this response also contains the verification token.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetIdentityVerificationAttributesResponse {
   /// A map of Identities to IdentityVerificationAttributes objects.
+  @_s.JsonKey(name: 'VerificationAttributes')
   final Map<String, IdentityVerificationAttributes> verificationAttributes;
 
   GetIdentityVerificationAttributesResponse({
@@ -4849,9 +5206,15 @@ class GetIdentityVerificationAttributesResponse {
 
 /// Represents your Amazon SES daily sending quota, maximum send rate, and the
 /// number of emails you have sent in the last 24 hours.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetSendQuotaResponse {
   /// The maximum number of emails the user is allowed to send in a 24-hour
   /// interval. A value of -1 signifies an unlimited quota.
+  @_s.JsonKey(name: 'Max24HourSend')
   final double max24HourSend;
 
   /// The maximum number of emails that Amazon SES can accept from the user's
@@ -4860,9 +5223,11 @@ class GetSendQuotaResponse {
   /// The rate at which Amazon SES accepts the user's messages might be less than
   /// the maximum send rate.
   /// </note>
+  @_s.JsonKey(name: 'MaxSendRate')
   final double maxSendRate;
 
   /// The number of emails sent during the previous 24 hours.
+  @_s.JsonKey(name: 'SentLast24Hours')
   final double sentLast24Hours;
 
   GetSendQuotaResponse({
@@ -4881,8 +5246,14 @@ class GetSendQuotaResponse {
 
 /// Represents a list of data points. This list contains aggregated data from
 /// the previous two weeks of your sending activity with Amazon SES.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetSendStatisticsResponse {
   /// A list of data points, each of which represents 15 minutes of activity.
+  @_s.JsonKey(name: 'SendDataPoints')
   final List<SendDataPoint> sendDataPoints;
 
   GetSendStatisticsResponse({
@@ -4899,7 +5270,13 @@ class GetSendStatisticsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetTemplateResponse {
+  @_s.JsonKey(name: 'Template')
   final Template template;
 
   GetTemplateResponse({
@@ -4914,14 +5291,21 @@ class GetTemplateResponse {
 }
 
 /// Represents the DKIM attributes of a verified email address or a domain.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IdentityDkimAttributes {
   /// Is true if DKIM signing is enabled for email sent from the identity. It's
   /// false otherwise. The default value is true.
+  @_s.JsonKey(name: 'DkimEnabled')
   final bool dkimEnabled;
 
   /// Describes whether Amazon SES has successfully verified the DKIM DNS records
   /// (tokens) published in the domain name's DNS. (This only applies to domain
   /// identities, not email address identities.)
+  @_s.JsonKey(name: 'DkimVerificationStatus')
   final VerificationStatus dkimVerificationStatus;
 
   /// A set of character strings that represent the domain's identity. Using these
@@ -4936,6 +5320,7 @@ class IdentityDkimAttributes {
   /// <a
   /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/easy-dkim.html">Amazon
   /// SES Developer Guide</a>.
+  @_s.JsonKey(name: 'DkimTokens')
   final List<String> dkimTokens;
 
   IdentityDkimAttributes({
@@ -4958,6 +5343,11 @@ class IdentityDkimAttributes {
 
 /// Represents the custom MAIL FROM domain attributes of a verified identity
 /// (email address or domain).
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IdentityMailFromDomainAttributes {
   /// The action that Amazon SES takes if it cannot successfully read the required
   /// MX record when you send an email. A value of <code>UseDefaultValue</code>
@@ -4970,9 +5360,11 @@ class IdentityMailFromDomainAttributes {
   /// The custom MAIL FROM setup states that result in this behavior are
   /// <code>Pending</code>, <code>Failed</code>, and
   /// <code>TemporaryFailure</code>.
+  @_s.JsonKey(name: 'BehaviorOnMXFailure')
   final BehaviorOnMXFailure behaviorOnMXFailure;
 
   /// The custom MAIL FROM domain that the identity is configured to use.
+  @_s.JsonKey(name: 'MailFromDomain')
   final String mailFromDomain;
 
   /// The state that indicates whether Amazon SES has successfully read the MX
@@ -4980,6 +5372,7 @@ class IdentityMailFromDomainAttributes {
   /// <code>Success</code>, Amazon SES uses the specified custom MAIL FROM domain
   /// when the verified identity sends an email. All other states indicate that
   /// Amazon SES takes the action described by <code>BehaviorOnMXFailure</code>.
+  @_s.JsonKey(name: 'MailFromDomainStatus')
   final CustomMailFromStatus mailFromDomainStatus;
 
   IdentityMailFromDomainAttributes({
@@ -5004,17 +5397,25 @@ class IdentityMailFromDomainAttributes {
 /// identity has Amazon Simple Notification Service (Amazon SNS) topics set for
 /// bounce, complaint, and/or delivery notifications, and whether feedback
 /// forwarding is enabled for bounce and complaint notifications.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IdentityNotificationAttributes {
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic where Amazon SES will
   /// publish bounce notifications.
+  @_s.JsonKey(name: 'BounceTopic')
   final String bounceTopic;
 
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic where Amazon SES will
   /// publish complaint notifications.
+  @_s.JsonKey(name: 'ComplaintTopic')
   final String complaintTopic;
 
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic where Amazon SES will
   /// publish delivery notifications.
+  @_s.JsonKey(name: 'DeliveryTopic')
   final String deliveryTopic;
 
   /// Describes whether Amazon SES will forward bounce and complaint notifications
@@ -5022,6 +5423,7 @@ class IdentityNotificationAttributes {
   /// and complaint notifications as email, while <code>false</code> indicates
   /// that bounce and complaint notifications will be published only to the
   /// specified bounce and complaint Amazon SNS topics.
+  @_s.JsonKey(name: 'ForwardingEnabled')
   final bool forwardingEnabled;
 
   /// Describes whether Amazon SES includes the original email headers in Amazon
@@ -5029,6 +5431,7 @@ class IdentityNotificationAttributes {
   /// specifies that Amazon SES will include headers in bounce notifications, and
   /// a value of <code>false</code> specifies that Amazon SES will not include
   /// headers in bounce notifications.
+  @_s.JsonKey(name: 'HeadersInBounceNotificationsEnabled')
   final bool headersInBounceNotificationsEnabled;
 
   /// Describes whether Amazon SES includes the original email headers in Amazon
@@ -5036,6 +5439,7 @@ class IdentityNotificationAttributes {
   /// <code>true</code> specifies that Amazon SES will include headers in
   /// complaint notifications, and a value of <code>false</code> specifies that
   /// Amazon SES will not include headers in complaint notifications.
+  @_s.JsonKey(name: 'HeadersInComplaintNotificationsEnabled')
   final bool headersInComplaintNotificationsEnabled;
 
   /// Describes whether Amazon SES includes the original email headers in Amazon
@@ -5043,6 +5447,7 @@ class IdentityNotificationAttributes {
   /// <code>true</code> specifies that Amazon SES will include headers in delivery
   /// notifications, and a value of <code>false</code> specifies that Amazon SES
   /// will not include headers in delivery notifications.
+  @_s.JsonKey(name: 'HeadersInDeliveryNotificationsEnabled')
   final bool headersInDeliveryNotificationsEnabled;
 
   IdentityNotificationAttributes({
@@ -5071,7 +5476,9 @@ class IdentityNotificationAttributes {
 }
 
 enum IdentityType {
+  @_s.JsonValue('EmailAddress')
   emailAddress,
+  @_s.JsonValue('Domain')
   domain,
 }
 
@@ -5088,13 +5495,20 @@ extension on String {
 }
 
 /// Represents the verification attributes of a single identity.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IdentityVerificationAttributes {
   /// The verification status of the identity: "Pending", "Success", "Failed", or
   /// "TemporaryFailure".
+  @_s.JsonKey(name: 'VerificationStatus')
   final VerificationStatus verificationStatus;
 
   /// The verification token for a domain identity. Null for email address
   /// identities.
+  @_s.JsonKey(name: 'VerificationToken')
   final String verificationToken;
 
   IdentityVerificationAttributes({
@@ -5112,7 +5526,9 @@ class IdentityVerificationAttributes {
 }
 
 enum InvocationType {
+  @_s.JsonValue('Event')
   event,
+  @_s.JsonValue('RequestResponse')
   requestResponse,
 }
 
@@ -5136,13 +5552,20 @@ extension on String {
 /// information about using configuration sets, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class KinesisFirehoseDestination {
   /// The ARN of the Amazon Kinesis Firehose stream that email sending events
   /// should be published to.
+  @_s.JsonKey(name: 'DeliveryStreamARN')
   final String deliveryStreamARN;
 
   /// The ARN of the IAM role under which Amazon SES publishes email sending
   /// events to the Amazon Kinesis Firehose stream.
+  @_s.JsonKey(name: 'IAMRoleARN')
   final String iAMRoleARN;
 
   KinesisFirehoseDestination({
@@ -5155,6 +5578,8 @@ class KinesisFirehoseDestination {
       iAMRoleARN: _s.extractXmlStringValue(elem, 'IAMRoleARN'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$KinesisFirehoseDestinationToJson(this);
 }
 
 /// When included in a receipt rule, this action calls an AWS Lambda function
@@ -5170,6 +5595,11 @@ class KinesisFirehoseDestination {
 /// For information about using AWS Lambda actions in receipt rules, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-lambda.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LambdaAction {
   /// The Amazon Resource Name (ARN) of the AWS Lambda function. An example of an
   /// AWS Lambda function ARN is
@@ -5177,6 +5607,7 @@ class LambdaAction {
   /// more information about AWS Lambda, see the <a
   /// href="https://docs.aws.amazon.com/lambda/latest/dg/welcome.html">AWS Lambda
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'FunctionArn')
   final String functionArn;
 
   /// The invocation type of the AWS Lambda function. An invocation type of
@@ -5193,6 +5624,7 @@ class LambdaAction {
   /// <code>RequestResponse</code> only when you want to make a mail flow
   /// decision, such as whether to stop the receipt rule or the receipt rule set.
   /// </important>
+  @_s.JsonKey(name: 'InvocationType')
   final InvocationType invocationType;
 
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic to notify when the
@@ -5201,6 +5633,7 @@ class LambdaAction {
   /// information about Amazon SNS topics, see the <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Amazon SNS
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   LambdaAction({
@@ -5216,6 +5649,8 @@ class LambdaAction {
       topicArn: _s.extractXmlStringValue(elem, 'TopicArn'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LambdaActionToJson(this);
 }
 
 /// A list of configuration sets associated with your AWS account. Configuration
@@ -5223,13 +5658,20 @@ class LambdaAction {
 /// configuration sets, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListConfigurationSetsResponse {
   /// A list of configuration sets.
+  @_s.JsonKey(name: 'ConfigurationSets')
   final List<ConfigurationSet> configurationSets;
 
   /// A token indicating that there are additional configuration sets available to
   /// be listed. Pass this token to successive calls of
   /// <code>ListConfigurationSets</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListConfigurationSetsResponse({
@@ -5249,15 +5691,22 @@ class ListConfigurationSetsResponse {
 }
 
 /// A paginated list of custom verification email templates.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListCustomVerificationEmailTemplatesResponse {
   /// A list of the custom verification email templates that exist in your
   /// account.
+  @_s.JsonKey(name: 'CustomVerificationEmailTemplates')
   final List<CustomVerificationEmailTemplate> customVerificationEmailTemplates;
 
   /// A token indicating that there are additional custom verification email
   /// templates available to be listed. Pass this token to a subsequent call to
   /// <code>ListTemplates</code> to retrieve the next 50 custom verification email
   /// templates.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListCustomVerificationEmailTemplatesResponse({
@@ -5280,11 +5729,18 @@ class ListCustomVerificationEmailTemplatesResponse {
 
 /// A list of all identities that you have attempted to verify under your AWS
 /// account, regardless of verification status.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListIdentitiesResponse {
   /// A list of identities.
+  @_s.JsonKey(name: 'Identities')
   final List<String> identities;
 
   /// The token used for pagination.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListIdentitiesResponse({
@@ -5302,8 +5758,14 @@ class ListIdentitiesResponse {
 }
 
 /// A list of names of sending authorization policies that apply to an identity.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListIdentityPoliciesResponse {
   /// A list of names of policies that apply to the specified identity.
+  @_s.JsonKey(name: 'PolicyNames')
   final List<String> policyNames;
 
   ListIdentityPoliciesResponse({
@@ -5319,9 +5781,15 @@ class ListIdentityPoliciesResponse {
 }
 
 /// A list of IP address filters that exist under your AWS account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListReceiptFiltersResponse {
   /// A list of IP address filter data structures, which each consist of a name,
   /// an IP address range, and whether to allow or block mail from it.
+  @_s.JsonKey(name: 'Filters')
   final List<ReceiptFilter> filters;
 
   ListReceiptFiltersResponse({
@@ -5338,16 +5806,23 @@ class ListReceiptFiltersResponse {
 }
 
 /// A list of receipt rule sets that exist under your AWS account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListReceiptRuleSetsResponse {
   /// A token indicating that there are additional receipt rule sets available to
   /// be listed. Pass this token to successive calls of
   /// <code>ListReceiptRuleSets</code> to retrieve up to 100 receipt rule sets at
   /// a time.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// The metadata for the currently active receipt rule set. The metadata
   /// consists of the rule set name and the timestamp of when the rule set was
   /// created.
+  @_s.JsonKey(name: 'RuleSets')
   final List<ReceiptRuleSetMetadata> ruleSets;
 
   ListReceiptRuleSetsResponse({
@@ -5365,14 +5840,21 @@ class ListReceiptRuleSetsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListTemplatesResponse {
   /// A token indicating that there are additional email templates available to be
   /// listed. Pass this token to a subsequent call to <code>ListTemplates</code>
   /// to retrieve the next 50 email templates.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// An array the contains the name and creation time stamp for each template in
   /// your Amazon SES account.
+  @_s.JsonKey(name: 'TemplatesMetadata')
   final List<TemplateMetadata> templatesMetadata;
 
   ListTemplatesResponse({
@@ -5393,8 +5875,14 @@ class ListTemplatesResponse {
 
 /// A list of email addresses that you have verified with Amazon SES under your
 /// AWS account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListVerifiedEmailAddressesResponse {
   /// A list of email addresses that have been verified.
+  @_s.JsonKey(name: 'VerifiedEmailAddresses')
   final List<String> verifiedEmailAddresses;
 
   ListVerifiedEmailAddressesResponse({
@@ -5411,18 +5899,26 @@ class ListVerifiedEmailAddressesResponse {
 }
 
 /// Represents the message to be sent, composed of a subject and a body.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Message {
   /// The message body.
+  @_s.JsonKey(name: 'Body')
   final Body body;
 
   /// The subject of the message: A short summary of the content, which will
   /// appear in the recipient's inbox.
+  @_s.JsonKey(name: 'Subject')
   final Content subject;
 
   Message({
     @_s.required this.body,
     @_s.required this.subject,
   });
+  Map<String, dynamic> toJson() => _$MessageToJson(this);
 }
 
 /// Message-related information to include in the Delivery Status Notification
@@ -5431,18 +5927,26 @@ class Message {
 /// For information about receiving email through Amazon SES, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MessageDsn {
   /// The reporting MTA that attempted to deliver the message, formatted as
   /// specified in <a href="https://tools.ietf.org/html/rfc3464">RFC 3464</a>
   /// (<code>mta-name-type; mta-name</code>). The default value is <code>dns;
   /// inbound-smtp.[region].amazonaws.com</code>.
+  @_s.JsonKey(name: 'ReportingMta')
   final String reportingMta;
 
   /// When the message was received by the reporting mail transfer agent (MTA), in
   /// <a href="https://www.ietf.org/rfc/rfc0822.txt">RFC 822</a> date-time format.
+  @_s.JsonKey(name: 'ArrivalDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime arrivalDate;
 
   /// Additional X-headers to include in the DSN.
+  @_s.JsonKey(name: 'ExtensionFields')
   final List<ExtensionField> extensionFields;
 
   MessageDsn({
@@ -5450,6 +5954,7 @@ class MessageDsn {
     this.arrivalDate,
     this.extensionFields,
   });
+  Map<String, dynamic> toJson() => _$MessageDsnToJson(this);
 }
 
 /// Contains the name and value of a tag that you can provide to
@@ -5460,6 +5965,11 @@ class MessageDsn {
 /// the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MessageTag {
   /// The name of the tag. The name must:
   ///
@@ -5472,6 +5982,7 @@ class MessageTag {
   /// Contain less than 256 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the tag. The value must:
@@ -5485,17 +5996,22 @@ class MessageTag {
   /// Contain less than 256 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   MessageTag({
     @_s.required this.name,
     @_s.required this.value,
   });
+  Map<String, dynamic> toJson() => _$MessageTagToJson(this);
 }
 
 enum NotificationType {
+  @_s.JsonValue('Bounce')
   bounce,
+  @_s.JsonValue('Complaint')
   complaint,
+  @_s.JsonValue('Delivery')
   delivery,
 }
 
@@ -5515,6 +6031,11 @@ extension on String {
 
 /// An HTTP 200 response if the request succeeds, or an error message if the
 /// request fails.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PutConfigurationSetDeliveryOptionsResponse {
   PutConfigurationSetDeliveryOptionsResponse();
   factory PutConfigurationSetDeliveryOptionsResponse.fromXml(
@@ -5525,6 +6046,11 @@ class PutConfigurationSetDeliveryOptionsResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PutIdentityPolicyResponse {
   PutIdentityPolicyResponse();
   factory PutIdentityPolicyResponse.fromXml(
@@ -5535,6 +6061,11 @@ class PutIdentityPolicyResponse {
 }
 
 /// Represents the raw data of the message.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class RawMessage {
   /// The raw data of the message. This data needs to base64-encoded if you are
   /// accessing Amazon SES directly through the HTTPS interface. If you are
@@ -5556,11 +6087,14 @@ class RawMessage {
   /// For more information, go to the <a
   /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-raw.html">Amazon
   /// SES Developer Guide</a>.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'Data')
   final Uint8List data;
 
   RawMessage({
     @_s.required this.data,
   });
+  Map<String, dynamic> toJson() => _$RawMessageToJson(this);
 }
 
 /// An action that Amazon SES can take when it receives an email on behalf of
@@ -5570,32 +6104,44 @@ class RawMessage {
 /// For information about setting up receipt rules, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-receipt-rules.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ReceiptAction {
   /// Adds a header to the received email.
+  @_s.JsonKey(name: 'AddHeaderAction')
   final AddHeaderAction addHeaderAction;
 
   /// Rejects the received email by returning a bounce response to the sender and,
   /// optionally, publishes a notification to Amazon Simple Notification Service
   /// (Amazon SNS).
+  @_s.JsonKey(name: 'BounceAction')
   final BounceAction bounceAction;
 
   /// Calls an AWS Lambda function, and optionally, publishes a notification to
   /// Amazon SNS.
+  @_s.JsonKey(name: 'LambdaAction')
   final LambdaAction lambdaAction;
 
   /// Saves the received message to an Amazon Simple Storage Service (Amazon S3)
   /// bucket and, optionally, publishes a notification to Amazon SNS.
+  @_s.JsonKey(name: 'S3Action')
   final S3Action s3Action;
 
   /// Publishes the email content within a notification to Amazon SNS.
+  @_s.JsonKey(name: 'SNSAction')
   final SNSAction sNSAction;
 
   /// Terminates the evaluation of the receipt rule set and optionally publishes a
   /// notification to Amazon SNS.
+  @_s.JsonKey(name: 'StopAction')
   final StopAction stopAction;
 
   /// Calls Amazon WorkMail and, optionally, publishes a notification to Amazon
   /// Amazon SNS.
+  @_s.JsonKey(name: 'WorkmailAction')
   final WorkmailAction workmailAction;
 
   ReceiptAction({
@@ -5631,6 +6177,8 @@ class ReceiptAction {
           ?.let((e) => WorkmailAction.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ReceiptActionToJson(this);
 }
 
 /// A receipt IP address filter enables you to specify whether to accept or
@@ -5639,9 +6187,15 @@ class ReceiptAction {
 /// For information about setting up IP address filters, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-ip-filters.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ReceiptFilter {
   /// A structure that provides the IP addresses to block or allow, and whether to
   /// block or allow incoming mail from them.
+  @_s.JsonKey(name: 'IpFilter')
   final ReceiptIpFilter ipFilter;
 
   /// The name of the IP address filter. The name must:
@@ -5658,6 +6212,7 @@ class ReceiptFilter {
   /// Contain less than 64 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   ReceiptFilter({
@@ -5672,10 +6227,14 @@ class ReceiptFilter {
       name: _s.extractXmlStringValue(elem, 'Name'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ReceiptFilterToJson(this);
 }
 
 enum ReceiptFilterPolicy {
+  @_s.JsonValue('Block')
   block,
+  @_s.JsonValue('Allow')
   allow,
 }
 
@@ -5697,16 +6256,23 @@ extension on String {
 /// For information about setting up IP address filters, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-ip-filters.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ReceiptIpFilter {
   /// A single IP address or a range of IP addresses that you want to block or
   /// allow, specified in Classless Inter-Domain Routing (CIDR) notation. An
   /// example of a single email address is 10.0.0.1. An example of a range of IP
   /// addresses is 10.0.0.1/24. For more information about CIDR notation, see <a
   /// href="https://tools.ietf.org/html/rfc2317">RFC 2317</a>.
+  @_s.JsonKey(name: 'Cidr')
   final String cidr;
 
   /// Indicates whether to block or allow incoming mail from the specified IP
   /// addresses.
+  @_s.JsonKey(name: 'Policy')
   final ReceiptFilterPolicy policy;
 
   ReceiptIpFilter({
@@ -5719,6 +6285,8 @@ class ReceiptIpFilter {
       policy: _s.extractXmlStringValue(elem, 'Policy')?.toReceiptFilterPolicy(),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ReceiptIpFilterToJson(this);
 }
 
 /// Receipt rules enable you to specify which actions Amazon SES should take
@@ -5733,6 +6301,11 @@ class ReceiptIpFilter {
 /// For information about setting up receipt rules, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-receipt-rules.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ReceiptRule {
   /// The name of the receipt rule. The name must:
   ///
@@ -5748,29 +6321,35 @@ class ReceiptRule {
   /// Contain less than 64 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// An ordered list of actions to perform on messages that match at least one of
   /// the recipient email addresses or domains specified in the receipt rule.
+  @_s.JsonKey(name: 'Actions')
   final List<ReceiptAction> actions;
 
   /// If <code>true</code>, the receipt rule is active. The default value is
   /// <code>false</code>.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// The recipient domains and email addresses that the receipt rule applies to.
   /// If this field is not specified, this rule will match all recipients under
   /// all verified domains.
+  @_s.JsonKey(name: 'Recipients')
   final List<String> recipients;
 
   /// If <code>true</code>, then messages that this receipt rule applies to are
   /// scanned for spam and viruses. The default value is <code>false</code>.
+  @_s.JsonKey(name: 'ScanEnabled')
   final bool scanEnabled;
 
   /// Specifies whether Amazon SES should require that incoming email is delivered
   /// over a connection encrypted with Transport Layer Security (TLS). If this
   /// parameter is set to <code>Require</code>, Amazon SES will bounce emails that
   /// are not received over TLS. The default is <code>Optional</code>.
+  @_s.JsonKey(name: 'TlsPolicy')
   final TlsPolicy tlsPolicy;
 
   ReceiptRule({
@@ -5796,6 +6375,8 @@ class ReceiptRule {
       tlsPolicy: _s.extractXmlStringValue(elem, 'TlsPolicy')?.toTlsPolicy(),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ReceiptRuleToJson(this);
 }
 
 /// Information about a receipt rule set.
@@ -5807,8 +6388,15 @@ class ReceiptRule {
 /// For information about setting up receipt rule sets, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-receipt-rule-set.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReceiptRuleSetMetadata {
   /// The date and time the receipt rule set was created.
+  @_s.JsonKey(
+      name: 'CreatedTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdTimestamp;
 
   /// The name of the receipt rule set. The name must:
@@ -5825,6 +6413,7 @@ class ReceiptRuleSetMetadata {
   /// Contain less than 64 characters.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   ReceiptRuleSetMetadata({
@@ -5845,22 +6434,31 @@ class ReceiptRuleSetMetadata {
 /// For information about receiving email through Amazon SES, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class RecipientDsnFields {
   /// The action performed by the reporting mail transfer agent (MTA) as a result
   /// of its attempt to deliver the message to the recipient address. This is
   /// required by <a href="https://tools.ietf.org/html/rfc3464">RFC 3464</a>.
+  @_s.JsonKey(name: 'Action')
   final DsnAction action;
 
   /// The status code that indicates what went wrong. This is required by <a
   /// href="https://tools.ietf.org/html/rfc3464">RFC 3464</a>.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// An extended explanation of what went wrong; this is usually an SMTP
   /// response. See <a href="https://tools.ietf.org/html/rfc3463">RFC 3463</a> for
   /// the correct formatting of this parameter.
+  @_s.JsonKey(name: 'DiagnosticCode')
   final String diagnosticCode;
 
   /// Additional X-headers to include in the DSN.
+  @_s.JsonKey(name: 'ExtensionFields')
   final List<ExtensionField> extensionFields;
 
   /// The email address that the message was ultimately delivered to. This
@@ -5875,16 +6473,20 @@ class RecipientDsnFields {
   /// 822;</code>, as described in <a
   /// href="https://tools.ietf.org/html/rfc3798">RFC 3798</a>.
   /// </note>
+  @_s.JsonKey(name: 'FinalRecipient')
   final String finalRecipient;
 
   /// The time the final delivery attempt was made, in <a
   /// href="https://www.ietf.org/rfc/rfc0822.txt">RFC 822</a> date-time format.
+  @_s.JsonKey(
+      name: 'LastAttemptDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastAttemptDate;
 
   /// The MTA to which the remote MTA attempted to deliver the message, formatted
   /// as specified in <a href="https://tools.ietf.org/html/rfc3464">RFC 3464</a>
   /// (<code>mta-name-type; mta-name</code>). This parameter typically applies
   /// only to propagating synchronous bounces.
+  @_s.JsonKey(name: 'RemoteMta')
   final String remoteMta;
 
   RecipientDsnFields({
@@ -5896,9 +6498,15 @@ class RecipientDsnFields {
     this.lastAttemptDate,
     this.remoteMta,
   });
+  Map<String, dynamic> toJson() => _$RecipientDsnFieldsToJson(this);
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReorderReceiptRuleSetResponse {
   ReorderReceiptRuleSetResponse();
   factory ReorderReceiptRuleSetResponse.fromXml(
@@ -5909,6 +6517,11 @@ class ReorderReceiptRuleSetResponse {
 }
 
 /// Contains information about the reputation settings for a configuration set.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReputationOptions {
   /// The date and time at which the reputation metrics for the configuration set
   /// were last reset. Resetting these metrics is known as a <i>fresh start</i>.
@@ -5920,6 +6533,8 @@ class ReputationOptions {
   ///
   /// If email sending for the configuration set has never been disabled and later
   /// re-enabled, the value of this attribute is <code>null</code>.
+  @_s.JsonKey(
+      name: 'LastFreshStart', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastFreshStart;
 
   /// Describes whether or not Amazon SES publishes reputation metrics for the
@@ -5928,6 +6543,7 @@ class ReputationOptions {
   /// If the value is <code>true</code>, reputation metrics are published. If the
   /// value is <code>false</code>, reputation metrics are not published. The
   /// default value is <code>false</code>.
+  @_s.JsonKey(name: 'ReputationMetricsEnabled')
   final bool reputationMetricsEnabled;
 
   /// Describes whether email sending is enabled or disabled for the configuration
@@ -5936,6 +6552,7 @@ class ReputationOptions {
   /// SES will not send emails that use the configuration set. The default value
   /// is <code>true</code>. You can change this setting using
   /// <a>UpdateConfigurationSetSendingEnabled</a>.
+  @_s.JsonKey(name: 'SendingEnabled')
   final bool sendingEnabled;
 
   ReputationOptions({
@@ -5971,8 +6588,14 @@ class ReputationOptions {
 /// <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-s3.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class S3Action {
   /// The name of the Amazon S3 bucket that incoming email will be saved to.
+  @_s.JsonKey(name: 'BucketName')
   final String bucketName;
 
   /// The customer master key that Amazon SES should use to encrypt your emails
@@ -6017,11 +6640,13 @@ class S3Action {
   /// href="https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingClientSideEncryption.html">Amazon
   /// S3 Developer Guide</a>.
   /// </important>
+  @_s.JsonKey(name: 'KmsKeyArn')
   final String kmsKeyArn;
 
   /// The key prefix of the Amazon S3 bucket. The key prefix is similar to a
   /// directory name that enables you to store similar data under the same
   /// directory in a bucket.
+  @_s.JsonKey(name: 'ObjectKeyPrefix')
   final String objectKeyPrefix;
 
   /// The ARN of the Amazon SNS topic to notify when the message is saved to the
@@ -6030,6 +6655,7 @@ class S3Action {
   /// information about Amazon SNS topics, see the <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Amazon SNS
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   S3Action({
@@ -6046,6 +6672,8 @@ class S3Action {
       topicArn: _s.extractXmlStringValue(elem, 'TopicArn'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$S3ActionToJson(this);
 }
 
 /// When included in a receipt rule, this action publishes a notification to
@@ -6070,6 +6698,11 @@ class S3Action {
 /// notification, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-sns.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SNSAction {
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic to notify. An example
   /// of an Amazon SNS topic ARN is
@@ -6077,12 +6710,14 @@ class SNSAction {
   /// information about Amazon SNS topics, see the <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Amazon SNS
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   /// The encoding to use for the email within the Amazon SNS notification. UTF-8
   /// is easier to use, but may not preserve all special characters when a message
   /// was encoded with a different encoding format. Base64 preserves all special
   /// characters. The default value is UTF-8.
+  @_s.JsonKey(name: 'Encoding')
   final SNSActionEncoding encoding;
 
   SNSAction({
@@ -6096,10 +6731,14 @@ class SNSAction {
           _s.extractXmlStringValue(elem, 'Encoding')?.toSNSActionEncoding(),
     );
   }
+
+  Map<String, dynamic> toJson() => _$SNSActionToJson(this);
 }
 
 enum SNSActionEncoding {
+  @_s.JsonValue('UTF-8')
   utf_8,
+  @_s.JsonValue('Base64')
   base64,
 }
 
@@ -6123,6 +6762,11 @@ extension on String {
 /// about using configuration sets, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/monitor-sending-activity.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SNSDestination {
   /// The ARN of the Amazon SNS topic that email sending events will be published
   /// to. An example of an Amazon SNS topic ARN is
@@ -6130,6 +6774,7 @@ class SNSDestination {
   /// information about Amazon SNS topics, see the <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Amazon SNS
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'TopicARN')
   final String topicARN;
 
   SNSDestination({
@@ -6140,11 +6785,19 @@ class SNSDestination {
       topicARN: _s.extractXmlStringValue(elem, 'TopicARN'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$SNSDestinationToJson(this);
 }
 
 /// Represents a unique message ID.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendBounceResponse {
   /// The message ID of the bounce message.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   SendBounceResponse({
@@ -6157,9 +6810,15 @@ class SendBounceResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendBulkTemplatedEmailResponse {
   /// The unique message identifier returned from the
   /// <code>SendBulkTemplatedEmail</code> action.
+  @_s.JsonKey(name: 'Status')
   final List<BulkEmailDestinationStatus> status;
 
   SendBulkTemplatedEmailResponse({
@@ -6176,9 +6835,15 @@ class SendBulkTemplatedEmailResponse {
 }
 
 /// The response received when attempting to send the custom verification email.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendCustomVerificationEmailResponse {
   /// The unique message identifier returned from the
   /// <code>SendCustomVerificationEmail</code> operation.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   SendCustomVerificationEmailResponse({
@@ -6193,20 +6858,30 @@ class SendCustomVerificationEmailResponse {
 
 /// Represents sending statistics data. Each <code>SendDataPoint</code> contains
 /// statistics for a 15-minute period of sending activity.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendDataPoint {
   /// Number of emails that have bounced.
+  @_s.JsonKey(name: 'Bounces')
   final int bounces;
 
   /// Number of unwanted emails that were rejected by recipients.
+  @_s.JsonKey(name: 'Complaints')
   final int complaints;
 
   /// Number of emails that have been sent.
+  @_s.JsonKey(name: 'DeliveryAttempts')
   final int deliveryAttempts;
 
   /// Number of emails rejected by Amazon SES.
+  @_s.JsonKey(name: 'Rejects')
   final int rejects;
 
   /// Time of the data point.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   SendDataPoint({
@@ -6228,9 +6903,15 @@ class SendDataPoint {
 }
 
 /// Represents a unique message ID.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendEmailResponse {
   /// The unique message identifier returned from the <code>SendEmail</code>
   /// action.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   SendEmailResponse({
@@ -6244,9 +6925,15 @@ class SendEmailResponse {
 }
 
 /// Represents a unique message ID.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendRawEmailResponse {
   /// The unique message identifier returned from the <code>SendRawEmail</code>
   /// action.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   SendRawEmailResponse({
@@ -6259,9 +6946,15 @@ class SendRawEmailResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendTemplatedEmailResponse {
   /// The unique message identifier returned from the
   /// <code>SendTemplatedEmail</code> action.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   SendTemplatedEmailResponse({
@@ -6275,6 +6968,11 @@ class SendTemplatedEmailResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetActiveReceiptRuleSetResponse {
   SetActiveReceiptRuleSetResponse();
   factory SetActiveReceiptRuleSetResponse.fromXml(
@@ -6285,6 +6983,11 @@ class SetActiveReceiptRuleSetResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetIdentityDkimEnabledResponse {
   SetIdentityDkimEnabledResponse();
   factory SetIdentityDkimEnabledResponse.fromXml(
@@ -6295,6 +6998,11 @@ class SetIdentityDkimEnabledResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetIdentityFeedbackForwardingEnabledResponse {
   SetIdentityFeedbackForwardingEnabledResponse();
   factory SetIdentityFeedbackForwardingEnabledResponse.fromXml(
@@ -6305,6 +7013,11 @@ class SetIdentityFeedbackForwardingEnabledResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetIdentityHeadersInNotificationsEnabledResponse {
   SetIdentityHeadersInNotificationsEnabledResponse();
   factory SetIdentityHeadersInNotificationsEnabledResponse.fromXml(
@@ -6315,6 +7028,11 @@ class SetIdentityHeadersInNotificationsEnabledResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetIdentityMailFromDomainResponse {
   SetIdentityMailFromDomainResponse();
   factory SetIdentityMailFromDomainResponse.fromXml(
@@ -6325,6 +7043,11 @@ class SetIdentityMailFromDomainResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetIdentityNotificationTopicResponse {
   SetIdentityNotificationTopicResponse();
   factory SetIdentityNotificationTopicResponse.fromXml(
@@ -6335,6 +7058,11 @@ class SetIdentityNotificationTopicResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetReceiptRulePositionResponse {
   SetReceiptRulePositionResponse();
   factory SetReceiptRulePositionResponse.fromXml(
@@ -6351,9 +7079,15 @@ class SetReceiptRulePositionResponse {
 /// For information about setting a stop action in a receipt rule, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-stop.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class StopAction {
   /// The scope of the StopAction. The only acceptable value is
   /// <code>RuleSet</code>.
+  @_s.JsonKey(name: 'Scope')
   final StopScope scope;
 
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic to notify when the
@@ -6362,6 +7096,7 @@ class StopAction {
   /// information about Amazon SNS topics, see the <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Amazon SNS
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   StopAction({
@@ -6374,9 +7109,12 @@ class StopAction {
       topicArn: _s.extractXmlStringValue(elem, 'TopicArn'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$StopActionToJson(this);
 }
 
 enum StopScope {
+  @_s.JsonValue('RuleSet')
   ruleSet,
 }
 
@@ -6392,20 +7130,29 @@ extension on String {
 
 /// The content of the email, composed of a subject line, an HTML part, and a
 /// text-only part.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Template {
   /// The name of the template. You will refer to this name when you send email
   /// using the <code>SendTemplatedEmail</code> or
   /// <code>SendBulkTemplatedEmail</code> operations.
+  @_s.JsonKey(name: 'TemplateName')
   final String templateName;
 
   /// The HTML body of the email.
+  @_s.JsonKey(name: 'HtmlPart')
   final String htmlPart;
 
   /// The subject line of the email.
+  @_s.JsonKey(name: 'SubjectPart')
   final String subjectPart;
 
   /// The email body that will be visible to recipients whose email clients do not
   /// display HTML.
+  @_s.JsonKey(name: 'TextPart')
   final String textPart;
 
   Template({
@@ -6422,14 +7169,24 @@ class Template {
       textPart: _s.extractXmlStringValue(elem, 'TextPart'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TemplateToJson(this);
 }
 
 /// Contains information about an email template.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TemplateMetadata {
   /// The time and date the template was created.
+  @_s.JsonKey(
+      name: 'CreatedTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdTimestamp;
 
   /// The name of the template.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   TemplateMetadata({
@@ -6444,9 +7201,15 @@ class TemplateMetadata {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TestRenderTemplateResponse {
   /// The complete MIME message rendered by applying the data in the TemplateData
   /// parameter to the template specified in the TemplateName parameter.
+  @_s.JsonKey(name: 'RenderedTemplate')
   final String renderedTemplate;
 
   TestRenderTemplateResponse({
@@ -6460,7 +7223,9 @@ class TestRenderTemplateResponse {
 }
 
 enum TlsPolicy {
+  @_s.JsonValue('Require')
   require,
+  @_s.JsonValue('Optional')
   optional,
 }
 
@@ -6484,9 +7249,15 @@ extension on String {
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/configure-custom-open-click-domains.html">Configuring
 /// Custom Domains to Handle Open and Click Tracking</a> in the <i>Amazon SES
 /// Developer Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TrackingOptions {
   /// The custom subdomain that will be used to redirect email recipients to the
   /// Amazon SES event tracking domain.
+  @_s.JsonKey(name: 'CustomRedirectDomain')
   final String customRedirectDomain;
 
   TrackingOptions({
@@ -6498,9 +7269,16 @@ class TrackingOptions {
           _s.extractXmlStringValue(elem, 'CustomRedirectDomain'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TrackingOptionsToJson(this);
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateConfigurationSetEventDestinationResponse {
   UpdateConfigurationSetEventDestinationResponse();
   factory UpdateConfigurationSetEventDestinationResponse.fromXml(
@@ -6511,6 +7289,11 @@ class UpdateConfigurationSetEventDestinationResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateConfigurationSetTrackingOptionsResponse {
   UpdateConfigurationSetTrackingOptionsResponse();
   factory UpdateConfigurationSetTrackingOptionsResponse.fromXml(
@@ -6521,6 +7304,11 @@ class UpdateConfigurationSetTrackingOptionsResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateReceiptRuleResponse {
   UpdateReceiptRuleResponse();
   factory UpdateReceiptRuleResponse.fromXml(
@@ -6530,6 +7318,11 @@ class UpdateReceiptRuleResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateTemplateResponse {
   UpdateTemplateResponse();
   factory UpdateTemplateResponse.fromXml(
@@ -6540,10 +7333,15 @@ class UpdateTemplateResponse {
 }
 
 enum VerificationStatus {
+  @_s.JsonValue('Pending')
   pending,
+  @_s.JsonValue('Success')
   success,
+  @_s.JsonValue('Failed')
   failed,
+  @_s.JsonValue('TemporaryFailure')
   temporaryFailure,
+  @_s.JsonValue('NotStarted')
   notStarted,
 }
 
@@ -6567,6 +7365,11 @@ extension on String {
 
 /// Returns CNAME records that you must publish to the DNS server of your domain
 /// to set up Easy DKIM with Amazon SES.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VerifyDomainDkimResponse {
   /// A set of character strings that represent the domain's identity. If the
   /// identity is an email address, the tokens represent the domain of that
@@ -6583,6 +7386,7 @@ class VerifyDomainDkimResponse {
   /// <a
   /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/easy-dkim.html">Amazon
   /// SES Developer Guide</a>.
+  @_s.JsonKey(name: 'DkimTokens')
   final List<String> dkimTokens;
 
   VerifyDomainDkimResponse({
@@ -6599,6 +7403,11 @@ class VerifyDomainDkimResponse {
 
 /// Returns a TXT record that you must publish to the DNS server of your domain
 /// to complete domain verification with Amazon SES.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VerifyDomainIdentityResponse {
   /// A TXT record that you must place in the DNS settings of the domain to
   /// complete domain verification with Amazon SES.
@@ -6609,6 +7418,7 @@ class VerifyDomainIdentityResponse {
   /// within 72 hours, the domain's verification status changes to "Failed." In
   /// that case, if you still want to verify the domain, you must restart the
   /// verification process from the beginning.
+  @_s.JsonKey(name: 'VerificationToken')
   final String verificationToken;
 
   VerifyDomainIdentityResponse({
@@ -6622,6 +7432,11 @@ class VerifyDomainIdentityResponse {
 }
 
 /// An empty element returned on a successful request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VerifyEmailIdentityResponse {
   VerifyEmailIdentityResponse();
   factory VerifyEmailIdentityResponse.fromXml(
@@ -6639,6 +7454,11 @@ class VerifyEmailIdentityResponse {
 /// For information using a receipt rule to call Amazon WorkMail, see the <a
 /// href="https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-action-workmail.html">Amazon
 /// SES Developer Guide</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class WorkmailAction {
   /// The ARN of the Amazon WorkMail organization. An example of an Amazon
   /// WorkMail organization ARN is
@@ -6646,6 +7466,7 @@ class WorkmailAction {
   /// For information about Amazon WorkMail organizations, see the <a
   /// href="https://docs.aws.amazon.com/workmail/latest/adminguide/organizations_overview.html">Amazon
   /// WorkMail Administrator Guide</a>.
+  @_s.JsonKey(name: 'OrganizationArn')
   final String organizationArn;
 
   /// The Amazon Resource Name (ARN) of the Amazon SNS topic to notify when the
@@ -6654,6 +7475,7 @@ class WorkmailAction {
   /// information about Amazon SNS topics, see the <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/CreateTopic.html">Amazon SNS
   /// Developer Guide</a>.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   WorkmailAction({
@@ -6666,6 +7488,8 @@ class WorkmailAction {
       topicArn: _s.extractXmlStringValue(elem, 'TopicArn'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$WorkmailActionToJson(this);
 }
 
 class AccountSendingPausedException extends _s.GenericAwsException {

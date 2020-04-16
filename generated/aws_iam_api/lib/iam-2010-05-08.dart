@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'iam-2010-05-08.g.dart';
 
 /// AWS Identity and Access Management (IAM) is a web service that you can use
 /// to manage users and user permissions under your AWS account. This guide
@@ -483,9 +493,10 @@ class IAM {
   ///
   /// The <a href="http://wikipedia.org/wiki/regex">regex pattern</a> that is
   /// used to validate this parameter is a string of characters. That string can
-  /// include almost any printable ASCII character from the space (\u0020)
-  /// through the end of the ASCII character range (\u00FF). You can also
-  /// include the tab (\u0009), line feed (\u000A), and carriage return (\u000D)
+  /// include almost any printable ASCII character from the space
+  /// (<code>\u0020</code>) through the end of the ASCII character range
+  /// (<code>\u00FF</code>). You can also include the tab (<code>\u0009</code>),
+  /// line feed (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// characters. Any of these characters are valid in a password. However, many
   /// tools, such as the AWS Management Console, might restrict the ability to
   /// type certain characters because they have special meaning within that
@@ -670,9 +681,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<CreateGroupResponse> createGroup({
     @_s.required String groupName,
     String path,
@@ -750,9 +761,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<CreateInstanceProfileResponse> createInstanceProfile({
     @_s.required String instanceProfileName,
     String path,
@@ -813,9 +824,10 @@ class IAM {
   ///
   /// The <a href="http://wikipedia.org/wiki/regex">regex pattern</a> that is
   /// used to validate this parameter is a string of characters. That string can
-  /// include almost any printable ASCII character from the space (\u0020)
-  /// through the end of the ASCII character range (\u00FF). You can also
-  /// include the tab (\u0009), line feed (\u000A), and carriage return (\u000D)
+  /// include almost any printable ASCII character from the space
+  /// (<code>\u0020</code>) through the end of the ASCII character range
+  /// (<code>\u00FF</code>). You can also include the tab (<code>\u0009</code>),
+  /// line feed (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// characters. Any of these characters are valid in a password. However, many
   /// tools, such as the AWS Management Console, might restrict the ability to
   /// type certain characters because they have special meaning within that
@@ -899,7 +911,7 @@ class IAM {
   /// OIDC provider
   /// </li>
   /// <li>
-  /// A list of thumbprints of the server certificate(s) that the IdP uses
+  /// A list of thumbprints of one or more server certificates that the IdP uses
   /// </li>
   /// </ul>
   /// You get all of this information from the OIDC IdP that you want to use to
@@ -1027,16 +1039,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -1070,9 +1082,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<CreatePolicyResponse> createPolicy({
     @_s.required String policyDocument,
     @_s.required String policyName,
@@ -1182,16 +1194,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -1276,16 +1288,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   /// Upon success, the response includes the same trust policy in JSON format.
@@ -1332,9 +1344,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   ///
   /// Parameter [permissionsBoundary] :
   /// The ARN of the policy that is used to set the permissions boundary for the
@@ -1734,9 +1746,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   ///
   /// Parameter [permissionsBoundary] :
   /// The ARN of the policy that is used to set the permissions boundary for the
@@ -1850,9 +1862,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<CreateVirtualMFADeviceResponse> createVirtualMFADevice({
     @_s.required String virtualMFADeviceName,
     String path,
@@ -3824,6 +3836,11 @@ class IAM {
   /// groups, roles, or policies to list every AWS service that the resource
   /// could access using permissions policies. For each service, the response
   /// includes information about the most recent access attempt.
+  ///
+  /// The <code>JobId</code> returned by
+  /// <code>GenerateServiceLastAccessedDetail</code> must be used by the same
+  /// role within a session, or by the same user when used to call
+  /// <code>GetServiceLastAccessedDetail</code>.
   /// </li>
   /// <li>
   /// <a>GetServiceLastAccessedDetailsWithEntities</a> – Use this operation for
@@ -4082,16 +4099,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   Future<GetContextKeysForPolicyResponse> getContextKeysForCustomPolicy({
@@ -4162,16 +4179,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   Future<GetContextKeysForPolicyResponse> getContextKeysForPrincipalPolicy({
@@ -5123,7 +5140,11 @@ class IAM {
   ///
   /// Parameter [jobId] :
   /// The ID of the request generated by the
-  /// <a>GenerateServiceLastAccessedDetails</a> operation.
+  /// <a>GenerateServiceLastAccessedDetails</a> operation. The
+  /// <code>JobId</code> returned by
+  /// <code>GenerateServiceLastAccessedDetail</code> must be used by the same
+  /// role within a session, or by the same user when used to call
+  /// <code>GetServiceLastAccessedDetail</code>.
   ///
   /// Parameter [marker] :
   /// Use this parameter only when paginating results and only after you receive
@@ -5700,9 +5721,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListAttachedGroupPoliciesResponse> listAttachedGroupPolicies({
     @_s.required String groupName,
     String marker,
@@ -5822,9 +5843,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListAttachedRolePoliciesResponse> listAttachedRolePolicies({
     @_s.required String roleName,
     String marker,
@@ -5944,9 +5965,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListAttachedUserPoliciesResponse> listAttachedUserPolicies({
     @_s.required String userName,
     String marker,
@@ -6071,9 +6092,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   ///
   /// Parameter [policyUsageFilter] :
   /// The policy usage method to use for filtering the results.
@@ -6278,9 +6299,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListGroupsResponse> listGroups({
     String marker,
     int maxItems,
@@ -6456,9 +6477,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListInstanceProfilesResponse> listInstanceProfiles({
     String marker,
     int maxItems,
@@ -6759,9 +6780,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   ///
   /// Parameter [policyUsageFilter] :
   /// The policy usage method to use for filtering the results.
@@ -7255,9 +7276,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListRolesResponse> listRoles({
     String marker,
     int maxItems,
@@ -7469,9 +7490,9 @@ class IAM {
   /// <a href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListServerCertificatesResponse> listServerCertificates({
     String marker,
     int maxItems,
@@ -7888,9 +7909,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<ListUsersResponse> listUsers({
     String marker,
     int maxItems,
@@ -8060,16 +8081,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -8250,16 +8271,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -8437,16 +8458,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -9020,14 +9041,14 @@ class IAM {
   /// authorization to determine if the simulated policies allow or deny the
   /// operations.
   ///
-  /// If you want to simulate existing policies attached to an IAM user, group,
-  /// or role, use <a>SimulatePrincipalPolicy</a> instead.
+  /// If you want to simulate existing policies that are attached to an IAM
+  /// user, group, or role, use <a>SimulatePrincipalPolicy</a> instead.
   ///
-  /// Context keys are variables maintained by AWS and its services that provide
-  /// details about the context of an API query request. You can use the
-  /// <code>Condition</code> element of an IAM policy to evaluate context keys.
-  /// To get the list of context keys that the policies require for correct
-  /// simulation, use <a>GetContextKeysForCustomPolicy</a>.
+  /// Context keys are variables that are maintained by AWS and its services and
+  /// which provide details about the context of an API query request. You can
+  /// use the <code>Condition</code> element of an IAM policy to evaluate
+  /// context keys. To get the list of context keys that the policies require
+  /// for correct simulation, use <a>GetContextKeysForCustomPolicy</a>.
   ///
   /// If the output is long, you can use <code>MaxItems</code> and
   /// <code>Marker</code> parameters to paginate the results.
@@ -9060,16 +9081,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -9105,6 +9126,35 @@ class IAM {
   /// returns <code>true</code>, and <code>Marker</code> contains a value to
   /// include in the subsequent call that tells the service where to continue
   /// from.
+  ///
+  /// Parameter [permissionsBoundaryPolicyInputList] :
+  /// The IAM permissions boundary policy to simulate. The permissions boundary
+  /// sets the maximum permissions that an IAM entity can have. You can input
+  /// only one permissions boundary when you pass a policy to this operation.
+  /// For more information about permissions boundaries, see <a
+  /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
+  /// Boundaries for IAM Entities</a> in the <i>IAM User Guide</i>. The policy
+  /// input is specified as a string that contains the complete, valid JSON text
+  /// of a permissions boundary policy.
+  ///
+  /// The <a href="http://wikipedia.org/wiki/regex">regex pattern</a> used to
+  /// validate this parameter is a string of characters consisting of the
+  /// following:
+  ///
+  /// <ul>
+  /// <li>
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
+  /// </li>
+  /// <li>
+  /// The printable characters in the Basic Latin and Latin-1 Supplement
+  /// character set (through <code>\u00FF</code>)
+  /// </li>
+  /// <li>
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
+  /// </li>
+  /// </ul>
   ///
   /// Parameter [resourceArns] :
   /// A list of ARNs of AWS resources to include in the simulation. If this
@@ -9209,16 +9259,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   Future<SimulatePolicyResponse> simulateCustomPolicy({
@@ -9228,6 +9278,7 @@ class IAM {
     List<ContextEntry> contextEntries,
     String marker,
     int maxItems,
+    List<String> permissionsBoundaryPolicyInputList,
     List<String> resourceArns,
     String resourceHandlingOption,
     String resourceOwner,
@@ -9291,6 +9342,8 @@ class IAM {
     contextEntries?.also((arg) => $request['ContextEntries'] = arg);
     marker?.also((arg) => $request['Marker'] = arg);
     maxItems?.also((arg) => $request['MaxItems'] = arg);
+    permissionsBoundaryPolicyInputList
+        ?.also((arg) => $request['PermissionsBoundaryPolicyInputList'] = arg);
     resourceArns?.also((arg) => $request['ResourceArns'] = arg);
     resourceHandlingOption
         ?.also((arg) => $request['ResourceHandlingOption'] = arg);
@@ -9408,6 +9461,39 @@ class IAM {
   /// include in the subsequent call that tells the service where to continue
   /// from.
   ///
+  /// Parameter [permissionsBoundaryPolicyInputList] :
+  /// The IAM permissions boundary policy to simulate. The permissions boundary
+  /// sets the maximum permissions that the entity can have. You can input only
+  /// one permissions boundary when you pass a policy to this operation. An IAM
+  /// entity can only have one permissions boundary in effect at a time. For
+  /// example, if a permissions boundary is attached to an entity and you pass
+  /// in a different permissions boundary policy using this parameter, then the
+  /// new permission boundary policy is used for the simulation. For more
+  /// information about permissions boundaries, see <a
+  /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
+  /// Boundaries for IAM Entities</a> in the <i>IAM User Guide</i>. The policy
+  /// input is specified as a string containing the complete, valid JSON text of
+  /// a permissions boundary policy.
+  ///
+  /// The <a href="http://wikipedia.org/wiki/regex">regex pattern</a> used to
+  /// validate this parameter is a string of characters consisting of the
+  /// following:
+  ///
+  /// <ul>
+  /// <li>
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
+  /// </li>
+  /// <li>
+  /// The printable characters in the Basic Latin and Latin-1 Supplement
+  /// character set (through <code>\u00FF</code>)
+  /// </li>
+  /// <li>
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
+  /// </li>
+  /// </ul>
+  ///
   /// Parameter [policyInputList] :
   /// An optional list of additional policy documents to include in the
   /// simulation. Each document is specified as a string containing the
@@ -9419,16 +9505,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -9526,16 +9612,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   Future<SimulatePolicyResponse> simulatePrincipalPolicy({
@@ -9545,6 +9631,7 @@ class IAM {
     List<ContextEntry> contextEntries,
     String marker,
     int maxItems,
+    List<String> permissionsBoundaryPolicyInputList,
     List<String> policyInputList,
     List<String> resourceArns,
     String resourceHandlingOption,
@@ -9615,6 +9702,8 @@ class IAM {
     contextEntries?.also((arg) => $request['ContextEntries'] = arg);
     marker?.also((arg) => $request['Marker'] = arg);
     maxItems?.also((arg) => $request['MaxItems'] = arg);
+    permissionsBoundaryPolicyInputList
+        ?.also((arg) => $request['PermissionsBoundaryPolicyInputList'] = arg);
     policyInputList?.also((arg) => $request['PolicyInputList'] = arg);
     resourceArns?.also((arg) => $request['ResourceArns'] = arg);
     resourceHandlingOption
@@ -10183,16 +10272,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -10293,9 +10382,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   Future<void> updateGroup({
     @_s.required String groupName,
     String newGroupName,
@@ -10380,16 +10469,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   /// However, the format can be further restricted by the account administrator
@@ -10835,9 +10924,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   ///
   /// Parameter [newServerCertificateName] :
   /// The new name for the server certificate. Include this only if you are
@@ -11094,9 +11183,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   ///
   /// Parameter [newUserName] :
   /// New name for the user. Include this parameter only if you're changing the
@@ -11187,16 +11276,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -11300,16 +11389,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -11322,16 +11411,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -11354,16 +11443,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -11378,9 +11467,9 @@ class IAM {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of either a forward slash (/) by itself or a string
   /// that must begin and end with forward slashes. In addition, it can contain
-  /// any ASCII character from the ! (\u0021) through the DEL character
-  /// (\u007F), including most punctuation characters, digits, and upper and
-  /// lowercased letters.
+  /// any ASCII character from the ! (<code>\u0021</code>) through the DEL
+  /// character (<code>\u007F</code>), including most punctuation characters,
+  /// digits, and upper and lowercased letters.
   /// <note>
   /// If you are uploading a server certificate specifically for use with Amazon
   /// CloudFront distributions, you must specify a path using the
@@ -11511,16 +11600,16 @@ class IAM {
   ///
   /// <ul>
   /// <li>
-  /// Any printable ASCII character ranging from the space character (\u0020)
-  /// through the end of the ASCII character range
+  /// Any printable ASCII character ranging from the space character
+  /// (<code>\u0020</code>) through the end of the ASCII character range
   /// </li>
   /// <li>
   /// The printable characters in the Basic Latin and Latin-1 Supplement
-  /// character set (through \u00FF)
+  /// character set (through <code>\u00FF</code>)
   /// </li>
   /// <li>
-  /// The special characters tab (\u0009), line feed (\u000A), and carriage
-  /// return (\u000D)
+  /// The special characters tab (<code>\u0009</code>), line feed
+  /// (<code>\u000A</code>), and carriage return (<code>\u000D</code>)
   /// </li>
   /// </ul>
   ///
@@ -11582,8 +11671,14 @@ class IAM {
 ///
 /// This data type is a response element in the
 /// <a>GetOrganizationsAccessReport</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccessDetail {
   /// The name of the service in which access was attempted.
+  @_s.JsonKey(name: 'ServiceName')
   final String serviceName;
 
   /// The namespace of the service in which access was attempted.
@@ -11596,6 +11691,7 @@ class AccessDetail {
   /// prefix: a4b)</code>. For more information about service namespaces, see <a
   /// href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#genref-aws-service-namespaces">AWS
   /// Service Namespaces</a> in the <i>AWS General Reference</i>.
+  @_s.JsonKey(name: 'ServiceNamespace')
   final String serviceNamespace;
 
   /// The path of the Organizations entity (root, organizational unit, or account)
@@ -11607,6 +11703,7 @@ class AccessDetail {
   /// <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period">reporting
   /// period</a>.
+  @_s.JsonKey(name: 'EntityPath')
   final String entityPath;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -11618,6 +11715,8 @@ class AccessDetail {
   /// attempted to access the service within the <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period">reporting
   /// period</a>.
+  @_s.JsonKey(
+      name: 'LastAuthenticatedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastAuthenticatedTime;
 
   /// The Region where the last service access attempt occurred.
@@ -11626,10 +11725,12 @@ class AccessDetail {
   /// attempted to access the service within the <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period">reporting
   /// period</a>.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   /// The number of accounts with authenticated principals (root users, IAM users,
   /// and IAM roles) that attempted to access the service in the reporting period.
+  @_s.JsonKey(name: 'TotalAuthenticatedEntities')
   final int totalAuthenticatedEntities;
 
   AccessDetail({
@@ -11664,21 +11765,31 @@ class AccessDetail {
 /// create an access key; you cannot recover the secret access key later. If you
 /// lose a secret access key, you must create a new access key.
 /// </note>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccessKey {
   /// The ID for this access key.
+  @_s.JsonKey(name: 'AccessKeyId')
   final String accessKeyId;
 
   /// The secret key used to sign requests.
+  @_s.JsonKey(name: 'SecretAccessKey')
   final String secretAccessKey;
 
   /// The status of the access key. <code>Active</code> means that the key is
   /// valid for API calls, while <code>Inactive</code> means it is not.
+  @_s.JsonKey(name: 'Status')
   final StatusType status;
 
   /// The name of the IAM user that the access key is associated with.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   /// The date when the access key was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   AccessKey({
@@ -11704,6 +11815,11 @@ class AccessKey {
 ///
 /// This data type is used as a response element in the
 /// <a>GetAccessKeyLastUsed</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccessKeyLastUsed {
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the access key was most recently used. This field
@@ -11721,6 +11837,7 @@ class AccessKeyLastUsed {
   /// There is no sign-in data associated with the user.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'LastUsedDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUsedDate;
 
   /// The AWS Region where this access key was most recently used. The value for
@@ -11741,6 +11858,7 @@ class AccessKeyLastUsed {
   /// For more information about AWS Regions, see <a
   /// href="https://docs.aws.amazon.com/general/latest/gr/rande.html">Regions and
   /// Endpoints</a> in the Amazon Web Services General Reference.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   /// The name of the AWS service with which this access key was most recently
@@ -11758,6 +11876,7 @@ class AccessKeyLastUsed {
   /// There is no sign-in data associated with the user.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ServiceName')
   final String serviceName;
 
   AccessKeyLastUsed({
@@ -11778,18 +11897,27 @@ class AccessKeyLastUsed {
 ///
 /// This data type is used as a response element in the <a>ListAccessKeys</a>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccessKeyMetadata {
   /// The ID for this access key.
+  @_s.JsonKey(name: 'AccessKeyId')
   final String accessKeyId;
 
   /// The date when the access key was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The status of the access key. <code>Active</code> means that the key is
   /// valid for API calls; <code>Inactive</code> means it is not.
+  @_s.JsonKey(name: 'Status')
   final StatusType status;
 
   /// The name of the IAM user that the key is associated with.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   AccessKeyMetadata({
@@ -11816,14 +11944,21 @@ class AccessKeyMetadata {
 /// For more information about permissions boundaries, see <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
 /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AttachedPermissionsBoundary {
   /// The ARN of the policy used to set the permissions boundary for the user or
   /// role.
+  @_s.JsonKey(name: 'PermissionsBoundaryArn')
   final String permissionsBoundaryArn;
 
   /// The permissions boundary usage type that indicates what type of IAM resource
   /// is used as the permissions boundary for an entity. This data type can only
   /// have a value of <code>Policy</code>.
+  @_s.JsonKey(name: 'PermissionsBoundaryType')
   final PermissionsBoundaryAttachmentType permissionsBoundaryType;
 
   AttachedPermissionsBoundary({
@@ -11852,10 +11987,17 @@ class AttachedPermissionsBoundary {
 /// For more information about managed policies, refer to <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html">Managed
 /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AttachedPolicy {
+  @_s.JsonKey(name: 'PolicyArn')
   final String policyArn;
 
   /// The friendly name of the attached policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   AttachedPolicy({
@@ -11875,21 +12017,28 @@ class AttachedPolicy {
 /// multiple values) to use in the simulation. This information is used when
 /// evaluating the <code>Condition</code> elements of the input policies.
 ///
-/// This data type is used as an input parameter to <code>
-/// <a>SimulateCustomPolicy</a> </code> and <code>
-/// <a>SimulatePrincipalPolicy</a> </code>.
+/// This data type is used as an input parameter to <a>SimulateCustomPolicy</a>
+/// and <a>SimulatePrincipalPolicy</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ContextEntry {
   /// The full name of a condition context key, including the service prefix. For
   /// example, <code>aws:SourceIp</code> or <code>s3:VersionId</code>.
+  @_s.JsonKey(name: 'ContextKeyName')
   final String contextKeyName;
 
   /// The data type of the value (or values) specified in the
   /// <code>ContextKeyValues</code> parameter.
+  @_s.JsonKey(name: 'ContextKeyType')
   final ContextKeyTypeEnum contextKeyType;
 
   /// The value (or values, if the condition context key supports multiple values)
   /// to provide to the simulation when the key is referenced by a
   /// <code>Condition</code> element in an input policy.
+  @_s.JsonKey(name: 'ContextKeyValues')
   final List<String> contextKeyValues;
 
   ContextEntry({
@@ -11897,20 +12046,33 @@ class ContextEntry {
     this.contextKeyType,
     this.contextKeyValues,
   });
+  Map<String, dynamic> toJson() => _$ContextEntryToJson(this);
 }
 
 enum ContextKeyTypeEnum {
+  @_s.JsonValue('string')
   string,
+  @_s.JsonValue('stringList')
   stringList,
+  @_s.JsonValue('numeric')
   numeric,
+  @_s.JsonValue('numericList')
   numericList,
+  @_s.JsonValue('boolean')
   boolean,
+  @_s.JsonValue('booleanList')
   booleanList,
+  @_s.JsonValue('ip')
   ip,
+  @_s.JsonValue('ipList')
   ipList,
+  @_s.JsonValue('binary')
   binary,
+  @_s.JsonValue('binaryList')
   binaryList,
+  @_s.JsonValue('date')
   date,
+  @_s.JsonValue('dateList')
   dateList,
 }
 
@@ -11947,8 +12109,14 @@ extension on String {
 }
 
 /// Contains the response to a successful <a>CreateAccessKey</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateAccessKeyResponse {
   /// A structure with details about the access key.
+  @_s.JsonKey(name: 'AccessKey')
   final AccessKey accessKey;
 
   CreateAccessKeyResponse({
@@ -11964,8 +12132,14 @@ class CreateAccessKeyResponse {
 }
 
 /// Contains the response to a successful <a>CreateGroup</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateGroupResponse {
   /// A structure containing details about the new group.
+  @_s.JsonKey(name: 'Group')
   final Group group;
 
   CreateGroupResponse({
@@ -11979,8 +12153,14 @@ class CreateGroupResponse {
 }
 
 /// Contains the response to a successful <a>CreateInstanceProfile</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateInstanceProfileResponse {
   /// A structure containing details about the new instance profile.
+  @_s.JsonKey(name: 'InstanceProfile')
   final InstanceProfile instanceProfile;
 
   CreateInstanceProfileResponse({
@@ -11996,8 +12176,14 @@ class CreateInstanceProfileResponse {
 }
 
 /// Contains the response to a successful <a>CreateLoginProfile</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateLoginProfileResponse {
   /// A structure containing the user name and password create date.
+  @_s.JsonKey(name: 'LoginProfile')
   final LoginProfile loginProfile;
 
   CreateLoginProfileResponse({
@@ -12014,9 +12200,15 @@ class CreateLoginProfileResponse {
 
 /// Contains the response to a successful <a>CreateOpenIDConnectProvider</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateOpenIDConnectProviderResponse {
   /// The Amazon Resource Name (ARN) of the new IAM OpenID Connect provider that
   /// is created. For more information, see <a>OpenIDConnectProviderListEntry</a>.
+  @_s.JsonKey(name: 'OpenIDConnectProviderArn')
   final String openIDConnectProviderArn;
 
   CreateOpenIDConnectProviderResponse({
@@ -12031,8 +12223,14 @@ class CreateOpenIDConnectProviderResponse {
 }
 
 /// Contains the response to a successful <a>CreatePolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreatePolicyResponse {
   /// A structure containing details about the new policy.
+  @_s.JsonKey(name: 'Policy')
   final Policy policy;
 
   CreatePolicyResponse({
@@ -12046,8 +12244,14 @@ class CreatePolicyResponse {
 }
 
 /// Contains the response to a successful <a>CreatePolicyVersion</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreatePolicyVersionResponse {
   /// A structure containing details about the new policy version.
+  @_s.JsonKey(name: 'PolicyVersion')
   final PolicyVersion policyVersion;
 
   CreatePolicyVersionResponse({
@@ -12063,8 +12267,14 @@ class CreatePolicyVersionResponse {
 }
 
 /// Contains the response to a successful <a>CreateRole</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateRoleResponse {
   /// A structure containing details about the new role.
+  @_s.JsonKey(name: 'Role')
   final Role role;
 
   CreateRoleResponse({
@@ -12078,8 +12288,14 @@ class CreateRoleResponse {
 }
 
 /// Contains the response to a successful <a>CreateSAMLProvider</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateSAMLProviderResponse {
   /// The Amazon Resource Name (ARN) of the new SAML provider resource in IAM.
+  @_s.JsonKey(name: 'SAMLProviderArn')
   final String sAMLProviderArn;
 
   CreateSAMLProviderResponse({
@@ -12092,8 +12308,14 @@ class CreateSAMLProviderResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateServiceLinkedRoleResponse {
   /// A <a>Role</a> object that contains details about the newly created role.
+  @_s.JsonKey(name: 'Role')
   final Role role;
 
   CreateServiceLinkedRoleResponse({
@@ -12106,6 +12328,11 @@ class CreateServiceLinkedRoleResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateServiceSpecificCredentialResponse {
   /// A structure that contains information about the newly created
   /// service-specific credential.
@@ -12114,6 +12341,7 @@ class CreateServiceSpecificCredentialResponse {
   /// available. It cannot be recovered later. Instead, you must reset the
   /// password with <a>ResetServiceSpecificCredential</a>.
   /// </important>
+  @_s.JsonKey(name: 'ServiceSpecificCredential')
   final ServiceSpecificCredential serviceSpecificCredential;
 
   CreateServiceSpecificCredentialResponse({
@@ -12129,8 +12357,14 @@ class CreateServiceSpecificCredentialResponse {
 }
 
 /// Contains the response to a successful <a>CreateUser</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateUserResponse {
   /// A structure with details about the new IAM user.
+  @_s.JsonKey(name: 'User')
   final User user;
 
   CreateUserResponse({
@@ -12144,8 +12378,14 @@ class CreateUserResponse {
 }
 
 /// Contains the response to a successful <a>CreateVirtualMFADevice</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateVirtualMFADeviceResponse {
   /// A structure containing details about the new virtual MFA device.
+  @_s.JsonKey(name: 'VirtualMFADevice')
   final VirtualMFADevice virtualMFADevice;
 
   CreateVirtualMFADeviceResponse({
@@ -12160,10 +12400,16 @@ class CreateVirtualMFADeviceResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteServiceLinkedRoleResponse {
   /// The deletion task identifier that you can use to check the status of the
   /// deletion. This identifier is returned in the format
   /// <code>task/aws-service-role/&lt;service-principal-name&gt;/&lt;role-name&gt;/&lt;task-uuid&gt;</code>.
+  @_s.JsonKey(name: 'DeletionTaskId')
   final String deletionTaskId;
 
   DeleteServiceLinkedRoleResponse({
@@ -12180,9 +12426,15 @@ class DeleteServiceLinkedRoleResponse {
 ///
 /// This data type is used as a response element in the
 /// <a>GetServiceLinkedRoleDeletionStatus</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeletionTaskFailureReasonType {
   /// A short description of the reason that the service-linked role deletion
   /// failed.
+  @_s.JsonKey(name: 'Reason')
   final String reason;
 
   /// A list of objects that contains details about the service-linked role
@@ -12191,6 +12443,7 @@ class DeletionTaskFailureReasonType {
   /// by the role have not been deleted from the linked service, the role can't be
   /// deleted. This parameter includes a list of the resources that are associated
   /// with the role and the Region in which the resources are being used.
+  @_s.JsonKey(name: 'RoleUsageList')
   final List<RoleUsageType> roleUsageList;
 
   DeletionTaskFailureReasonType({
@@ -12210,9 +12463,13 @@ class DeletionTaskFailureReasonType {
 }
 
 enum DeletionTaskStatusType {
+  @_s.JsonValue('SUCCEEDED')
   succeeded,
+  @_s.JsonValue('IN_PROGRESS')
   inProgress,
+  @_s.JsonValue('FAILED')
   failed,
+  @_s.JsonValue('NOT_STARTED')
   notStarted,
 }
 
@@ -12237,9 +12494,15 @@ extension on String {
 ///
 /// This data type is a response element in the
 /// <a>GetServiceLastAccessedDetailsWithEntities</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EntityDetails {
   /// The <code>EntityInfo</code> object that contains details about the entity
   /// (user or role).
+  @_s.JsonKey(name: 'EntityInfo')
   final EntityInfo entityInfo;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -12250,6 +12513,8 @@ class EntityDetails {
   /// the <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period">reporting
   /// period</a>.
+  @_s.JsonKey(
+      name: 'LastAuthenticated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastAuthenticated;
 
   EntityDetails({
@@ -12269,22 +12534,32 @@ class EntityDetails {
 /// Contains details about the specified entity (user or role).
 ///
 /// This data type is an element of the <a>EntityDetails</a> object.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EntityInfo {
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The identifier of the entity (user or role).
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// The name of the entity (user or role).
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The type of entity (user or role).
+  @_s.JsonKey(name: 'Type')
   final PolicyOwnerEntityType type;
 
   /// The path to the entity (user or role). For more information about paths, see
   /// <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   EntityInfo({
@@ -12306,10 +12581,15 @@ class EntityInfo {
 }
 
 enum EntityType {
+  @_s.JsonValue('User')
   user,
+  @_s.JsonValue('Role')
   role,
+  @_s.JsonValue('Group')
   group,
+  @_s.JsonValue('LocalManagedPolicy')
   localManagedPolicy,
+  @_s.JsonValue('AWSManagedPolicy')
   awsManagedPolicy,
 }
 
@@ -12336,11 +12616,18 @@ extension on String {
 /// This data type is used as a response element in the
 /// <a>GetOrganizationsAccessReport</a>, <a>GetServiceLastAccessedDetails</a>,
 /// and <a>GetServiceLastAccessedDetailsWithEntities</a> operations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ErrorDetails {
   /// The error code associated with the operation failure.
+  @_s.JsonKey(name: 'Code')
   final String code;
 
   /// Detailed information about the reason that the operation failed.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   ErrorDetails({
@@ -12360,23 +12647,45 @@ class ErrorDetails {
 /// This data type is used by the return parameter of <code>
 /// <a>SimulateCustomPolicy</a> </code> and <code>
 /// <a>SimulatePrincipalPolicy</a> </code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EvaluationResult {
   /// The name of the API operation tested on the indicated resource.
+  @_s.JsonKey(name: 'EvalActionName')
   final String evalActionName;
 
   /// The result of the simulation.
+  @_s.JsonKey(name: 'EvalDecision')
   final PolicyEvaluationDecisionType evalDecision;
 
-  /// Additional details about the results of the evaluation decision. When there
-  /// are both IAM policies and resource policies, this parameter explains how
-  /// each set of policies contributes to the final evaluation decision. When
-  /// simulating cross-account access to a resource, both the resource-based
-  /// policy and the caller's IAM policy must grant access. See <a
-  /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_compare-resource-policies.html">How
-  /// IAM Roles Differ from Resource-based Policies</a>
+  /// Additional details about the results of the cross-account evaluation
+  /// decision. This parameter is populated for only cross-account simulations. It
+  /// contains a brief summary of how each policy type contributes to the final
+  /// evaluation decision.
+  ///
+  /// If the simulation evaluates policies within the same account and includes a
+  /// resource ARN, then the parameter is present but the response is empty. If
+  /// the simulation evaluates policies within the same account and specifies all
+  /// resources (<code>*</code>), then the parameter is not returned.
+  ///
+  /// When you make a cross-account request, AWS evaluates the request in the
+  /// trusting account and the trusted account. The request is allowed only if
+  /// both evaluations return <code>true</code>. For more information about how
+  /// policies are evaluated, see <a
+  /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html#policy-eval-basics">Evaluating
+  /// Policies Within a Single Account</a>.
+  ///
+  /// If an AWS Organizations SCP included in the evaluation denies access, the
+  /// simulation ends. In this case, policy evaluation does not proceed any
+  /// further and this parameter is not returned.
+  @_s.JsonKey(name: 'EvalDecisionDetails')
   final Map<String, String> evalDecisionDetails;
 
   /// The ARN of the resource that the indicated API operation was tested on.
+  @_s.JsonKey(name: 'EvalResourceName')
   final String evalResourceName;
 
   /// A list of the statements in the input policies that determine the result for
@@ -12384,6 +12693,7 @@ class EvaluationResult {
   /// on the resource, if only one statement denies that operation, then the
   /// explicit deny overrides any allow. In addition, the deny statement is the
   /// only entry included in the result.
+  @_s.JsonKey(name: 'MatchedStatements')
   final List<Statement> matchedStatements;
 
   /// A list of context keys that are required by the included input policies but
@@ -12394,15 +12704,23 @@ class EvaluationResult {
   /// <code>ResourceSpecificResults</code> section. To discover the context keys
   /// used by a set of policies, you can call <a>GetContextKeysForCustomPolicy</a>
   /// or <a>GetContextKeysForPrincipalPolicy</a>.
+  @_s.JsonKey(name: 'MissingContextValues')
   final List<String> missingContextValues;
 
   /// A structure that details how Organizations and its service control policies
   /// affect the results of the simulation. Only applies if the simulated user's
   /// account is part of an organization.
+  @_s.JsonKey(name: 'OrganizationsDecisionDetail')
   final OrganizationsDecisionDetail organizationsDecisionDetail;
+
+  /// Contains information about the effect that a permissions boundary has on a
+  /// policy simulation when the boundary is applied to an IAM entity.
+  @_s.JsonKey(name: 'PermissionsBoundaryDecisionDetail')
+  final PermissionsBoundaryDecisionDetail permissionsBoundaryDecisionDetail;
 
   /// The individual results of the simulation of the API operation specified in
   /// EvalActionName on each resource.
+  @_s.JsonKey(name: 'ResourceSpecificResults')
   final List<ResourceSpecificResult> resourceSpecificResults;
 
   EvaluationResult({
@@ -12413,6 +12731,7 @@ class EvaluationResult {
     this.matchedStatements,
     this.missingContextValues,
     this.organizationsDecisionDetail,
+    this.permissionsBoundaryDecisionDetail,
     this.resourceSpecificResults,
   });
   factory EvaluationResult.fromXml(_s.XmlElement elem) {
@@ -12442,6 +12761,9 @@ class EvaluationResult {
       organizationsDecisionDetail: _s
           .extractXmlChild(elem, 'OrganizationsDecisionDetail')
           ?.let((e) => OrganizationsDecisionDetail.fromXml(e)),
+      permissionsBoundaryDecisionDetail: _s
+          .extractXmlChild(elem, 'PermissionsBoundaryDecisionDetail')
+          ?.let((e) => PermissionsBoundaryDecisionDetail.fromXml(e)),
       resourceSpecificResults: _s
           .extractXmlChild(elem, 'ResourceSpecificResults')
           ?.let((elem) => elem
@@ -12454,11 +12776,18 @@ class EvaluationResult {
 
 /// Contains the response to a successful <a>GenerateCredentialReport</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GenerateCredentialReportResponse {
   /// Information about the credential report.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Information about the state of the credential report.
+  @_s.JsonKey(name: 'State')
   final ReportStateType state;
 
   GenerateCredentialReportResponse({
@@ -12473,9 +12802,15 @@ class GenerateCredentialReportResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GenerateOrganizationsAccessReportResponse {
   /// The job identifier that you can use in the
   /// <a>GetOrganizationsAccessReport</a> operation.
+  @_s.JsonKey(name: 'JobId')
   final String jobId;
 
   GenerateOrganizationsAccessReportResponse({
@@ -12489,9 +12824,20 @@ class GenerateOrganizationsAccessReportResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GenerateServiceLastAccessedDetailsResponse {
-  /// The job ID that you can use in the <a>GetServiceLastAccessedDetails</a> or
-  /// <a>GetServiceLastAccessedDetailsWithEntities</a> operations.
+  /// The <code>JobId</code> that you can use in the
+  /// <a>GetServiceLastAccessedDetails</a> or
+  /// <a>GetServiceLastAccessedDetailsWithEntities</a> operations. The
+  /// <code>JobId</code> returned by
+  /// <code>GenerateServiceLastAccessedDetail</code> must be used by the same role
+  /// within a session, or by the same user when used to call
+  /// <code>GetServiceLastAccessedDetail</code>.
+  @_s.JsonKey(name: 'JobId')
   final String jobId;
 
   GenerateServiceLastAccessedDetailsResponse({
@@ -12508,12 +12854,19 @@ class GenerateServiceLastAccessedDetailsResponse {
 /// Contains the response to a successful <a>GetAccessKeyLastUsed</a> request.
 /// It is also returned as a member of the <a>AccessKeyMetaData</a> structure
 /// returned by the <a>ListAccessKeys</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetAccessKeyLastUsedResponse {
   /// Contains information about the last time the access key was used.
+  @_s.JsonKey(name: 'AccessKeyLastUsed')
   final AccessKeyLastUsed accessKeyLastUsed;
 
   /// The name of the AWS IAM user that owns this access key.
   /// <p/>
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   GetAccessKeyLastUsedResponse({
@@ -12532,8 +12885,14 @@ class GetAccessKeyLastUsedResponse {
 
 /// Contains the response to a successful <a>GetAccountAuthorizationDetails</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetAccountAuthorizationDetailsResponse {
   /// A list containing information about IAM groups.
+  @_s.JsonKey(name: 'GroupDetailList')
   final List<GroupDetail> groupDetailList;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -12543,20 +12902,25 @@ class GetAccountAuthorizationDetailsResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list containing information about managed policies.
+  @_s.JsonKey(name: 'Policies')
   final List<ManagedPolicyDetail> policies;
 
   /// A list containing information about IAM roles.
+  @_s.JsonKey(name: 'RoleDetailList')
   final List<RoleDetail> roleDetailList;
 
   /// A list containing information about IAM users.
+  @_s.JsonKey(name: 'UserDetailList')
   final List<UserDetail> userDetailList;
 
   GetAccountAuthorizationDetailsResponse({
@@ -12596,8 +12960,14 @@ class GetAccountAuthorizationDetailsResponse {
 
 /// Contains the response to a successful <a>GetAccountPasswordPolicy</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetAccountPasswordPolicyResponse {
   /// A structure that contains details about the account's password policy.
+  @_s.JsonKey(name: 'PasswordPolicy')
   final PasswordPolicy passwordPolicy;
 
   GetAccountPasswordPolicyResponse({
@@ -12613,9 +12983,15 @@ class GetAccountPasswordPolicyResponse {
 }
 
 /// Contains the response to a successful <a>GetAccountSummary</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetAccountSummaryResponse {
   /// A set of key–value pairs containing information about IAM entity usage and
   /// IAM quotas.
+  @_s.JsonKey(name: 'SummaryMap')
   final Map<String, int> summaryMap;
 
   GetAccountSummaryResponse({
@@ -12638,8 +13014,14 @@ class GetAccountSummaryResponse {
 /// Contains the response to a successful
 /// <a>GetContextKeysForPrincipalPolicy</a> or
 /// <a>GetContextKeysForCustomPolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetContextKeysForPolicyResponse {
   /// The list of context keys that are referenced in the input policies.
+  @_s.JsonKey(name: 'ContextKeyNames')
   final List<String> contextKeyNames;
 
   GetContextKeysForPolicyResponse({
@@ -12654,15 +13036,24 @@ class GetContextKeysForPolicyResponse {
 }
 
 /// Contains the response to a successful <a>GetCredentialReport</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetCredentialReportResponse {
   /// Contains the credential report. The report is Base64-encoded.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'Content')
   final Uint8List content;
 
   /// The date and time when the credential report was created, in <a
   /// href="http://www.iso.org/iso/iso8601">ISO 8601 date-time format</a>.
+  @_s.JsonKey(name: 'GeneratedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime generatedTime;
 
   /// The format (MIME type) of the credential report.
+  @_s.JsonKey(name: 'ReportFormat')
   final ReportFormatType reportFormat;
 
   GetCredentialReportResponse({
@@ -12681,8 +13072,14 @@ class GetCredentialReportResponse {
 }
 
 /// Contains the response to a successful <a>GetGroupPolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetGroupPolicyResponse {
   /// The group the policy is associated with.
+  @_s.JsonKey(name: 'GroupName')
   final String groupName;
 
   /// The policy document.
@@ -12691,9 +13088,11 @@ class GetGroupPolicyResponse {
   /// using AWS CloudFormation templates can be formatted in YAML. AWS
   /// CloudFormation always converts a YAML policy to JSON format before
   /// submitting it to IAM.
+  @_s.JsonKey(name: 'PolicyDocument')
   final String policyDocument;
 
   /// The name of the policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   GetGroupPolicyResponse({
@@ -12711,11 +13110,18 @@ class GetGroupPolicyResponse {
 }
 
 /// Contains the response to a successful <a>GetGroup</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetGroupResponse {
   /// A structure that contains details about the group.
+  @_s.JsonKey(name: 'Group')
   final Group group;
 
   /// A list of users in the group.
+  @_s.JsonKey(name: 'Users')
   final List<User> users;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -12725,11 +13131,13 @@ class GetGroupResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   GetGroupResponse({
@@ -12750,8 +13158,14 @@ class GetGroupResponse {
 }
 
 /// Contains the response to a successful <a>GetInstanceProfile</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetInstanceProfileResponse {
   /// A structure containing details about the instance profile.
+  @_s.JsonKey(name: 'InstanceProfile')
   final InstanceProfile instanceProfile;
 
   GetInstanceProfileResponse({
@@ -12767,8 +13181,14 @@ class GetInstanceProfileResponse {
 }
 
 /// Contains the response to a successful <a>GetLoginProfile</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetLoginProfileResponse {
   /// A structure containing the user name and password create date for the user.
+  @_s.JsonKey(name: 'LoginProfile')
   final LoginProfile loginProfile;
 
   GetLoginProfileResponse({
@@ -12785,23 +13205,32 @@ class GetLoginProfileResponse {
 
 /// Contains the response to a successful <a>GetOpenIDConnectProvider</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetOpenIDConnectProviderResponse {
   /// A list of client IDs (also known as audiences) that are associated with the
   /// specified IAM OIDC provider resource object. For more information, see
   /// <a>CreateOpenIDConnectProvider</a>.
+  @_s.JsonKey(name: 'ClientIDList')
   final List<String> clientIDList;
 
   /// The date and time when the IAM OIDC provider resource object was created in
   /// the AWS account.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// A list of certificate thumbprints that are associated with the specified IAM
   /// OIDC provider resource object. For more information, see
   /// <a>CreateOpenIDConnectProvider</a>.
+  @_s.JsonKey(name: 'ThumbprintList')
   final List<String> thumbprintList;
 
   /// The URL that the IAM OIDC provider resource object is associated with. For
   /// more information, see <a>CreateOpenIDConnectProvider</a>.
+  @_s.JsonKey(name: 'Url')
   final String url;
 
   GetOpenIDConnectProviderResponse({
@@ -12823,17 +13252,27 @@ class GetOpenIDConnectProviderResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetOrganizationsAccessReportResponse {
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the report job was created.
+  @_s.JsonKey(
+      name: 'JobCreationDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime jobCreationDate;
 
   /// The status of the job.
+  @_s.JsonKey(name: 'JobStatus')
   final JobStatusType jobStatus;
 
   /// An object that contains details about the most recent attempt to access the
   /// service.
+  @_s.JsonKey(name: 'AccessDetails')
   final List<AccessDetail> accessDetails;
+  @_s.JsonKey(name: 'ErrorDetails')
   final ErrorDetails errorDetails;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -12843,6 +13282,7 @@ class GetOrganizationsAccessReportResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -12850,19 +13290,24 @@ class GetOrganizationsAccessReportResponse {
   ///
   /// This field is null if the job is still in progress, as indicated by a job
   /// status value of <code>IN_PROGRESS</code>.
+  @_s.JsonKey(
+      name: 'JobCompletionDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime jobCompletionDate;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// The number of services that the applicable SCPs allow account principals to
   /// access.
+  @_s.JsonKey(name: 'NumberOfServicesAccessible')
   final int numberOfServicesAccessible;
 
   /// The number of services that account principals are allowed but did not
   /// attempt to access.
+  @_s.JsonKey(name: 'NumberOfServicesNotAccessed')
   final int numberOfServicesNotAccessed;
 
   GetOrganizationsAccessReportResponse({
@@ -12900,8 +13345,14 @@ class GetOrganizationsAccessReportResponse {
 }
 
 /// Contains the response to a successful <a>GetPolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetPolicyResponse {
   /// A structure containing details about the policy.
+  @_s.JsonKey(name: 'Policy')
   final Policy policy;
 
   GetPolicyResponse({
@@ -12915,8 +13366,14 @@ class GetPolicyResponse {
 }
 
 /// Contains the response to a successful <a>GetPolicyVersion</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetPolicyVersionResponse {
   /// A structure containing details about the policy version.
+  @_s.JsonKey(name: 'PolicyVersion')
   final PolicyVersion policyVersion;
 
   GetPolicyVersionResponse({
@@ -12932,6 +13389,11 @@ class GetPolicyVersionResponse {
 }
 
 /// Contains the response to a successful <a>GetRolePolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetRolePolicyResponse {
   /// The policy document.
   ///
@@ -12939,12 +13401,15 @@ class GetRolePolicyResponse {
   /// using AWS CloudFormation templates can be formatted in YAML. AWS
   /// CloudFormation always converts a YAML policy to JSON format before
   /// submitting it to IAM.
+  @_s.JsonKey(name: 'PolicyDocument')
   final String policyDocument;
 
   /// The name of the policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   /// The role the policy is associated with.
+  @_s.JsonKey(name: 'RoleName')
   final String roleName;
 
   GetRolePolicyResponse({
@@ -12962,8 +13427,14 @@ class GetRolePolicyResponse {
 }
 
 /// Contains the response to a successful <a>GetRole</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetRoleResponse {
   /// A structure containing details about the IAM role.
+  @_s.JsonKey(name: 'Role')
   final Role role;
 
   GetRoleResponse({
@@ -12977,15 +13448,23 @@ class GetRoleResponse {
 }
 
 /// Contains the response to a successful <a>GetSAMLProvider</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetSAMLProviderResponse {
   /// The date and time when the SAML provider was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The XML metadata document that includes information about an identity
   /// provider.
+  @_s.JsonKey(name: 'SAMLMetadataDocument')
   final String sAMLMetadataDocument;
 
   /// The expiration date and time for the SAML provider.
+  @_s.JsonKey(name: 'ValidUntil', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime validUntil;
 
   GetSAMLProviderResponse({
@@ -13004,8 +13483,14 @@ class GetSAMLProviderResponse {
 }
 
 /// Contains the response to a successful <a>GetSSHPublicKey</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetSSHPublicKeyResponse {
   /// A structure containing details about the SSH public key.
+  @_s.JsonKey(name: 'SSHPublicKey')
   final SSHPublicKey sSHPublicKey;
 
   GetSSHPublicKeyResponse({
@@ -13021,8 +13506,14 @@ class GetSSHPublicKeyResponse {
 }
 
 /// Contains the response to a successful <a>GetServerCertificate</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetServerCertificateResponse {
   /// A structure containing details about the server certificate.
+  @_s.JsonKey(name: 'ServerCertificate')
   final ServerCertificate serverCertificate;
 
   GetServerCertificateResponse({
@@ -13037,26 +13528,38 @@ class GetServerCertificateResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetServiceLastAccessedDetailsResponse {
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the generated report job was completed or failed.
   ///
   /// This field is null if the job is still in progress, as indicated by a job
   /// status value of <code>IN_PROGRESS</code>.
+  @_s.JsonKey(
+      name: 'JobCompletionDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime jobCompletionDate;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the report job was created.
+  @_s.JsonKey(
+      name: 'JobCreationDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime jobCreationDate;
 
   /// The status of the job.
+  @_s.JsonKey(name: 'JobStatus')
   final JobStatusType jobStatus;
 
   /// A <code>ServiceLastAccessed</code> object that contains details about the
   /// most recent attempt to access the service.
+  @_s.JsonKey(name: 'ServicesLastAccessed')
   final List<ServiceLastAccessed> servicesLastAccessed;
 
   /// An object that contains details about the reason the operation failed.
+  @_s.JsonKey(name: 'Error')
   final ErrorDetails error;
 
   /// <p/>
@@ -13067,11 +13570,13 @@ class GetServiceLastAccessedDetailsResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   GetServiceLastAccessedDetailsResponse({
@@ -13103,10 +13608,16 @@ class GetServiceLastAccessedDetailsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetServiceLastAccessedDetailsWithEntitiesResponse {
   /// An <code>EntityDetailsList</code> object that contains details about when an
   /// IAM entity (user or role) used group or policy permissions in an attempt to
   /// access the specified AWS service.
+  @_s.JsonKey(name: 'EntityDetailsList')
   final List<EntityDetails> entityDetailsList;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -13114,16 +13625,22 @@ class GetServiceLastAccessedDetailsWithEntitiesResponse {
   ///
   /// This field is null if the job is still in progress, as indicated by a job
   /// status value of <code>IN_PROGRESS</code>.
+  @_s.JsonKey(
+      name: 'JobCompletionDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime jobCompletionDate;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the report job was created.
+  @_s.JsonKey(
+      name: 'JobCreationDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime jobCreationDate;
 
   /// The status of the job.
+  @_s.JsonKey(name: 'JobStatus')
   final JobStatusType jobStatus;
 
   /// An object that contains details about the reason the operation failed.
+  @_s.JsonKey(name: 'Error')
   final ErrorDetails error;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13133,11 +13650,13 @@ class GetServiceLastAccessedDetailsWithEntitiesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   GetServiceLastAccessedDetailsWithEntitiesResponse({
@@ -13169,11 +13688,18 @@ class GetServiceLastAccessedDetailsWithEntitiesResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetServiceLinkedRoleDeletionStatusResponse {
   /// The status of the deletion.
+  @_s.JsonKey(name: 'Status')
   final DeletionTaskStatusType status;
 
   /// An object that contains details about the reason the deletion failed.
+  @_s.JsonKey(name: 'Reason')
   final DeletionTaskFailureReasonType reason;
 
   GetServiceLinkedRoleDeletionStatusResponse({
@@ -13193,6 +13719,11 @@ class GetServiceLinkedRoleDeletionStatusResponse {
 }
 
 /// Contains the response to a successful <a>GetUserPolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetUserPolicyResponse {
   /// The policy document.
   ///
@@ -13200,12 +13731,15 @@ class GetUserPolicyResponse {
   /// using AWS CloudFormation templates can be formatted in YAML. AWS
   /// CloudFormation always converts a YAML policy to JSON format before
   /// submitting it to IAM.
+  @_s.JsonKey(name: 'PolicyDocument')
   final String policyDocument;
 
   /// The name of the policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   /// The user the policy is associated with.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   GetUserPolicyResponse({
@@ -13223,6 +13757,11 @@ class GetUserPolicyResponse {
 }
 
 /// Contains the response to a successful <a>GetUser</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetUserResponse {
   /// A structure containing details about the IAM user.
   /// <important>
@@ -13245,6 +13784,7 @@ class GetUserResponse {
   /// your users use access keys to access AWS programmatically you can refer to
   /// access key last used information because it is accurate for all dates.
   /// </important>
+  @_s.JsonKey(name: 'User')
   final User user;
 
   GetUserResponse({
@@ -13272,29 +13812,39 @@ class GetUserResponse {
 /// <a>ListGroups</a>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Group {
   /// The Amazon Resource Name (ARN) specifying the group. For more information
   /// about ARNs and how to use them in policies, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the group was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The stable and unique string identifying the group. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'GroupId')
   final String groupId;
 
   /// The friendly name that identifies the group.
+  @_s.JsonKey(name: 'GroupName')
   final String groupName;
 
   /// The path to the group. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   Group({
@@ -13320,31 +13870,43 @@ class Group {
 ///
 /// This data type is used as a response element in the
 /// <a>GetAccountAuthorizationDetails</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GroupDetail {
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// A list of the managed policies attached to the group.
+  @_s.JsonKey(name: 'AttachedManagedPolicies')
   final List<AttachedPolicy> attachedManagedPolicies;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the group was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The stable and unique string identifying the group. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'GroupId')
   final String groupId;
 
   /// The friendly name that identifies the group.
+  @_s.JsonKey(name: 'GroupName')
   final String groupName;
 
   /// A list of the inline policies embedded in the group.
+  @_s.JsonKey(name: 'GroupPolicyList')
   final List<PolicyDetail> groupPolicyList;
 
   /// The path to the group. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   GroupDetail({
@@ -13396,31 +13958,42 @@ class GroupDetail {
 /// <a>ListInstanceProfilesForRole</a>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InstanceProfile {
   /// The Amazon Resource Name (ARN) specifying the instance profile. For more
   /// information about ARNs and how to use them in policies, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The date when the instance profile was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The stable and unique string identifying the instance profile. For more
   /// information about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'InstanceProfileId')
   final String instanceProfileId;
 
   /// The name identifying the instance profile.
+  @_s.JsonKey(name: 'InstanceProfileName')
   final String instanceProfileName;
 
   /// The path to the instance profile. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The role associated with the instance profile.
+  @_s.JsonKey(name: 'Roles')
   final List<Role> roles;
 
   InstanceProfile({
@@ -13446,8 +14019,14 @@ class InstanceProfile {
 }
 
 /// Contains the response to a successful <a>ListAccessKeys</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListAccessKeysResponse {
   /// A list of objects containing metadata about the access keys.
+  @_s.JsonKey(name: 'AccessKeyMetadata')
   final List<AccessKeyMetadata> accessKeyMetadata;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13457,11 +14036,13 @@ class ListAccessKeysResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListAccessKeysResponse({
@@ -13483,9 +14064,15 @@ class ListAccessKeysResponse {
 }
 
 /// Contains the response to a successful <a>ListAccountAliases</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListAccountAliasesResponse {
   /// A list of aliases associated with the account. AWS supports only one alias
   /// per account.
+  @_s.JsonKey(name: 'AccountAliases')
   final List<String> accountAliases;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13495,11 +14082,13 @@ class ListAccountAliasesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListAccountAliasesResponse({
@@ -13519,8 +14108,14 @@ class ListAccountAliasesResponse {
 
 /// Contains the response to a successful <a>ListAttachedGroupPolicies</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListAttachedGroupPoliciesResponse {
   /// A list of the attached policies.
+  @_s.JsonKey(name: 'AttachedPolicies')
   final List<AttachedPolicy> attachedPolicies;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13530,11 +14125,13 @@ class ListAttachedGroupPoliciesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListAttachedGroupPoliciesResponse({
@@ -13557,8 +14154,14 @@ class ListAttachedGroupPoliciesResponse {
 
 /// Contains the response to a successful <a>ListAttachedRolePolicies</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListAttachedRolePoliciesResponse {
   /// A list of the attached policies.
+  @_s.JsonKey(name: 'AttachedPolicies')
   final List<AttachedPolicy> attachedPolicies;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13568,11 +14171,13 @@ class ListAttachedRolePoliciesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListAttachedRolePoliciesResponse({
@@ -13595,8 +14200,14 @@ class ListAttachedRolePoliciesResponse {
 
 /// Contains the response to a successful <a>ListAttachedUserPolicies</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListAttachedUserPoliciesResponse {
   /// A list of the attached policies.
+  @_s.JsonKey(name: 'AttachedPolicies')
   final List<AttachedPolicy> attachedPolicies;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13606,11 +14217,13 @@ class ListAttachedUserPoliciesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListAttachedUserPoliciesResponse({
@@ -13632,6 +14245,11 @@ class ListAttachedUserPoliciesResponse {
 }
 
 /// Contains the response to a successful <a>ListEntitiesForPolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListEntitiesForPolicyResponse {
   /// A flag that indicates whether there are more items to return. If your
   /// results were truncated, you can make a subsequent pagination request using
@@ -13640,20 +14258,25 @@ class ListEntitiesForPolicyResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of IAM groups that the policy is attached to.
+  @_s.JsonKey(name: 'PolicyGroups')
   final List<PolicyGroup> policyGroups;
 
   /// A list of IAM roles that the policy is attached to.
+  @_s.JsonKey(name: 'PolicyRoles')
   final List<PolicyRole> policyRoles;
 
   /// A list of IAM users that the policy is attached to.
+  @_s.JsonKey(name: 'PolicyUsers')
   final List<PolicyUser> policyUsers;
 
   ListEntitiesForPolicyResponse({
@@ -13684,6 +14307,11 @@ class ListEntitiesForPolicyResponse {
 }
 
 /// Contains the response to a successful <a>ListGroupPolicies</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListGroupPoliciesResponse {
   /// A list of policy names.
   ///
@@ -13691,6 +14319,7 @@ class ListGroupPoliciesResponse {
   /// href="http://wikipedia.org/wiki/regex">regex pattern</a>) a string of
   /// characters consisting of upper and lowercase alphanumeric characters with no
   /// spaces. You can also include any of the following characters: _+=,.@-
+  @_s.JsonKey(name: 'PolicyNames')
   final List<String> policyNames;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13700,11 +14329,13 @@ class ListGroupPoliciesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListGroupPoliciesResponse({
@@ -13724,8 +14355,14 @@ class ListGroupPoliciesResponse {
 }
 
 /// Contains the response to a successful <a>ListGroupsForUser</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListGroupsForUserResponse {
   /// A list of groups.
+  @_s.JsonKey(name: 'Groups')
   final List<Group> groups;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13735,11 +14372,13 @@ class ListGroupsForUserResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListGroupsForUserResponse({
@@ -13758,8 +14397,14 @@ class ListGroupsForUserResponse {
 }
 
 /// Contains the response to a successful <a>ListGroups</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListGroupsResponse {
   /// A list of groups.
+  @_s.JsonKey(name: 'Groups')
   final List<Group> groups;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13769,11 +14414,13 @@ class ListGroupsResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListGroupsResponse({
@@ -13793,8 +14440,14 @@ class ListGroupsResponse {
 
 /// Contains the response to a successful <a>ListInstanceProfilesForRole</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListInstanceProfilesForRoleResponse {
   /// A list of instance profiles.
+  @_s.JsonKey(name: 'InstanceProfiles')
   final List<InstanceProfile> instanceProfiles;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13804,11 +14457,13 @@ class ListInstanceProfilesForRoleResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListInstanceProfilesForRoleResponse({
@@ -13830,8 +14485,14 @@ class ListInstanceProfilesForRoleResponse {
 }
 
 /// Contains the response to a successful <a>ListInstanceProfiles</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListInstanceProfilesResponse {
   /// A list of instance profiles.
+  @_s.JsonKey(name: 'InstanceProfiles')
   final List<InstanceProfile> instanceProfiles;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13841,11 +14502,13 @@ class ListInstanceProfilesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListInstanceProfilesResponse({
@@ -13867,8 +14530,14 @@ class ListInstanceProfilesResponse {
 }
 
 /// Contains the response to a successful <a>ListMFADevices</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListMFADevicesResponse {
   /// A list of MFA devices.
+  @_s.JsonKey(name: 'MFADevices')
   final List<MFADevice> mFADevices;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -13878,11 +14547,13 @@ class ListMFADevicesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListMFADevicesResponse({
@@ -13904,8 +14575,14 @@ class ListMFADevicesResponse {
 
 /// Contains the response to a successful <a>ListOpenIDConnectProviders</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListOpenIDConnectProvidersResponse {
   /// The list of IAM OIDC provider resource objects defined in the AWS account.
+  @_s.JsonKey(name: 'OpenIDConnectProviderList')
   final List<OpenIDConnectProviderListEntry> openIDConnectProviderList;
 
   ListOpenIDConnectProvidersResponse({
@@ -13928,9 +14605,15 @@ class ListOpenIDConnectProvidersResponse {
 ///
 /// This data type is used as a response element in the
 /// <a>ListPoliciesGrantingServiceAccess</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListPoliciesGrantingServiceAccessEntry {
   /// The <code>PoliciesGrantingServiceAccess</code> object that contains details
   /// about the policy.
+  @_s.JsonKey(name: 'Policies')
   final List<PolicyGrantingServiceAccess> policies;
 
   /// The namespace of the service that was accessed.
@@ -13943,6 +14626,7 @@ class ListPoliciesGrantingServiceAccessEntry {
   /// prefix: a4b)</code>. For more information about service namespaces, see <a
   /// href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#genref-aws-service-namespaces">AWS
   /// Service Namespaces</a> in the <i>AWS General Reference</i>.
+  @_s.JsonKey(name: 'ServiceNamespace')
   final String serviceNamespace;
 
   ListPoliciesGrantingServiceAccessEntry({
@@ -13960,10 +14644,16 @@ class ListPoliciesGrantingServiceAccessEntry {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListPoliciesGrantingServiceAccessResponse {
   /// A <code>ListPoliciesGrantingServiceAccess</code> object that contains
   /// details about the permissions policies attached to the specified identity
   /// (user, group, or role).
+  @_s.JsonKey(name: 'PoliciesGrantingServiceAccess')
   final List<ListPoliciesGrantingServiceAccessEntry>
       policiesGrantingServiceAccess;
 
@@ -13972,11 +14662,13 @@ class ListPoliciesGrantingServiceAccessResponse {
   /// the <code>Marker</code> request parameter to retrieve more items. We
   /// recommend that you check <code>IsTruncated</code> after every call to ensure
   /// that you receive all your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListPoliciesGrantingServiceAccessResponse({
@@ -14000,6 +14692,11 @@ class ListPoliciesGrantingServiceAccessResponse {
 }
 
 /// Contains the response to a successful <a>ListPolicies</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListPoliciesResponse {
   /// A flag that indicates whether there are more items to return. If your
   /// results were truncated, you can make a subsequent pagination request using
@@ -14008,14 +14705,17 @@ class ListPoliciesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of policies.
+  @_s.JsonKey(name: 'Policies')
   final List<Policy> policies;
 
   ListPoliciesResponse({
@@ -14034,6 +14734,11 @@ class ListPoliciesResponse {
 }
 
 /// Contains the response to a successful <a>ListPolicyVersions</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListPolicyVersionsResponse {
   /// A flag that indicates whether there are more items to return. If your
   /// results were truncated, you can make a subsequent pagination request using
@@ -14042,11 +14747,13 @@ class ListPolicyVersionsResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of policy versions.
@@ -14054,6 +14761,7 @@ class ListPolicyVersionsResponse {
   /// For more information about managed policy versions, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-versions.html">Versioning
   /// for Managed Policies</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Versions')
   final List<PolicyVersion> versions;
 
   ListPolicyVersionsResponse({
@@ -14074,8 +14782,14 @@ class ListPolicyVersionsResponse {
 }
 
 /// Contains the response to a successful <a>ListRolePolicies</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListRolePoliciesResponse {
   /// A list of policy names.
+  @_s.JsonKey(name: 'PolicyNames')
   final List<String> policyNames;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14085,11 +14799,13 @@ class ListRolePoliciesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListRolePoliciesResponse({
@@ -14108,10 +14824,16 @@ class ListRolePoliciesResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListRoleTagsResponse {
   /// The list of tags currently that is attached to the role. Each tag consists
   /// of a key name and an associated value. If no tags are attached to the
   /// specified role, the response contains an empty list.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14120,11 +14842,13 @@ class ListRoleTagsResponse {
   /// Note that IAM might return fewer than the <code>MaxItems</code> number of
   /// results even when more results are available. Check <code>IsTruncated</code>
   /// after every call to ensure that you receive all of your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListRoleTagsResponse({
@@ -14143,8 +14867,14 @@ class ListRoleTagsResponse {
 }
 
 /// Contains the response to a successful <a>ListRoles</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListRolesResponse {
   /// A list of roles.
+  @_s.JsonKey(name: 'Roles')
   final List<Role> roles;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14154,11 +14884,13 @@ class ListRolesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListRolesResponse({
@@ -14177,9 +14909,15 @@ class ListRolesResponse {
 }
 
 /// Contains the response to a successful <a>ListSAMLProviders</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListSAMLProvidersResponse {
   /// The list of SAML provider resource objects defined in IAM for this AWS
   /// account.
+  @_s.JsonKey(name: 'SAMLProviderList')
   final List<SAMLProviderListEntry> sAMLProviderList;
 
   ListSAMLProvidersResponse({
@@ -14197,6 +14935,11 @@ class ListSAMLProvidersResponse {
 }
 
 /// Contains the response to a successful <a>ListSSHPublicKeys</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListSSHPublicKeysResponse {
   /// A flag that indicates whether there are more items to return. If your
   /// results were truncated, you can make a subsequent pagination request using
@@ -14205,14 +14948,17 @@ class ListSSHPublicKeysResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of the SSH public keys assigned to IAM user.
+  @_s.JsonKey(name: 'SSHPublicKeys')
   final List<SSHPublicKeyMetadata> sSHPublicKeys;
 
   ListSSHPublicKeysResponse({
@@ -14234,8 +14980,14 @@ class ListSSHPublicKeysResponse {
 }
 
 /// Contains the response to a successful <a>ListServerCertificates</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListServerCertificatesResponse {
   /// A list of server certificates.
+  @_s.JsonKey(name: 'ServerCertificateMetadataList')
   final List<ServerCertificateMetadata> serverCertificateMetadataList;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14245,11 +14997,13 @@ class ListServerCertificatesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListServerCertificatesResponse({
@@ -14271,9 +15025,15 @@ class ListServerCertificatesResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListServiceSpecificCredentialsResponse {
   /// A list of structures that each contain details about a service-specific
   /// credential.
+  @_s.JsonKey(name: 'ServiceSpecificCredentials')
   final List<ServiceSpecificCredentialMetadata> serviceSpecificCredentials;
 
   ListServiceSpecificCredentialsResponse({
@@ -14293,8 +15053,14 @@ class ListServiceSpecificCredentialsResponse {
 
 /// Contains the response to a successful <a>ListSigningCertificates</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListSigningCertificatesResponse {
   /// A list of the user's signing certificate information.
+  @_s.JsonKey(name: 'Certificates')
   final List<SigningCertificate> certificates;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14304,11 +15070,13 @@ class ListSigningCertificatesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListSigningCertificatesResponse({
@@ -14329,8 +15097,14 @@ class ListSigningCertificatesResponse {
 }
 
 /// Contains the response to a successful <a>ListUserPolicies</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListUserPoliciesResponse {
   /// A list of policy names.
+  @_s.JsonKey(name: 'PolicyNames')
   final List<String> policyNames;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14340,11 +15114,13 @@ class ListUserPoliciesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListUserPoliciesResponse({
@@ -14363,10 +15139,16 @@ class ListUserPoliciesResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListUserTagsResponse {
   /// The list of tags that are currently attached to the user. Each tag consists
   /// of a key name and an associated value. If no tags are attached to the
   /// specified user, the response contains an empty list.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14375,11 +15157,13 @@ class ListUserTagsResponse {
   /// Note that IAM might return fewer than the <code>MaxItems</code> number of
   /// results even when more results are available. Check <code>IsTruncated</code>
   /// after every call to ensure that you receive all of your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListUserTagsResponse({
@@ -14398,8 +15182,14 @@ class ListUserTagsResponse {
 }
 
 /// Contains the response to a successful <a>ListUsers</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListUsersResponse {
   /// A list of users.
+  @_s.JsonKey(name: 'Users')
   final List<User> users;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14409,11 +15199,13 @@ class ListUsersResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListUsersResponse({
@@ -14432,9 +15224,15 @@ class ListUsersResponse {
 }
 
 /// Contains the response to a successful <a>ListVirtualMFADevices</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListVirtualMFADevicesResponse {
   /// The list of virtual MFA devices in the current account that match the
   /// <code>AssignmentStatus</code> value that was passed in the request.
+  @_s.JsonKey(name: 'VirtualMFADevices')
   final List<VirtualMFADevice> virtualMFADevices;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -14444,11 +15242,13 @@ class ListVirtualMFADevicesResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   ListVirtualMFADevicesResponse({
@@ -14473,16 +15273,24 @@ class ListVirtualMFADevicesResponse {
 ///
 /// This data type is used as a response element in the
 /// <a>CreateLoginProfile</a> and <a>GetLoginProfile</a> operations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoginProfile {
   /// The date when the password for the user was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The name of the user, which can be used for signing in to the AWS Management
   /// Console.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   /// Specifies whether the user is required to set a new password on next
   /// sign-in.
+  @_s.JsonKey(name: 'PasswordResetRequired')
   final bool passwordResetRequired;
 
   LoginProfile({
@@ -14504,15 +15312,23 @@ class LoginProfile {
 ///
 /// This data type is used as a response element in the <a>ListMFADevices</a>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MFADevice {
   /// The date when the MFA device was enabled for the user.
+  @_s.JsonKey(name: 'EnableDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime enableDate;
 
   /// The serial number that uniquely identifies the MFA device. For virtual MFA
   /// devices, the serial number is the device ARN.
+  @_s.JsonKey(name: 'SerialNumber')
   final String serialNumber;
 
   /// The user with whom the MFA device is associated.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   MFADevice({
@@ -14539,15 +15355,23 @@ class MFADevice {
 /// For more information about managed policies, see <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html">Managed
 /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ManagedPolicyDetail {
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The number of principal entities (users, groups, and roles) that the policy
   /// is attached to.
+  @_s.JsonKey(name: 'AttachmentCount')
   final int attachmentCount;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the policy was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The identifier for the version of the policy that is set as the default
@@ -14556,12 +15380,15 @@ class ManagedPolicyDetail {
   /// For more information about policy versions, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-versions.html">Versioning
   /// for Managed Policies</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'DefaultVersionId')
   final String defaultVersionId;
 
   /// A friendly description of the policy.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Specifies whether the policy can be attached to an IAM user, group, or role.
+  @_s.JsonKey(name: 'IsAttachable')
   final bool isAttachable;
 
   /// The path to the policy.
@@ -14569,6 +15396,7 @@ class ManagedPolicyDetail {
   /// For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The number of entities (users and roles) for which the policy is used as the
@@ -14577,6 +15405,7 @@ class ManagedPolicyDetail {
   /// For more information about permissions boundaries, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
   /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PermissionsBoundaryUsageCount')
   final int permissionsBoundaryUsageCount;
 
   /// The stable and unique string identifying the policy.
@@ -14584,12 +15413,15 @@ class ManagedPolicyDetail {
   /// For more information about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PolicyId')
   final String policyId;
 
   /// The friendly name (not ARN) identifying the policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   /// A list containing information about the versions of the policy.
+  @_s.JsonKey(name: 'PolicyVersionList')
   final List<PolicyVersion> policyVersionList;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -14599,6 +15431,7 @@ class ManagedPolicyDetail {
   /// when the policy was created. When a policy has more than one version, this
   /// field contains the date and time when the most recent policy version was
   /// created.
+  @_s.JsonKey(name: 'UpdateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime updateDate;
 
   ManagedPolicyDetail({
@@ -14639,7 +15472,13 @@ class ManagedPolicyDetail {
 }
 
 /// Contains the Amazon Resource Name (ARN) for an IAM OpenID Connect provider.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OpenIDConnectProviderListEntry {
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   OpenIDConnectProviderListEntry({
@@ -14654,9 +15493,15 @@ class OpenIDConnectProviderListEntry {
 
 /// Contains information about the effect that Organizations has on a policy
 /// simulation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OrganizationsDecisionDetail {
   /// Specifies whether the simulated operation is allowed by the Organizations
   /// service control policies that impact the simulated user's account.
+  @_s.JsonKey(name: 'AllowedByOrganizations')
   final bool allowedByOrganizations;
 
   OrganizationsDecisionDetail({
@@ -14674,39 +15519,54 @@ class OrganizationsDecisionDetail {
 ///
 /// This data type is used as a response element in the
 /// <a>GetAccountPasswordPolicy</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PasswordPolicy {
   /// Specifies whether IAM users are allowed to change their own password.
+  @_s.JsonKey(name: 'AllowUsersToChangePassword')
   final bool allowUsersToChangePassword;
 
   /// Indicates whether passwords in the account expire. Returns true if
   /// <code>MaxPasswordAge</code> contains a value greater than 0. Returns false
   /// if MaxPasswordAge is 0 or not present.
+  @_s.JsonKey(name: 'ExpirePasswords')
   final bool expirePasswords;
 
   /// Specifies whether IAM users are prevented from setting a new password after
   /// their password has expired.
+  @_s.JsonKey(name: 'HardExpiry')
   final bool hardExpiry;
 
   /// The number of days that an IAM user password is valid.
+  @_s.JsonKey(name: 'MaxPasswordAge')
   final int maxPasswordAge;
 
   /// Minimum length to require for IAM user passwords.
+  @_s.JsonKey(name: 'MinimumPasswordLength')
   final int minimumPasswordLength;
 
   /// Specifies the number of previous passwords that IAM users are prevented from
   /// reusing.
+  @_s.JsonKey(name: 'PasswordReusePrevention')
   final int passwordReusePrevention;
 
   /// Specifies whether to require lowercase characters for IAM user passwords.
+  @_s.JsonKey(name: 'RequireLowercaseCharacters')
   final bool requireLowercaseCharacters;
 
   /// Specifies whether to require numbers for IAM user passwords.
+  @_s.JsonKey(name: 'RequireNumbers')
   final bool requireNumbers;
 
   /// Specifies whether to require symbols for IAM user passwords.
+  @_s.JsonKey(name: 'RequireSymbols')
   final bool requireSymbols;
 
   /// Specifies whether to require uppercase characters for IAM user passwords.
+  @_s.JsonKey(name: 'RequireUppercaseCharacters')
   final bool requireUppercaseCharacters;
 
   PasswordPolicy({
@@ -14743,6 +15603,7 @@ class PasswordPolicy {
 }
 
 enum PermissionsBoundaryAttachmentType {
+  @_s.JsonValue('PermissionsBoundaryPolicy')
   permissionsBoundaryPolicy,
 }
 
@@ -14756,6 +15617,37 @@ extension on String {
   }
 }
 
+/// Contains information about the effect that a permissions boundary has on a
+/// policy simulation when the boundary is applied to an IAM entity.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class PermissionsBoundaryDecisionDetail {
+  /// Specifies whether an action is allowed by a permissions boundary that is
+  /// applied to an IAM entity (user or role). A value of <code>true</code> means
+  /// that the permissions boundary does not deny the action. This means that the
+  /// policy includes an <code>Allow</code> statement that matches the request. In
+  /// this case, if an identity-based policy also allows the action, the request
+  /// is allowed. A value of <code>false</code> means that either the requested
+  /// action is not allowed (implicitly denied) or that the action is explicitly
+  /// denied by the permissions boundary. In both of these cases, the action is
+  /// not allowed, regardless of the identity-based policy.
+  @_s.JsonKey(name: 'AllowedByPermissionsBoundary')
+  final bool allowedByPermissionsBoundary;
+
+  PermissionsBoundaryDecisionDetail({
+    this.allowedByPermissionsBoundary,
+  });
+  factory PermissionsBoundaryDecisionDetail.fromXml(_s.XmlElement elem) {
+    return PermissionsBoundaryDecisionDetail(
+      allowedByPermissionsBoundary:
+          _s.extractXmlBoolValue(elem, 'AllowedByPermissionsBoundary'),
+    );
+  }
+}
+
 /// Contains information about a managed policy.
 ///
 /// This data type is used as a response element in the <a>CreatePolicy</a>,
@@ -14764,28 +15656,39 @@ extension on String {
 /// For more information about managed policies, refer to <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html">Managed
 /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Policy {
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The number of entities (users, groups, and roles) that the policy is
   /// attached to.
+  @_s.JsonKey(name: 'AttachmentCount')
   final int attachmentCount;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the policy was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The identifier for the version of the policy that is set as the default
   /// version.
+  @_s.JsonKey(name: 'DefaultVersionId')
   final String defaultVersionId;
 
   /// A friendly description of the policy.
   ///
   /// This element is included in the response to the <a>GetPolicy</a> operation.
   /// It is not included in the response to the <a>ListPolicies</a> operation.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Specifies whether the policy can be attached to an IAM user, group, or role.
+  @_s.JsonKey(name: 'IsAttachable')
   final bool isAttachable;
 
   /// The path to the policy.
@@ -14793,6 +15696,7 @@ class Policy {
   /// For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The number of entities (users and roles) for which the policy is used to set
@@ -14801,6 +15705,7 @@ class Policy {
   /// For more information about permissions boundaries, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
   /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PermissionsBoundaryUsageCount')
   final int permissionsBoundaryUsageCount;
 
   /// The stable and unique string identifying the policy.
@@ -14808,9 +15713,11 @@ class Policy {
   /// For more information about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PolicyId')
   final String policyId;
 
   /// The friendly name (not ARN) identifying the policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -14820,6 +15727,7 @@ class Policy {
   /// when the policy was created. When a policy has more than one version, this
   /// field contains the date and time when the most recent policy version was
   /// created.
+  @_s.JsonKey(name: 'UpdateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime updateDate;
 
   Policy({
@@ -14857,11 +15765,18 @@ class Policy {
 ///
 /// This data type is used as a response element in the
 /// <a>GetAccountAuthorizationDetails</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyDetail {
   /// The policy document.
+  @_s.JsonKey(name: 'PolicyDocument')
   final String policyDocument;
 
   /// The name of the policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   PolicyDetail({
@@ -14877,8 +15792,11 @@ class PolicyDetail {
 }
 
 enum PolicyEvaluationDecisionType {
+  @_s.JsonValue('allowed')
   allowed,
+  @_s.JsonValue('explicitDeny')
   explicitDeny,
+  @_s.JsonValue('implicitDeny')
   implicitDeny,
 }
 
@@ -14901,13 +15819,20 @@ extension on String {
 ///
 /// This data type is an element of the
 /// <a>ListPoliciesGrantingServiceAccessEntry</a> object.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyGrantingServiceAccess {
   /// The policy name.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   /// The policy type. For more information about these policy types, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html">Managed
   /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PolicyType')
   final PolicyType policyType;
 
   /// The name of the entity (user or role) to which the inline policy is
@@ -14917,6 +15842,7 @@ class PolicyGrantingServiceAccess {
   /// policy types, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html">Managed
   /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'EntityName')
   final String entityName;
 
   /// The type of entity (user or role) that used the policy to access the service
@@ -14926,7 +15852,9 @@ class PolicyGrantingServiceAccess {
   /// policy types, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html">Managed
   /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'EntityType')
   final PolicyOwnerEntityType entityType;
+  @_s.JsonKey(name: 'PolicyArn')
   final String policyArn;
 
   PolicyGrantingServiceAccess({
@@ -14957,14 +15885,21 @@ class PolicyGrantingServiceAccess {
 /// For more information about managed policies, refer to <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html">Managed
 /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyGroup {
   /// The stable and unique string identifying the group. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'GroupId')
   final String groupId;
 
   /// The name (friendly name, not ARN) identifying the group.
+  @_s.JsonKey(name: 'GroupName')
   final String groupName;
 
   PolicyGroup({
@@ -14987,14 +15922,21 @@ class PolicyGroup {
 /// For more information about managed policies, refer to <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html">Managed
 /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyRole {
   /// The stable and unique string identifying the role. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'RoleId')
   final String roleId;
 
   /// The name (friendly name, not ARN) identifying the role.
+  @_s.JsonKey(name: 'RoleName')
   final String roleName;
 
   PolicyRole({
@@ -15010,12 +15952,19 @@ class PolicyRole {
 }
 
 enum PolicySourceType {
+  @_s.JsonValue('user')
   user,
+  @_s.JsonValue('group')
   group,
+  @_s.JsonValue('role')
   role,
+  @_s.JsonValue('aws-managed')
   awsManaged,
+  @_s.JsonValue('user-managed')
   userManaged,
+  @_s.JsonValue('resource')
   resource,
+  @_s.JsonValue('none')
   none,
 }
 
@@ -15048,7 +15997,9 @@ extension on String {
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
 /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
 enum PolicyUsageType {
+  @_s.JsonValue('PermissionsPolicy')
   permissionsPolicy,
+  @_s.JsonValue('PermissionsBoundary')
   permissionsBoundary,
 }
 
@@ -15072,14 +16023,21 @@ extension on String {
 /// For more information about managed policies, refer to <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html">Managed
 /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyUser {
   /// The stable and unique string identifying the user. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'UserId')
   final String userId;
 
   /// The name (friendly name, not ARN) identifying the user.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   PolicyUser({
@@ -15104,9 +16062,15 @@ class PolicyUser {
 /// For more information about managed policies, refer to <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/policies-managed-vs-inline.html">Managed
 /// Policies and Inline Policies</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyVersion {
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the policy version was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The policy document.
@@ -15122,9 +16086,11 @@ class PolicyVersion {
   /// example, if you use Java, you can use the <code>decode</code> method of the
   /// <code>java.net.URLDecoder</code> utility class in the Java SDK. Other
   /// languages and SDKs provide similar functionality.
+  @_s.JsonKey(name: 'Document')
   final String document;
 
   /// Specifies whether the policy version is set as the policy's default version.
+  @_s.JsonKey(name: 'IsDefaultVersion')
   final bool isDefaultVersion;
 
   /// The identifier for the policy version.
@@ -15132,6 +16098,7 @@ class PolicyVersion {
   /// Policy version identifiers always begin with <code>v</code> (always
   /// lowercase). When a policy is created, the first policy version is
   /// <code>v1</code>.
+  @_s.JsonKey(name: 'VersionId')
   final String versionId;
 
   PolicyVersion({
@@ -15155,11 +16122,18 @@ class PolicyVersion {
 ///
 /// This data type is used as a member of the <code> <a>Statement</a> </code>
 /// type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Position {
   /// The column in the line containing the specified position in the document.
+  @_s.JsonKey(name: 'Column')
   final int column;
 
   /// The line containing the specified position in the document.
+  @_s.JsonKey(name: 'Line')
   final int line;
 
   Position({
@@ -15175,6 +16149,7 @@ class Position {
 }
 
 enum ReportFormatType {
+  @_s.JsonValue('text/csv')
   textCsv,
 }
 
@@ -15189,8 +16164,11 @@ extension on String {
 }
 
 enum ReportStateType {
+  @_s.JsonValue('STARTED')
   started,
+  @_s.JsonValue('INPROGRESS')
   inprogress,
+  @_s.JsonValue('COMPLETE')
   complete,
 }
 
@@ -15208,6 +16186,11 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResetServiceSpecificCredentialResponse {
   /// A structure with details about the updated service-specific credential,
   /// including the new password.
@@ -15215,6 +16198,7 @@ class ResetServiceSpecificCredentialResponse {
   /// This is the <b>only</b> time that you can access the password. You cannot
   /// recover the password later, but you can reset it again.
   /// </important>
+  @_s.JsonKey(name: 'ServiceSpecificCredential')
   final ServiceSpecificCredential serviceSpecificCredential;
 
   ResetServiceSpecificCredentialResponse({
@@ -15233,19 +16217,26 @@ class ResetServiceSpecificCredentialResponse {
 /// single resource.
 ///
 /// This data type is used by a member of the <a>EvaluationResult</a> data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceSpecificResult {
   /// The result of the simulation of the simulated API operation on the resource
   /// specified in <code>EvalResourceName</code>.
+  @_s.JsonKey(name: 'EvalResourceDecision')
   final PolicyEvaluationDecisionType evalResourceDecision;
 
   /// The name of the simulated resource, in Amazon Resource Name (ARN) format.
+  @_s.JsonKey(name: 'EvalResourceName')
   final String evalResourceName;
 
-  /// Additional details about the results of the evaluation decision. When there
-  /// are both IAM policies and resource policies, this parameter explains how
-  /// each set of policies contributes to the final evaluation decision. When
-  /// simulating cross-account access to a resource, both the resource-based
-  /// policy and the caller's IAM policy must grant access.
+  /// Additional details about the results of the evaluation decision on a single
+  /// resource. This parameter is returned only for cross-account simulations.
+  /// This parameter explains how each policy type contributes to the
+  /// resource-specific evaluation decision.
+  @_s.JsonKey(name: 'EvalDecisionDetails')
   final Map<String, String> evalDecisionDetails;
 
   /// A list of the statements in the input policies that determine the result for
@@ -15253,6 +16244,7 @@ class ResourceSpecificResult {
   /// the operation on the resource, if <i>any</i> statement denies that
   /// operation, then the explicit deny overrides any allow. In addition, the deny
   /// statement is the only entry included in the result.
+  @_s.JsonKey(name: 'MatchedStatements')
   final List<Statement> matchedStatements;
 
   /// A list of context keys that are required by the included input policies but
@@ -15265,7 +16257,13 @@ class ResourceSpecificResult {
   /// discover the context keys used by a set of policies, you can call
   /// <a>GetContextKeysForCustomPolicy</a> or
   /// <a>GetContextKeysForPrincipalPolicy</a>.
+  @_s.JsonKey(name: 'MissingContextValues')
   final List<String> missingContextValues;
+
+  /// Contains information about the effect that a permissions boundary has on a
+  /// policy simulation when that boundary is applied to an IAM entity.
+  @_s.JsonKey(name: 'PermissionsBoundaryDecisionDetail')
+  final PermissionsBoundaryDecisionDetail permissionsBoundaryDecisionDetail;
 
   ResourceSpecificResult({
     @_s.required this.evalResourceDecision,
@@ -15273,6 +16271,7 @@ class ResourceSpecificResult {
     this.evalDecisionDetails,
     this.matchedStatements,
     this.missingContextValues,
+    this.permissionsBoundaryDecisionDetail,
   });
   factory ResourceSpecificResult.fromXml(_s.XmlElement elem) {
     return ResourceSpecificResult(
@@ -15297,47 +16296,63 @@ class ResourceSpecificResult {
           .extractXmlChild(elem, 'MissingContextValues')
           ?.let((elem) =>
               _s.extractXmlStringListValues(elem, 'MissingContextValues')),
+      permissionsBoundaryDecisionDetail: _s
+          .extractXmlChild(elem, 'PermissionsBoundaryDecisionDetail')
+          ?.let((e) => PermissionsBoundaryDecisionDetail.fromXml(e)),
     );
   }
 }
 
 /// Contains information about an IAM role. This structure is returned as a
 /// response element in several API operations that interact with roles.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Role {
   /// The Amazon Resource Name (ARN) specifying the role. For more information
   /// about ARNs and how to use them in policies, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i> guide.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the role was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The path to the role. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The stable and unique string identifying the role. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'RoleId')
   final String roleId;
 
   /// The friendly name that identifies the role.
+  @_s.JsonKey(name: 'RoleName')
   final String roleName;
 
   /// The policy that grants an entity permission to assume the role.
+  @_s.JsonKey(name: 'AssumeRolePolicyDocument')
   final String assumeRolePolicyDocument;
 
   /// A description of the role that you provide.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The maximum session duration (in seconds) for the specified role. Anyone who
   /// uses the AWS CLI, or API to assume the role can specify the duration using
   /// the optional <code>DurationSeconds</code> API parameter or
   /// <code>duration-seconds</code> CLI parameter.
+  @_s.JsonKey(name: 'MaxSessionDuration')
   final int maxSessionDuration;
 
   /// The ARN of the policy used to set the permissions boundary for the role.
@@ -15345,6 +16360,7 @@ class Role {
   /// For more information about permissions boundaries, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
   /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PermissionsBoundary')
   final AttachedPermissionsBoundary permissionsBoundary;
 
   /// Contains information about the last time that an IAM role was used. This
@@ -15355,12 +16371,14 @@ class Role {
   /// see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period">Regions
   /// Where Data Is Tracked</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'RoleLastUsed')
   final RoleLastUsed roleLastUsed;
 
   /// A list of tags that are attached to the specified role. For more information
   /// about tagging, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html">Tagging
   /// IAM Identities</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   Role({
@@ -15404,26 +16422,37 @@ class Role {
 ///
 /// This data type is used as a response element in the
 /// <a>GetAccountAuthorizationDetails</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RoleDetail {
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The trust policy that grants permission to assume the role.
+  @_s.JsonKey(name: 'AssumeRolePolicyDocument')
   final String assumeRolePolicyDocument;
 
   /// A list of managed policies attached to the role. These policies are the
   /// role's access (permissions) policies.
+  @_s.JsonKey(name: 'AttachedManagedPolicies')
   final List<AttachedPolicy> attachedManagedPolicies;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the role was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// A list of instance profiles that contain this role.
+  @_s.JsonKey(name: 'InstanceProfileList')
   final List<InstanceProfile> instanceProfileList;
 
   /// The path to the role. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The ARN of the policy used to set the permissions boundary for the role.
@@ -15431,12 +16460,14 @@ class RoleDetail {
   /// For more information about permissions boundaries, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
   /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PermissionsBoundary')
   final AttachedPermissionsBoundary permissionsBoundary;
 
   /// The stable and unique string identifying the role. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'RoleId')
   final String roleId;
 
   /// Contains information about the last time that an IAM role was used. This
@@ -15447,19 +16478,23 @@ class RoleDetail {
   /// see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period">Regions
   /// Where Data Is Tracked</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'RoleLastUsed')
   final RoleLastUsed roleLastUsed;
 
   /// The friendly name that identifies the role.
+  @_s.JsonKey(name: 'RoleName')
   final String roleName;
 
   /// A list of inline policies embedded in the role. These policies are the
   /// role's access (permissions) policies.
+  @_s.JsonKey(name: 'RolePolicyList')
   final List<PolicyDetail> rolePolicyList;
 
   /// A list of tags that are attached to the specified role. For more information
   /// about tagging, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html">Tagging
   /// IAM Identities</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   RoleDetail({
@@ -15524,6 +16559,11 @@ class RoleDetail {
 ///
 /// This data type is returned as a response element in the <a>GetRole</a> and
 /// <a>GetAccountAuthorizationDetails</a> operations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RoleLastUsed {
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a> that the role was last used.
@@ -15532,9 +16572,11 @@ class RoleLastUsed {
   /// period. For more information about the tracking period, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#access-advisor_tracking-period">Regions
   /// Where Data Is Tracked</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'LastUsedDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUsedDate;
 
   /// The name of the AWS Region in which the role was last used.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   RoleLastUsed({
@@ -15554,11 +16596,18 @@ class RoleLastUsed {
 ///
 /// This data type is used as a response element in the
 /// <a>GetServiceLinkedRoleDeletionStatus</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RoleUsageType {
   /// The name of the Region where the service-linked role is being used.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   /// The name of the resource that is using the service-linked role.
+  @_s.JsonKey(name: 'Resources')
   final List<String> resources;
 
   RoleUsageType({
@@ -15576,14 +16625,22 @@ class RoleUsageType {
 }
 
 /// Contains the list of SAML providers for this account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SAMLProviderListEntry {
   /// The Amazon Resource Name (ARN) of the SAML provider.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The date and time when the SAML provider was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The expiration date and time for the SAML provider.
+  @_s.JsonKey(name: 'ValidUntil', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime validUntil;
 
   SAMLProviderListEntry({
@@ -15604,26 +16661,37 @@ class SAMLProviderListEntry {
 ///
 /// This data type is used as a response element in the <a>GetSSHPublicKey</a>
 /// and <a>UploadSSHPublicKey</a> operations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SSHPublicKey {
   /// The MD5 message digest of the SSH public key.
+  @_s.JsonKey(name: 'Fingerprint')
   final String fingerprint;
 
   /// The SSH public key.
+  @_s.JsonKey(name: 'SSHPublicKeyBody')
   final String sSHPublicKeyBody;
 
   /// The unique identifier for the SSH public key.
+  @_s.JsonKey(name: 'SSHPublicKeyId')
   final String sSHPublicKeyId;
 
   /// The status of the SSH public key. <code>Active</code> means that the key can
   /// be used for authentication with an AWS CodeCommit repository.
   /// <code>Inactive</code> means that the key cannot be used.
+  @_s.JsonKey(name: 'Status')
   final StatusType status;
 
   /// The name of the IAM user associated with the SSH public key.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the SSH public key was uploaded.
+  @_s.JsonKey(name: 'UploadDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime uploadDate;
 
   SSHPublicKey({
@@ -15651,20 +16719,29 @@ class SSHPublicKey {
 ///
 /// This data type is used as a response element in the <a>ListSSHPublicKeys</a>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SSHPublicKeyMetadata {
   /// The unique identifier for the SSH public key.
+  @_s.JsonKey(name: 'SSHPublicKeyId')
   final String sSHPublicKeyId;
 
   /// The status of the SSH public key. <code>Active</code> means that the key can
   /// be used for authentication with an AWS CodeCommit repository.
   /// <code>Inactive</code> means that the key cannot be used.
+  @_s.JsonKey(name: 'Status')
   final StatusType status;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the SSH public key was uploaded.
+  @_s.JsonKey(name: 'UploadDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime uploadDate;
 
   /// The name of the IAM user associated with the SSH public key.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   SSHPublicKeyMetadata({
@@ -15687,15 +16764,23 @@ class SSHPublicKeyMetadata {
 ///
 /// This data type is used as a response element in the
 /// <a>GetServerCertificate</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServerCertificate {
   /// The contents of the public key certificate.
+  @_s.JsonKey(name: 'CertificateBody')
   final String certificateBody;
 
   /// The meta information of the server certificate, such as its name, path, ID,
   /// and ARN.
+  @_s.JsonKey(name: 'ServerCertificateMetadata')
   final ServerCertificateMetadata serverCertificateMetadata;
 
   /// The contents of the public key certificate chain.
+  @_s.JsonKey(name: 'CertificateChain')
   final String certificateChain;
 
   ServerCertificate({
@@ -15719,31 +16804,42 @@ class ServerCertificate {
 ///
 /// This data type is used as a response element in the
 /// <a>UploadServerCertificate</a> and <a>ListServerCertificates</a> operations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServerCertificateMetadata {
   /// The Amazon Resource Name (ARN) specifying the server certificate. For more
   /// information about ARNs and how to use them in policies, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The path to the server certificate. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The stable and unique string identifying the server certificate. For more
   /// information about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'ServerCertificateId')
   final String serverCertificateId;
 
   /// The name that identifies the server certificate.
+  @_s.JsonKey(name: 'ServerCertificateName')
   final String serverCertificateName;
 
   /// The date on which the certificate is set to expire.
+  @_s.JsonKey(name: 'Expiration', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime expiration;
 
   /// The date when the server certificate was uploaded.
+  @_s.JsonKey(name: 'UploadDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime uploadDate;
 
   ServerCertificateMetadata({
@@ -15772,8 +16868,14 @@ class ServerCertificateMetadata {
 ///
 /// This data type is used as a response element in the
 /// <a>GetServiceLastAccessedDetails</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServiceLastAccessed {
   /// The name of the service in which access was attempted.
+  @_s.JsonKey(name: 'ServiceName')
   final String serviceName;
 
   /// The namespace of the service in which access was attempted.
@@ -15786,6 +16888,7 @@ class ServiceLastAccessed {
   /// prefix: a4b)</code>. For more information about service namespaces, see <a
   /// href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#genref-aws-service-namespaces">AWS
   /// Service Namespaces</a> in the <i>AWS General Reference</i>.
+  @_s.JsonKey(name: 'ServiceNamespace')
   final String serviceNamespace;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -15796,6 +16899,8 @@ class ServiceLastAccessed {
   /// the <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period">reporting
   /// period</a>.
+  @_s.JsonKey(
+      name: 'LastAuthenticated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastAuthenticated;
 
   /// The ARN of the authenticated entity (user or role) that last attempted to
@@ -15805,6 +16910,7 @@ class ServiceLastAccessed {
   /// the <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period">reporting
   /// period</a>.
+  @_s.JsonKey(name: 'LastAuthenticatedEntity')
   final String lastAuthenticatedEntity;
 
   /// The total number of authenticated principals (root user, IAM users, or IAM
@@ -15814,6 +16920,7 @@ class ServiceLastAccessed {
   /// the <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_access-advisor.html#service-last-accessed-reporting-period">reporting
   /// period</a>.
+  @_s.JsonKey(name: 'TotalAuthenticatedEntities')
   final int totalAuthenticatedEntities;
 
   ServiceLastAccessed({
@@ -15837,32 +16944,44 @@ class ServiceLastAccessed {
 }
 
 /// Contains the details of a service-specific credential.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServiceSpecificCredential {
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the service-specific credential were created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The name of the service associated with the service-specific credential.
+  @_s.JsonKey(name: 'ServiceName')
   final String serviceName;
 
   /// The generated password for the service-specific credential.
+  @_s.JsonKey(name: 'ServicePassword')
   final String servicePassword;
 
   /// The unique identifier for the service-specific credential.
+  @_s.JsonKey(name: 'ServiceSpecificCredentialId')
   final String serviceSpecificCredentialId;
 
   /// The generated user name for the service-specific credential. This value is
   /// generated by combining the IAM user's name combined with the ID number of
   /// the AWS account, as in <code>jane-at-123456789012</code>, for example. This
   /// value cannot be configured by the user.
+  @_s.JsonKey(name: 'ServiceUserName')
   final String serviceUserName;
 
   /// The status of the service-specific credential. <code>Active</code> means
   /// that the key is valid for API calls, while <code>Inactive</code> means it is
   /// not.
+  @_s.JsonKey(name: 'Status')
   final StatusType status;
 
   /// The name of the IAM user associated with the service-specific credential.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   ServiceSpecificCredential({
@@ -15889,26 +17008,37 @@ class ServiceSpecificCredential {
 }
 
 /// Contains additional details about a service-specific credential.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServiceSpecificCredentialMetadata {
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the service-specific credential were created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The name of the service associated with the service-specific credential.
+  @_s.JsonKey(name: 'ServiceName')
   final String serviceName;
 
   /// The unique identifier for the service-specific credential.
+  @_s.JsonKey(name: 'ServiceSpecificCredentialId')
   final String serviceSpecificCredentialId;
 
   /// The generated user name for the service-specific credential.
+  @_s.JsonKey(name: 'ServiceUserName')
   final String serviceUserName;
 
   /// The status of the service-specific credential. <code>Active</code> means
   /// that the key is valid for API calls, while <code>Inactive</code> means it is
   /// not.
+  @_s.JsonKey(name: 'Status')
   final StatusType status;
 
   /// The name of the IAM user associated with the service-specific credential.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   ServiceSpecificCredentialMetadata({
@@ -15937,21 +17067,31 @@ class ServiceSpecificCredentialMetadata {
 /// This data type is used as a response element in the
 /// <a>UploadSigningCertificate</a> and <a>ListSigningCertificates</a>
 /// operations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SigningCertificate {
   /// The contents of the signing certificate.
+  @_s.JsonKey(name: 'CertificateBody')
   final String certificateBody;
 
   /// The ID for the signing certificate.
+  @_s.JsonKey(name: 'CertificateId')
   final String certificateId;
 
   /// The status of the signing certificate. <code>Active</code> means that the
   /// key is valid for API calls, while <code>Inactive</code> means it is not.
+  @_s.JsonKey(name: 'Status')
   final StatusType status;
 
   /// The name of the user the signing certificate is associated with.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   /// The date when the signing certificate was uploaded.
+  @_s.JsonKey(name: 'UploadDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime uploadDate;
 
   SigningCertificate({
@@ -15974,8 +17114,14 @@ class SigningCertificate {
 
 /// Contains the response to a successful <a>SimulatePrincipalPolicy</a> or
 /// <a>SimulateCustomPolicy</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SimulatePolicyResponse {
   /// The results of the simulation.
+  @_s.JsonKey(name: 'EvaluationResults')
   final List<EvaluationResult> evaluationResults;
 
   /// A flag that indicates whether there are more items to return. If your
@@ -15985,11 +17131,13 @@ class SimulatePolicyResponse {
   /// when there are more results available. We recommend that you check
   /// <code>IsTruncated</code> after every call to ensure that you receive all
   /// your results.
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
 
   /// When <code>IsTruncated</code> is <code>true</code>, this element is present
   /// and contains the value to use for the <code>Marker</code> parameter in a
   /// subsequent pagination request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   SimulatePolicyResponse({
@@ -16015,18 +17163,27 @@ class SimulatePolicyResponse {
 ///
 /// This data type is used by the <code>MatchedStatements</code> member of the
 /// <code> <a>EvaluationResult</a> </code> type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Statement {
   /// The row and column of the end of a <code>Statement</code> in an IAM policy.
+  @_s.JsonKey(name: 'EndPosition')
   final Position endPosition;
 
   /// The identifier of the policy that was provided as an input.
+  @_s.JsonKey(name: 'SourcePolicyId')
   final String sourcePolicyId;
 
   /// The type of the policy.
+  @_s.JsonKey(name: 'SourcePolicyType')
   final PolicySourceType sourcePolicyType;
 
   /// The row and column of the beginning of the <code>Statement</code> in an IAM
   /// policy.
+  @_s.JsonKey(name: 'StartPosition')
   final Position startPosition;
 
   Statement({
@@ -16056,10 +17213,16 @@ class Statement {
 /// tagging, see <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html">Tagging
 /// IAM Identities</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The key name that can be used to look up or retrieve the associated value.
   /// For example, <code>Department</code> or <code>Cost Center</code> are common
   /// choices.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value associated with this tag. For example, tags with a key name of
@@ -16074,6 +17237,7 @@ class Tag {
   /// need to store an array, you can store comma-separated values in the string.
   /// However, you must interpret the value in your code.
   /// </note>
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -16086,10 +17250,18 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateRoleDescriptionResponse {
   /// A structure that contains details about the modified role.
+  @_s.JsonKey(name: 'Role')
   final Role role;
 
   UpdateRoleDescriptionResponse({
@@ -16102,6 +17274,11 @@ class UpdateRoleDescriptionResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateRoleResponse {
   UpdateRoleResponse();
   factory UpdateRoleResponse.fromXml(
@@ -16112,8 +17289,14 @@ class UpdateRoleResponse {
 }
 
 /// Contains the response to a successful <a>UpdateSAMLProvider</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateSAMLProviderResponse {
   /// The Amazon Resource Name (ARN) of the SAML provider that was updated.
+  @_s.JsonKey(name: 'SAMLProviderArn')
   final String sAMLProviderArn;
 
   UpdateSAMLProviderResponse({
@@ -16127,8 +17310,14 @@ class UpdateSAMLProviderResponse {
 }
 
 /// Contains the response to a successful <a>UploadSSHPublicKey</a> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UploadSSHPublicKeyResponse {
   /// Contains information about the SSH public key.
+  @_s.JsonKey(name: 'SSHPublicKey')
   final SSHPublicKey sSHPublicKey;
 
   UploadSSHPublicKeyResponse({
@@ -16145,9 +17334,15 @@ class UploadSSHPublicKeyResponse {
 
 /// Contains the response to a successful <a>UploadServerCertificate</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UploadServerCertificateResponse {
   /// The meta information of the uploaded server certificate without its
   /// certificate body, certificate chain, and private key.
+  @_s.JsonKey(name: 'ServerCertificateMetadata')
   final ServerCertificateMetadata serverCertificateMetadata;
 
   UploadServerCertificateResponse({
@@ -16164,8 +17359,14 @@ class UploadServerCertificateResponse {
 
 /// Contains the response to a successful <a>UploadSigningCertificate</a>
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UploadSigningCertificateResponse {
   /// Information about the certificate.
+  @_s.JsonKey(name: 'Certificate')
   final SigningCertificate certificate;
 
   UploadSigningCertificateResponse({
@@ -16195,29 +17396,39 @@ class UploadSigningCertificateResponse {
 /// <a>ListUsers</a>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class User {
   /// The Amazon Resource Name (ARN) that identifies the user. For more
   /// information about ARNs and how to use ARNs in policies, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the user was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// The path to the user. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The stable and unique string identifying the user. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'UserId')
   final String userId;
 
   /// The friendly name identifying the user.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
@@ -16245,6 +17456,8 @@ class User {
   ///
   /// This value is returned only in the <a>GetUser</a> and <a>ListUsers</a>
   /// operations.
+  @_s.JsonKey(
+      name: 'PasswordLastUsed', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime passwordLastUsed;
 
   /// The ARN of the policy used to set the permissions boundary for the user.
@@ -16252,12 +17465,14 @@ class User {
   /// For more information about permissions boundaries, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
   /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PermissionsBoundary')
   final AttachedPermissionsBoundary permissionsBoundary;
 
   /// A list of tags that are associated with the specified user. For more
   /// information about tagging, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html">Tagging
   /// IAM Identities</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   User({
@@ -16292,22 +17507,32 @@ class User {
 ///
 /// This data type is used as a response element in the
 /// <a>GetAccountAuthorizationDetails</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UserDetail {
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// A list of the managed policies attached to the user.
+  @_s.JsonKey(name: 'AttachedManagedPolicies')
   final List<AttachedPolicy> attachedManagedPolicies;
 
   /// The date and time, in <a href="http://www.iso.org/iso/iso8601">ISO 8601
   /// date-time format</a>, when the user was created.
+  @_s.JsonKey(name: 'CreateDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createDate;
 
   /// A list of IAM groups that the user is in.
+  @_s.JsonKey(name: 'GroupList')
   final List<String> groupList;
 
   /// The path to the user. For more information about paths, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The ARN of the policy used to set the permissions boundary for the user.
@@ -16315,24 +17540,29 @@ class UserDetail {
   /// For more information about permissions boundaries, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html">Permissions
   /// Boundaries for IAM Identities </a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'PermissionsBoundary')
   final AttachedPermissionsBoundary permissionsBoundary;
 
   /// A list of tags that are associated with the specified user. For more
   /// information about tagging, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_tags.html">Tagging
   /// IAM Identities</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// The stable and unique string identifying the user. For more information
   /// about IDs, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'UserId')
   final String userId;
 
   /// The friendly name identifying the user.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   /// A list of the inline policies embedded in the user.
+  @_s.JsonKey(name: 'UserPolicyList')
   final List<PolicyDetail> userPolicyList;
 
   UserDetail({
@@ -16378,16 +17608,25 @@ class UserDetail {
 }
 
 /// Contains information about a virtual MFA device.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VirtualMFADevice {
   /// The serial number associated with <code>VirtualMFADevice</code>.
+  @_s.JsonKey(name: 'SerialNumber')
   final String serialNumber;
 
   /// The base32 seed defined as specified in <a
   /// href="https://tools.ietf.org/html/rfc3548.txt">RFC3548</a>. The
   /// <code>Base32StringSeed</code> is base64-encoded.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'Base32StringSeed')
   final Uint8List base32StringSeed;
 
   /// The date and time on which the virtual MFA device was enabled.
+  @_s.JsonKey(name: 'EnableDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime enableDate;
 
   /// A QR code PNG image that encodes
@@ -16396,9 +17635,12 @@ class VirtualMFADevice {
   /// arguments. <code>AccountName</code> is the user name if set (otherwise, the
   /// account ID otherwise), and <code>Base32String</code> is the seed in base32
   /// format. The <code>Base32String</code> value is base64-encoded.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'QRCodePNG')
   final Uint8List qRCodePNG;
 
   /// The IAM user associated with this virtual MFA device.
+  @_s.JsonKey(name: 'User')
   final User user;
 
   VirtualMFADevice({
@@ -16420,8 +17662,11 @@ class VirtualMFADevice {
 }
 
 enum AssignmentStatusType {
+  @_s.JsonValue('Assigned')
   assigned,
+  @_s.JsonValue('Unassigned')
   unassigned,
+  @_s.JsonValue('Any')
   any,
 }
 
@@ -16440,7 +17685,9 @@ extension on String {
 }
 
 enum EncodingType {
+  @_s.JsonValue('SSH')
   ssh,
+  @_s.JsonValue('PEM')
   pem,
 }
 
@@ -16457,7 +17704,9 @@ extension on String {
 }
 
 enum GlobalEndpointTokenVersion {
+  @_s.JsonValue('v1Token')
   v1Token,
+  @_s.JsonValue('v2Token')
   v2Token,
 }
 
@@ -16474,8 +17723,11 @@ extension on String {
 }
 
 enum JobStatusType {
+  @_s.JsonValue('IN_PROGRESS')
   inProgress,
+  @_s.JsonValue('COMPLETED')
   completed,
+  @_s.JsonValue('FAILED')
   failed,
 }
 
@@ -16494,8 +17746,11 @@ extension on String {
 }
 
 enum PolicyOwnerEntityType {
+  @_s.JsonValue('USER')
   user,
+  @_s.JsonValue('ROLE')
   role,
+  @_s.JsonValue('GROUP')
   group,
 }
 
@@ -16514,8 +17769,11 @@ extension on String {
 }
 
 enum PolicyScopeType {
+  @_s.JsonValue('All')
   all,
+  @_s.JsonValue('AWS')
   aws,
+  @_s.JsonValue('Local')
   local,
 }
 
@@ -16534,7 +17792,9 @@ extension on String {
 }
 
 enum PolicyType {
+  @_s.JsonValue('INLINE')
   inline,
+  @_s.JsonValue('MANAGED')
   managed,
 }
 
@@ -16551,9 +17811,13 @@ extension on String {
 }
 
 enum SortKeyType {
+  @_s.JsonValue('SERVICE_NAMESPACE_ASCENDING')
   serviceNamespaceAscending,
+  @_s.JsonValue('SERVICE_NAMESPACE_DESCENDING')
   serviceNamespaceDescending,
+  @_s.JsonValue('LAST_AUTHENTICATED_TIME_ASCENDING')
   lastAuthenticatedTimeAscending,
+  @_s.JsonValue('LAST_AUTHENTICATED_TIME_DESCENDING')
   lastAuthenticatedTimeDescending,
 }
 
@@ -16574,7 +17838,9 @@ extension on String {
 }
 
 enum StatusType {
+  @_s.JsonValue('Active')
   active,
+  @_s.JsonValue('Inactive')
   inactive,
 }
 
@@ -16591,31 +17857,57 @@ extension on String {
 }
 
 enum SummaryKeyType {
+  @_s.JsonValue('Users')
   users,
+  @_s.JsonValue('UsersQuota')
   usersQuota,
+  @_s.JsonValue('Groups')
   groups,
+  @_s.JsonValue('GroupsQuota')
   groupsQuota,
+  @_s.JsonValue('ServerCertificates')
   serverCertificates,
+  @_s.JsonValue('ServerCertificatesQuota')
   serverCertificatesQuota,
+  @_s.JsonValue('UserPolicySizeQuota')
   userPolicySizeQuota,
+  @_s.JsonValue('GroupPolicySizeQuota')
   groupPolicySizeQuota,
+  @_s.JsonValue('GroupsPerUserQuota')
   groupsPerUserQuota,
+  @_s.JsonValue('SigningCertificatesPerUserQuota')
   signingCertificatesPerUserQuota,
+  @_s.JsonValue('AccessKeysPerUserQuota')
   accessKeysPerUserQuota,
+  @_s.JsonValue('MFADevices')
   mFADevices,
+  @_s.JsonValue('MFADevicesInUse')
   mFADevicesInUse,
+  @_s.JsonValue('AccountMFAEnabled')
   accountMFAEnabled,
+  @_s.JsonValue('AccountAccessKeysPresent')
   accountAccessKeysPresent,
+  @_s.JsonValue('AccountSigningCertificatesPresent')
   accountSigningCertificatesPresent,
+  @_s.JsonValue('AttachedPoliciesPerGroupQuota')
   attachedPoliciesPerGroupQuota,
+  @_s.JsonValue('AttachedPoliciesPerRoleQuota')
   attachedPoliciesPerRoleQuota,
+  @_s.JsonValue('AttachedPoliciesPerUserQuota')
   attachedPoliciesPerUserQuota,
+  @_s.JsonValue('Policies')
   policies,
+  @_s.JsonValue('PoliciesQuota')
   policiesQuota,
+  @_s.JsonValue('PolicySizeQuota')
   policySizeQuota,
+  @_s.JsonValue('PolicyVersionsInUse')
   policyVersionsInUse,
+  @_s.JsonValue('PolicyVersionsInUseQuota')
   policyVersionsInUseQuota,
+  @_s.JsonValue('VersionsPerPolicyQuota')
   versionsPerPolicyQuota,
+  @_s.JsonValue('GlobalEndpointTokenVersion')
   globalEndpointTokenVersion,
 }
 

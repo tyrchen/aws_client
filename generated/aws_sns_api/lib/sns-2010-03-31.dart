@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'sns-2010-03-31.g.dart';
 
 /// Amazon Simple Notification Service (Amazon SNS) is a web service that
 /// enables you to build distributed web-enabled applications. Applications can
@@ -1884,6 +1894,11 @@ class SNS {
 }
 
 /// The response from the <code>CheckIfPhoneNumberIsOptedOut</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CheckIfPhoneNumberIsOptedOutResponse {
   /// Indicates whether the phone number is opted out:
   ///
@@ -1897,6 +1912,7 @@ class CheckIfPhoneNumberIsOptedOutResponse {
   /// SMS messages to it.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'isOptedOut')
   final bool isOptedOut;
 
   CheckIfPhoneNumberIsOptedOutResponse({
@@ -1910,8 +1926,14 @@ class CheckIfPhoneNumberIsOptedOutResponse {
 }
 
 /// Response for ConfirmSubscriptions action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConfirmSubscriptionResponse {
   /// The ARN of the created subscription.
+  @_s.JsonKey(name: 'SubscriptionArn')
   final String subscriptionArn;
 
   ConfirmSubscriptionResponse({
@@ -1925,8 +1947,14 @@ class ConfirmSubscriptionResponse {
 }
 
 /// Response from CreateEndpoint action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateEndpointResponse {
   /// EndpointArn returned from CreateEndpoint action.
+  @_s.JsonKey(name: 'EndpointArn')
   final String endpointArn;
 
   CreateEndpointResponse({
@@ -1940,8 +1968,14 @@ class CreateEndpointResponse {
 }
 
 /// Response from CreatePlatformApplication action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreatePlatformApplicationResponse {
   /// PlatformApplicationArn is returned.
+  @_s.JsonKey(name: 'PlatformApplicationArn')
   final String platformApplicationArn;
 
   CreatePlatformApplicationResponse({
@@ -1956,8 +1990,14 @@ class CreatePlatformApplicationResponse {
 }
 
 /// Response from CreateTopic action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateTopicResponse {
   /// The Amazon Resource Name (ARN) assigned to the created topic.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   CreateTopicResponse({
@@ -1971,11 +2011,18 @@ class CreateTopicResponse {
 }
 
 /// Endpoint for mobile app and device.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Endpoint {
   /// Attributes for endpoint.
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   /// EndpointArn for mobile app and device.
+  @_s.JsonKey(name: 'EndpointArn')
   final String endpointArn;
 
   Endpoint({
@@ -1998,6 +2045,11 @@ class Endpoint {
 }
 
 /// Response from GetEndpointAttributes of the EndpointArn.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetEndpointAttributesResponse {
   /// Attributes include the following:
   ///
@@ -2021,6 +2073,7 @@ class GetEndpointAttributesResponse {
   /// The device token for the iOS platform is returned in lowercase.
   /// </note> </li>
   /// </ul>
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   GetEndpointAttributesResponse({
@@ -2041,6 +2094,11 @@ class GetEndpointAttributesResponse {
 }
 
 /// Response for GetPlatformApplicationAttributes action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetPlatformApplicationAttributesResponse {
   /// Attributes include the following:
   ///
@@ -2063,6 +2121,7 @@ class GetPlatformApplicationAttributesResponse {
   /// (permanent) to one of the application's endpoints.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   GetPlatformApplicationAttributesResponse({
@@ -2083,8 +2142,14 @@ class GetPlatformApplicationAttributesResponse {
 }
 
 /// The response from the <code>GetSMSAttributes</code> request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetSMSAttributesResponse {
   /// The SMS attribute names and their values.
+  @_s.JsonKey(name: 'attributes')
   final Map<String, String> attributes;
 
   GetSMSAttributesResponse({
@@ -2105,6 +2170,11 @@ class GetSMSAttributesResponse {
 }
 
 /// Response for GetSubscriptionAttributes action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetSubscriptionAttributesResponse {
   /// A map of the subscription's attributes. Attributes in this map include the
   /// following:
@@ -2156,6 +2226,7 @@ class GetSubscriptionAttributesResponse {
   /// with.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   GetSubscriptionAttributesResponse({
@@ -2176,6 +2247,11 @@ class GetSubscriptionAttributesResponse {
 }
 
 /// Response for GetTopicAttributes action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetTopicAttributesResponse {
   /// A map of the topic's attributes. Attributes in this map include the
   /// following:
@@ -2230,6 +2306,7 @@ class GetTopicAttributesResponse {
   /// in the <i>AWS Key Management Service API Reference</i>.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   GetTopicAttributesResponse({
@@ -2250,12 +2327,19 @@ class GetTopicAttributesResponse {
 }
 
 /// Response for ListEndpointsByPlatformApplication action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListEndpointsByPlatformApplicationResponse {
   /// Endpoints returned for ListEndpointsByPlatformApplication action.
+  @_s.JsonKey(name: 'Endpoints')
   final List<Endpoint> endpoints;
 
   /// NextToken string is returned when calling ListEndpointsByPlatformApplication
   /// action if additional records are available after the first page results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListEndpointsByPlatformApplicationResponse({
@@ -2275,14 +2359,21 @@ class ListEndpointsByPlatformApplicationResponse {
 }
 
 /// The response from the <code>ListPhoneNumbersOptedOut</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListPhoneNumbersOptedOutResponse {
   /// A <code>NextToken</code> string is returned when you call the
   /// <code>ListPhoneNumbersOptedOut</code> action if additional records are
   /// available after the first page of results.
+  @_s.JsonKey(name: 'nextToken')
   final String nextToken;
 
   /// A list of phone numbers that are opted out of receiving SMS messages. The
   /// list is paginated, and each page can contain up to 100 phone numbers.
+  @_s.JsonKey(name: 'phoneNumbers')
   final List<String> phoneNumbers;
 
   ListPhoneNumbersOptedOutResponse({
@@ -2300,12 +2391,19 @@ class ListPhoneNumbersOptedOutResponse {
 }
 
 /// Response for ListPlatformApplications action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListPlatformApplicationsResponse {
   /// NextToken string is returned when calling ListPlatformApplications action if
   /// additional records are available after the first page results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// Platform applications returned when calling ListPlatformApplications action.
+  @_s.JsonKey(name: 'PlatformApplications')
   final List<PlatformApplication> platformApplications;
 
   ListPlatformApplicationsResponse({
@@ -2326,13 +2424,20 @@ class ListPlatformApplicationsResponse {
 }
 
 /// Response for ListSubscriptionsByTopic action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListSubscriptionsByTopicResponse {
   /// Token to pass along to the next <code>ListSubscriptionsByTopic</code>
   /// request. This element is returned if there are more subscriptions to
   /// retrieve.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of subscriptions.
+  @_s.JsonKey(name: 'Subscriptions')
   final List<Subscription> subscriptions;
 
   ListSubscriptionsByTopicResponse({
@@ -2352,12 +2457,19 @@ class ListSubscriptionsByTopicResponse {
 }
 
 /// Response for ListSubscriptions action
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListSubscriptionsResponse {
   /// Token to pass along to the next <code>ListSubscriptions</code> request. This
   /// element is returned if there are more subscriptions to retrieve.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of subscriptions.
+  @_s.JsonKey(name: 'Subscriptions')
   final List<Subscription> subscriptions;
 
   ListSubscriptionsResponse({
@@ -2376,8 +2488,14 @@ class ListSubscriptionsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListTagsForResourceResponse {
   /// The tags associated with the specified topic.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   ListTagsForResourceResponse({
@@ -2392,12 +2510,19 @@ class ListTagsForResourceResponse {
 }
 
 /// Response for ListTopics action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListTopicsResponse {
   /// Token to pass along to the next <code>ListTopics</code> request. This
   /// element is returned if there are additional topics to retrieve.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of topic ARNs.
+  @_s.JsonKey(name: 'Topics')
   final List<Topic> topics;
 
   ListTopicsResponse({
@@ -2425,21 +2550,30 @@ class ListTopicsResponse {
 /// information, see <a
 /// href="https://docs.aws.amazon.com/sns/latest/dg/SNSMessageAttributes.html">Using
 /// Amazon SNS Message Attributes</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MessageAttributeValue {
   /// Amazon SNS supports the following logical data types: String, String.Array,
   /// Number, and Binary. For more information, see <a
   /// href="https://docs.aws.amazon.com/sns/latest/dg/SNSMessageAttributes.html#SNSMessageAttributes.DataTypes">Message
   /// Attribute Data Types</a>.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// Binary type attributes can store any binary data, for example, compressed
   /// data, encrypted data, or images.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'BinaryValue')
   final Uint8List binaryValue;
 
   /// Strings are Unicode with UTF8 binary encoding. For a list of code values,
   /// see <a
   /// href="https://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters">ASCII
   /// Printable Characters</a>.
+  @_s.JsonKey(name: 'StringValue')
   final String stringValue;
 
   MessageAttributeValue({
@@ -2447,9 +2581,15 @@ class MessageAttributeValue {
     this.binaryValue,
     this.stringValue,
   });
+  Map<String, dynamic> toJson() => _$MessageAttributeValueToJson(this);
 }
 
 /// The response for the OptInPhoneNumber action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptInPhoneNumberResponse {
   OptInPhoneNumberResponse();
   factory OptInPhoneNumberResponse.fromXml(
@@ -2460,11 +2600,18 @@ class OptInPhoneNumberResponse {
 }
 
 /// Platform application object.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PlatformApplication {
   /// Attributes for platform application object.
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   /// PlatformApplicationArn for platform application object.
+  @_s.JsonKey(name: 'PlatformApplicationArn')
   final String platformApplicationArn;
 
   PlatformApplication({
@@ -2488,10 +2635,16 @@ class PlatformApplication {
 }
 
 /// Response for Publish action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PublishResponse {
   /// Unique identifier assigned to the published message.
   ///
   /// Length Constraint: Maximum 100 characters
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   PublishResponse({
@@ -2505,6 +2658,11 @@ class PublishResponse {
 }
 
 /// The response for the SetSMSAttributes action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetSMSAttributesResponse {
   SetSMSAttributesResponse();
   factory SetSMSAttributesResponse.fromXml(
@@ -2515,12 +2673,18 @@ class SetSMSAttributesResponse {
 }
 
 /// Response for Subscribe action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SubscribeResponse {
   /// The ARN of the subscription if it is confirmed, or the string "pending
   /// confirmation" if the subscription requires confirmation. However, if the API
   /// request parameter <code>ReturnSubscriptionArn</code> is true, then the value
   /// is always the subscription ARN, even if the subscription requires
   /// confirmation.
+  @_s.JsonKey(name: 'SubscriptionArn')
   final String subscriptionArn;
 
   SubscribeResponse({
@@ -2534,20 +2698,30 @@ class SubscribeResponse {
 }
 
 /// A wrapper type for the attributes of an Amazon SNS subscription.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Subscription {
   /// The subscription's endpoint (format depends on the protocol).
+  @_s.JsonKey(name: 'Endpoint')
   final String endpoint;
 
   /// The subscription's owner.
+  @_s.JsonKey(name: 'Owner')
   final String owner;
 
   /// The subscription's protocol.
+  @_s.JsonKey(name: 'Protocol')
   final String protocol;
 
   /// The subscription's ARN.
+  @_s.JsonKey(name: 'SubscriptionArn')
   final String subscriptionArn;
 
   /// The ARN of the subscription's topic.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   Subscription({
@@ -2569,11 +2743,18 @@ class Subscription {
 }
 
 /// The list of tags to be added to the specified topic.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The required key portion of the tag.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The optional value portion of the tag.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -2586,8 +2767,15 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagResourceResponse {
   TagResourceResponse();
   factory TagResourceResponse.fromXml(
@@ -2599,8 +2787,14 @@ class TagResourceResponse {
 
 /// A wrapper type for the topic's Amazon Resource Name (ARN). To retrieve a
 /// topic's attributes, use <code>GetTopicAttributes</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Topic {
   /// The topic's ARN.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   Topic({
@@ -2613,6 +2807,11 @@ class Topic {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UntagResourceResponse {
   UntagResourceResponse();
   factory UntagResourceResponse.fromXml(

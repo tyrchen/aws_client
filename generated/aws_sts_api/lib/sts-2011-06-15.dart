@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'sts-2011-06-15.g.dart';
 
 /// The AWS Security Token Service (STS) is a web service that enables you to
 /// request temporary, limited-privilege credentials for AWS Identity and Access
@@ -1813,6 +1823,11 @@ class STS {
 
 /// Contains the response to a successful <a>AssumeRole</a> request, including
 /// temporary AWS credentials that can be used to make AWS requests.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AssumeRoleResponse {
   /// The Amazon Resource Name (ARN) and the assumed role ID, which are
   /// identifiers that you can use to refer to the resulting temporary security
@@ -1820,6 +1835,7 @@ class AssumeRoleResponse {
   /// in a resource-based policy by using the ARN or assumed role ID. The ARN and
   /// ID include the <code>RoleSessionName</code> that you specified when you
   /// called <code>AssumeRole</code>.
+  @_s.JsonKey(name: 'AssumedRoleUser')
   final AssumedRoleUser assumedRoleUser;
 
   /// The temporary security credentials, which include an access key ID, a secret
@@ -1828,12 +1844,14 @@ class AssumeRoleResponse {
   /// The size of the security token that STS API operations return is not fixed.
   /// We strongly recommend that you make no assumptions about the maximum size.
   /// </note>
+  @_s.JsonKey(name: 'Credentials')
   final Credentials credentials;
 
   /// A percentage value that indicates the packed size of the session policies
   /// and session tags combined passed in the request. The request fails if the
   /// packed size is greater than 100 percent, which means the policies and tags
   /// exceeded the allowed space.
+  @_s.JsonKey(name: 'PackedPolicySize')
   final int packedPolicySize;
 
   AssumeRoleResponse({
@@ -1856,13 +1874,20 @@ class AssumeRoleResponse {
 
 /// Contains the response to a successful <a>AssumeRoleWithSAML</a> request,
 /// including temporary AWS credentials that can be used to make AWS requests.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AssumeRoleWithSAMLResponse {
   /// The identifiers for the temporary security credentials that the operation
   /// returns.
+  @_s.JsonKey(name: 'AssumedRoleUser')
   final AssumedRoleUser assumedRoleUser;
 
   /// The value of the <code>Recipient</code> attribute of the
   /// <code>SubjectConfirmationData</code> element of the SAML assertion.
+  @_s.JsonKey(name: 'Audience')
   final String audience;
 
   /// The temporary security credentials, which include an access key ID, a secret
@@ -1871,9 +1896,11 @@ class AssumeRoleWithSAMLResponse {
   /// The size of the security token that STS API operations return is not fixed.
   /// We strongly recommend that you make no assumptions about the maximum size.
   /// </note>
+  @_s.JsonKey(name: 'Credentials')
   final Credentials credentials;
 
   /// The value of the <code>Issuer</code> element of the SAML assertion.
+  @_s.JsonKey(name: 'Issuer')
   final String issuer;
 
   /// A hash value based on the concatenation of the <code>Issuer</code> response
@@ -1885,16 +1912,19 @@ class AssumeRoleWithSAMLResponse {
   ///
   /// <code>BASE64 ( SHA1 ( "https://example.com/saml" + "123456789012" +
   /// "/MySAMLIdP" ) )</code>
+  @_s.JsonKey(name: 'NameQualifier')
   final String nameQualifier;
 
   /// A percentage value that indicates the packed size of the session policies
   /// and session tags combined passed in the request. The request fails if the
   /// packed size is greater than 100 percent, which means the policies and tags
   /// exceeded the allowed space.
+  @_s.JsonKey(name: 'PackedPolicySize')
   final int packedPolicySize;
 
   /// The value of the <code>NameID</code> element in the <code>Subject</code>
   /// element of the SAML assertion.
+  @_s.JsonKey(name: 'Subject')
   final String subject;
 
   /// The format of the name ID, as defined by the <code>Format</code> attribute
@@ -1907,6 +1937,7 @@ class AssumeRoleWithSAMLResponse {
   /// <code>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</code> is returned
   /// as <code>transient</code>. If the format includes any other prefix, the
   /// format is returned with no modifications.
+  @_s.JsonKey(name: 'SubjectType')
   final String subjectType;
 
   AssumeRoleWithSAMLResponse({
@@ -1940,6 +1971,11 @@ class AssumeRoleWithSAMLResponse {
 /// Contains the response to a successful <a>AssumeRoleWithWebIdentity</a>
 /// request, including temporary AWS credentials that can be used to make AWS
 /// requests.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AssumeRoleWithWebIdentityResponse {
   /// The Amazon Resource Name (ARN) and the assumed role ID, which are
   /// identifiers that you can use to refer to the resulting temporary security
@@ -1947,11 +1983,13 @@ class AssumeRoleWithWebIdentityResponse {
   /// in a resource-based policy by using the ARN or assumed role ID. The ARN and
   /// ID include the <code>RoleSessionName</code> that you specified when you
   /// called <code>AssumeRole</code>.
+  @_s.JsonKey(name: 'AssumedRoleUser')
   final AssumedRoleUser assumedRoleUser;
 
   /// The intended audience (also known as client ID) of the web identity token.
   /// This is traditionally the client identifier issued to the application that
   /// requested the web identity token.
+  @_s.JsonKey(name: 'Audience')
   final String audience;
 
   /// The temporary security credentials, which include an access key ID, a secret
@@ -1960,12 +1998,14 @@ class AssumeRoleWithWebIdentityResponse {
   /// The size of the security token that STS API operations return is not fixed.
   /// We strongly recommend that you make no assumptions about the maximum size.
   /// </note>
+  @_s.JsonKey(name: 'Credentials')
   final Credentials credentials;
 
   /// A percentage value that indicates the packed size of the session policies
   /// and session tags combined passed in the request. The request fails if the
   /// packed size is greater than 100 percent, which means the policies and tags
   /// exceeded the allowed space.
+  @_s.JsonKey(name: 'PackedPolicySize')
   final int packedPolicySize;
 
   /// The issuing authority of the web identity token presented. For OpenID
@@ -1973,6 +2013,7 @@ class AssumeRoleWithWebIdentityResponse {
   /// For OAuth 2.0 access tokens, this contains the value of the
   /// <code>ProviderId</code> parameter that was passed in the
   /// <code>AssumeRoleWithWebIdentity</code> request.
+  @_s.JsonKey(name: 'Provider')
   final String provider;
 
   /// The unique user identifier that is returned by the identity provider. This
@@ -1982,6 +2023,7 @@ class AssumeRoleWithWebIdentityResponse {
   /// the <code>WebIdentityToken</code> (pairwise identifier). For OpenID Connect
   /// ID tokens, this field contains the value returned by the identity provider
   /// as the token's <code>sub</code> (Subject) claim.
+  @_s.JsonKey(name: 'SubjectFromWebIdentityToken')
   final String subjectFromWebIdentityToken;
 
   AssumeRoleWithWebIdentityResponse({
@@ -2011,17 +2053,24 @@ class AssumeRoleWithWebIdentityResponse {
 
 /// The identifiers for the temporary security credentials that the operation
 /// returns.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AssumedRoleUser {
   /// The ARN of the temporary security credentials that are returned from the
   /// <a>AssumeRole</a> action. For more information about ARNs and how to use
   /// them in policies, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// A unique identifier that contains the role ID and the role session name of
   /// the role that is being assumed. The role ID is generated by AWS when the
   /// role is created.
+  @_s.JsonKey(name: 'AssumedRoleId')
   final String assumedRoleId;
 
   AssumedRoleUser({
@@ -2037,18 +2086,27 @@ class AssumedRoleUser {
 }
 
 /// AWS credentials for API authentication.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Credentials {
   /// The access key ID that identifies the temporary security credentials.
+  @_s.JsonKey(name: 'AccessKeyId')
   final String accessKeyId;
 
   /// The date on which the current credentials expire.
+  @_s.JsonKey(name: 'Expiration', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime expiration;
 
   /// The secret access key that can be used to sign requests.
+  @_s.JsonKey(name: 'SecretAccessKey')
   final String secretAccessKey;
 
   /// The token that users must pass to the service API to use the temporary
   /// credentials.
+  @_s.JsonKey(name: 'SessionToken')
   final String sessionToken;
 
   Credentials({
@@ -2070,8 +2128,14 @@ class Credentials {
 /// A document that contains additional information about the authorization
 /// status of a request from an encoded message that is returned in response to
 /// an AWS request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DecodeAuthorizationMessageResponse {
   /// An XML document that contains the decoded message.
+  @_s.JsonKey(name: 'DecodedMessage')
   final String decodedMessage;
 
   DecodeAuthorizationMessageResponse({
@@ -2085,16 +2149,23 @@ class DecodeAuthorizationMessageResponse {
 }
 
 /// Identifiers for the federated user that is associated with the credentials.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class FederatedUser {
   /// The ARN that specifies the federated user that is associated with the
   /// credentials. For more information about ARNs and how to use them in
   /// policies, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html">IAM
   /// Identifiers</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The string that identifies the federated user associated with the
   /// credentials, similar to the unique ID of an IAM user.
+  @_s.JsonKey(name: 'FederatedUserId')
   final String federatedUserId;
 
   FederatedUser({
@@ -2109,8 +2180,14 @@ class FederatedUser {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetAccessKeyInfoResponse {
   /// The number used to identify the AWS account.
+  @_s.JsonKey(name: 'Account')
   final String account;
 
   GetAccessKeyInfoResponse({
@@ -2125,12 +2202,19 @@ class GetAccessKeyInfoResponse {
 
 /// Contains the response to a successful <a>GetCallerIdentity</a> request,
 /// including information about the entity making the request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetCallerIdentityResponse {
   /// The AWS account ID number of the account that owns or contains the calling
   /// entity.
+  @_s.JsonKey(name: 'Account')
   final String account;
 
   /// The AWS ARN associated with the calling entity.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The unique identifier of the calling entity. The exact value depends on the
@@ -2139,6 +2223,7 @@ class GetCallerIdentityResponse {
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_variables.html#principaltable">Principal
   /// table</a> found on the <b>Policy Variables</b> reference page in the <i>IAM
   /// User Guide</i>.
+  @_s.JsonKey(name: 'UserId')
   final String userId;
 
   GetCallerIdentityResponse({
@@ -2157,6 +2242,11 @@ class GetCallerIdentityResponse {
 
 /// Contains the response to a successful <a>GetFederationToken</a> request,
 /// including temporary AWS credentials that can be used to make AWS requests.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetFederationTokenResponse {
   /// The temporary security credentials, which include an access key ID, a secret
   /// access key, and a security (or session) token.
@@ -2164,18 +2254,21 @@ class GetFederationTokenResponse {
   /// The size of the security token that STS API operations return is not fixed.
   /// We strongly recommend that you make no assumptions about the maximum size.
   /// </note>
+  @_s.JsonKey(name: 'Credentials')
   final Credentials credentials;
 
   /// Identifiers for the federated user associated with the credentials (such as
   /// <code>arn:aws:sts::123456789012:federated-user/Bob</code> or
   /// <code>123456789012:Bob</code>). You can use the federated user's ARN in your
   /// resource-based policies, such as an Amazon S3 bucket policy.
+  @_s.JsonKey(name: 'FederatedUser')
   final FederatedUser federatedUser;
 
   /// A percentage value that indicates the packed size of the session policies
   /// and session tags combined passed in the request. The request fails if the
   /// packed size is greater than 100 percent, which means the policies and tags
   /// exceeded the allowed space.
+  @_s.JsonKey(name: 'PackedPolicySize')
   final int packedPolicySize;
 
   GetFederationTokenResponse({
@@ -2198,6 +2291,11 @@ class GetFederationTokenResponse {
 
 /// Contains the response to a successful <a>GetSessionToken</a> request,
 /// including temporary AWS credentials that can be used to make AWS requests.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetSessionTokenResponse {
   /// The temporary security credentials, which include an access key ID, a secret
   /// access key, and a security (or session) token.
@@ -2205,6 +2303,7 @@ class GetSessionTokenResponse {
   /// The size of the security token that STS API operations return is not fixed.
   /// We strongly recommend that you make no assumptions about the maximum size.
   /// </note>
+  @_s.JsonKey(name: 'Credentials')
   final Credentials credentials;
 
   GetSessionTokenResponse({
@@ -2221,17 +2320,24 @@ class GetSessionTokenResponse {
 
 /// A reference to the IAM managed policy that is passed as a session policy for
 /// a role session or a federated user session.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class PolicyDescriptorType {
   /// The Amazon Resource Name (ARN) of the IAM managed policy to use as a session
   /// policy for the role. For more information about ARNs, see <a
   /// href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html">Amazon
   /// Resource Names (ARNs) and AWS Service Namespaces</a> in the <i>AWS General
   /// Reference</i>.
+  @_s.JsonKey(name: 'arn')
   final String arn;
 
   PolicyDescriptorType({
     this.arn,
   });
+  Map<String, dynamic> toJson() => _$PolicyDescriptorTypeToJson(this);
 }
 
 /// You can pass custom key-value pair attributes when you assume a role or
@@ -2239,6 +2345,11 @@ class PolicyDescriptorType {
 /// tags to control access to resources. For more information, see <a
 /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_session-tags.html">Tagging
 /// AWS STS Sessions</a> in the <i>IAM User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The key for a session tag.
   ///
@@ -2246,6 +2357,7 @@ class Tag {
   /// exceed 128 characters. For these and additional limits, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-limits.html#reference_iam-limits-entity-length">IAM
   /// and STS Character Limits</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value for a session tag.
@@ -2254,12 +2366,14 @@ class Tag {
   /// exceed 256 characters. For these and additional limits, see <a
   /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_iam-limits.html#reference_iam-limits-entity-length">IAM
   /// and STS Character Limits</a> in the <i>IAM User Guide</i>.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
     @_s.required this.key,
     @_s.required this.value,
   });
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 class ExpiredTokenException extends _s.GenericAwsException {

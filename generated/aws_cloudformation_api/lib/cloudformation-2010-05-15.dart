@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'cloudformation-2010-05-15.g.dart';
 
 /// AWS CloudFormation allows you to create and manage AWS infrastructure
 /// deployments predictably and repeatedly. You can use AWS CloudFormation to
@@ -590,7 +600,7 @@ class CloudFormation {
   ///
   /// Parameter [stackName] :
   /// The name that is associated with the stack. The name must be unique in the
-  /// region in which you are creating the stack.
+  /// Region in which you are creating the stack.
   /// <note>
   /// A stack name can contain only alphanumeric characters (case sensitive) and
   /// hyphens. It must start with an alphabetic character and cannot be longer
@@ -817,7 +827,7 @@ class CloudFormation {
   ///
   /// Parameter [stackPolicyURL] :
   /// Location of a file containing the stack policy. The URL must point to a
-  /// policy (maximum size: 16 KB) located in an S3 bucket in the same region as
+  /// policy (maximum size: 16 KB) located in an S3 bucket in the same Region as
   /// the stack. You can specify either the <code>StackPolicyBody</code> or the
   /// <code>StackPolicyURL</code> parameter, but not both.
   ///
@@ -950,9 +960,10 @@ class CloudFormation {
   }
 
   /// Creates stack instances for the specified accounts, within the specified
-  /// regions. A stack instance refers to a stack in a specific account and
-  /// region. <code>Accounts</code> and <code>Regions</code> are required
-  /// parameters—you must specify at least one account and one region.
+  /// Regions. A stack instance refers to a stack in a specific account and
+  /// Region. You must specify at least one value for either
+  /// <code>Accounts</code> or <code>DeploymentTargets</code>, and you must
+  /// specify at least one value for <code>Regions</code>.
   ///
   /// May throw [StackSetNotFoundException].
   /// May throw [OperationInProgressException].
@@ -961,17 +972,28 @@ class CloudFormation {
   /// May throw [InvalidOperationException].
   /// May throw [LimitExceededException].
   ///
-  /// Parameter [accounts] :
-  /// The names of one or more AWS accounts that you want to create stack
-  /// instances in the specified region(s) for.
-  ///
   /// Parameter [regions] :
-  /// The names of one or more regions where you want to create stack instances
+  /// The names of one or more Regions where you want to create stack instances
   /// using the specified AWS account(s).
   ///
   /// Parameter [stackSetName] :
   /// The name or unique ID of the stack set that you want to create stack
   /// instances from.
+  ///
+  /// Parameter [accounts] :
+  /// [<code>Self-managed</code> permissions] The names of one or more AWS
+  /// accounts that you want to create stack instances in the specified
+  /// Region(s) for.
+  ///
+  /// You can specify <code>Accounts</code> or <code>DeploymentTargets</code>,
+  /// but not both.
+  ///
+  /// Parameter [deploymentTargets] :
+  /// [<code>Service-managed</code> permissions] The AWS Organizations accounts
+  /// for which to create stack instances in the specified Regions.
+  ///
+  /// You can specify <code>Accounts</code> or <code>DeploymentTargets</code>,
+  /// but not both.
   ///
   /// Parameter [operationId] :
   /// The unique identifier for this stack set operation.
@@ -994,7 +1016,7 @@ class CloudFormation {
   /// selected stack instances.
   ///
   /// Any overridden parameter values will be applied to all stack instances in
-  /// the specified accounts and regions. When specifying parameters and their
+  /// the specified accounts and Regions. When specifying parameters and their
   /// values, be aware of how AWS CloudFormation sets parameter values during
   /// stack instance operations:
   ///
@@ -1034,14 +1056,14 @@ class CloudFormation {
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_UpdateStackSet.html">UpdateStackSet</a>
   /// to update the stack set template.
   Future<CreateStackInstancesOutput> createStackInstances({
-    @_s.required List<String> accounts,
     @_s.required List<String> regions,
     @_s.required String stackSetName,
+    List<String> accounts,
+    DeploymentTargets deploymentTargets,
     String operationId,
     StackSetOperationPreferences operationPreferences,
     List<Parameter> parameterOverrides,
   }) async {
-    ArgumentError.checkNotNull(accounts, 'accounts');
     ArgumentError.checkNotNull(regions, 'regions');
     ArgumentError.checkNotNull(stackSetName, 'stackSetName');
     _s.validateStringLength(
@@ -1059,9 +1081,10 @@ class CloudFormation {
       'Action': 'CreateStackInstances',
       'Version': '2010-05-15',
     };
-    $request['Accounts'] = accounts;
     $request['Regions'] = regions;
     $request['StackSetName'] = stackSetName;
+    accounts?.also((arg) => $request['Accounts'] = arg);
+    deploymentTargets?.also((arg) => $request['DeploymentTargets'] = arg);
     operationId?.also((arg) => $request['OperationId'] = arg);
     operationPreferences?.also((arg) => $request['OperationPreferences'] = arg);
     parameterOverrides?.also((arg) => $request['ParameterOverrides'] = arg);
@@ -1083,7 +1106,7 @@ class CloudFormation {
   ///
   /// Parameter [stackSetName] :
   /// The name to associate with the stack set. The name must be unique in the
-  /// region where you create your stack set.
+  /// Region where you create your stack set.
   /// <note>
   /// A stack name can contain only alphanumeric characters (case-sensitive) and
   /// hyphens. It must start with an alphabetic character and can't be longer
@@ -1100,6 +1123,12 @@ class CloudFormation {
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs.html">Prerequisites:
   /// Granting Permissions for Stack Set Operations</a> in the <i>AWS
   /// CloudFormation User Guide</i>.
+  ///
+  /// Parameter [autoDeployment] :
+  /// Describes whether StackSets automatically deploys to AWS Organizations
+  /// accounts that are added to the target organization or organizational unit
+  /// (OU). Specify only if <code>PermissionModel</code> is
+  /// <code>SERVICE_MANAGED</code>.
   ///
   /// Parameter [capabilities] :
   /// In some cases, you must explicitly acknowledge that your stack set
@@ -1224,6 +1253,27 @@ class CloudFormation {
   /// Parameter [parameters] :
   /// The input parameters for the stack set template.
   ///
+  /// Parameter [permissionModel] :
+  /// Describes how the IAM roles required for stack set operations are created.
+  /// By default, <code>SELF-MANAGED</code> is specified.
+  ///
+  /// <ul>
+  /// <li>
+  /// With <code>self-managed</code> permissions, you must create the
+  /// administrator and execution roles required to deploy to target accounts.
+  /// For more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html">Grant
+  /// Self-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// <li>
+  /// With <code>service-managed</code> permissions, StackSets automatically
+  /// creates the IAM roles required to deploy to accounts managed by AWS
+  /// Organizations. For more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html">Grant
+  /// Service-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// </ul>
+  ///
   /// Parameter [tags] :
   /// The key-value pairs to associate with this stack set and the stacks
   /// created from it. AWS CloudFormation also propagates these tags to
@@ -1257,11 +1307,13 @@ class CloudFormation {
   Future<CreateStackSetOutput> createStackSet({
     @_s.required String stackSetName,
     String administrationRoleARN,
+    AutoDeployment autoDeployment,
     List<String> capabilities,
     String clientRequestToken,
     String description,
     String executionRoleName,
     List<Parameter> parameters,
+    PermissionModels permissionModel,
     List<Tag> tags,
     String templateBody,
     String templateURL,
@@ -1320,11 +1372,13 @@ class CloudFormation {
     $request['StackSetName'] = stackSetName;
     administrationRoleARN
         ?.also((arg) => $request['AdministrationRoleARN'] = arg);
+    autoDeployment?.also((arg) => $request['AutoDeployment'] = arg);
     capabilities?.also((arg) => $request['Capabilities'] = arg);
     clientRequestToken?.also((arg) => $request['ClientRequestToken'] = arg);
     description?.also((arg) => $request['Description'] = arg);
     executionRoleName?.also((arg) => $request['ExecutionRoleName'] = arg);
     parameters?.also((arg) => $request['Parameters'] = arg);
+    permissionModel?.also((arg) => $request['PermissionModel'] = arg);
     tags?.also((arg) => $request['Tags'] = arg);
     templateBody?.also((arg) => $request['TemplateBody'] = arg);
     templateURL?.also((arg) => $request['TemplateURL'] = arg);
@@ -1485,7 +1539,7 @@ class CloudFormation {
   }
 
   /// Deletes stack instances for the specified accounts, in the specified
-  /// regions.
+  /// Regions.
   ///
   /// May throw [StackSetNotFoundException].
   /// May throw [OperationInProgressException].
@@ -1493,11 +1547,8 @@ class CloudFormation {
   /// May throw [StaleRequestException].
   /// May throw [InvalidOperationException].
   ///
-  /// Parameter [accounts] :
-  /// The names of the AWS accounts that you want to delete stack instances for.
-  ///
   /// Parameter [regions] :
-  /// The regions where you want to delete stack set instances.
+  /// The Regions where you want to delete stack set instances.
   ///
   /// Parameter [retainStacks] :
   /// Removes the stack instances from the specified stack set, but doesn't
@@ -1511,6 +1562,20 @@ class CloudFormation {
   /// Parameter [stackSetName] :
   /// The name or unique ID of the stack set that you want to delete stack
   /// instances for.
+  ///
+  /// Parameter [accounts] :
+  /// [<code>Self-managed</code> permissions] The names of the AWS accounts that
+  /// you want to delete stack instances for.
+  ///
+  /// You can specify <code>Accounts</code> or <code>DeploymentTargets</code>,
+  /// but not both.
+  ///
+  /// Parameter [deploymentTargets] :
+  /// [<code>Service-managed</code> permissions] The AWS Organizations accounts
+  /// from which to delete stack instances.
+  ///
+  /// You can specify <code>Accounts</code> or <code>DeploymentTargets</code>,
+  /// but not both.
   ///
   /// Parameter [operationId] :
   /// The unique identifier for this stack set operation.
@@ -1528,14 +1593,14 @@ class CloudFormation {
   /// Parameter [operationPreferences] :
   /// Preferences for how AWS CloudFormation performs this stack set operation.
   Future<DeleteStackInstancesOutput> deleteStackInstances({
-    @_s.required List<String> accounts,
     @_s.required List<String> regions,
     @_s.required bool retainStacks,
     @_s.required String stackSetName,
+    List<String> accounts,
+    DeploymentTargets deploymentTargets,
     String operationId,
     StackSetOperationPreferences operationPreferences,
   }) async {
-    ArgumentError.checkNotNull(accounts, 'accounts');
     ArgumentError.checkNotNull(regions, 'regions');
     ArgumentError.checkNotNull(retainStacks, 'retainStacks');
     ArgumentError.checkNotNull(stackSetName, 'stackSetName');
@@ -1554,10 +1619,11 @@ class CloudFormation {
       'Action': 'DeleteStackInstances',
       'Version': '2010-05-15',
     };
-    $request['Accounts'] = accounts;
     $request['Regions'] = regions;
     $request['RetainStacks'] = retainStacks;
     $request['StackSetName'] = stackSetName;
+    accounts?.also((arg) => $request['Accounts'] = arg);
+    deploymentTargets?.also((arg) => $request['DeploymentTargets'] = arg);
     operationId?.also((arg) => $request['OperationId'] = arg);
     operationPreferences?.also((arg) => $request['OperationPreferences'] = arg);
     final $result = await _protocol.send(
@@ -1616,17 +1682,22 @@ class CloudFormation {
   /// Parameter [arn] :
   /// The Amazon Resource Name (ARN) of the type.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [type] :
   /// The kind of type.
   ///
   /// Currently the only valid value is <code>RESOURCE</code>.
   ///
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
+  ///
   /// Parameter [typeName] :
   /// The name of the type.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [versionId] :
   /// The ID of a specific version of the type. The version ID is the value at
@@ -1895,7 +1966,7 @@ class CloudFormation {
   }
 
   /// Returns the stack instance that's associated with the specified stack set,
-  /// AWS account, and region.
+  /// AWS account, and Region.
   ///
   /// For a list of stack instances that are associated with a specific stack
   /// set, use <a>ListStackInstances</a>.
@@ -1907,7 +1978,7 @@ class CloudFormation {
   /// The ID of an AWS account that's associated with this stack instance.
   ///
   /// Parameter [stackInstanceRegion] :
-  /// The name of a region that's associated with this stack instance.
+  /// The name of a Region that's associated with this stack instance.
   ///
   /// Parameter [stackSetName] :
   /// The name or the unique stack ID of the stack set that you want to get
@@ -1921,9 +1992,14 @@ class CloudFormation {
     _s.validateStringPattern(
       'stackInstanceAccount',
       stackInstanceAccount,
-      r'[0-9]{12}',
+      r'^[0-9]{12}$',
     );
     ArgumentError.checkNotNull(stackInstanceRegion, 'stackInstanceRegion');
+    _s.validateStringPattern(
+      'stackInstanceRegion',
+      stackInstanceRegion,
+      r'^[a-zA-Z0-9-]{1,128}$',
+    );
     ArgumentError.checkNotNull(stackSetName, 'stackSetName');
     final $request = <String, dynamic>{
       'Action': 'DescribeStackInstance',
@@ -2304,17 +2380,22 @@ class CloudFormation {
   /// Parameter [arn] :
   /// The Amazon Resource Name (ARN) of the type.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [type] :
   /// The kind of type.
   ///
   /// Currently the only valid value is <code>RESOURCE</code>.
   ///
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
+  ///
   /// Parameter [typeName] :
   /// The name of the type.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [versionId] :
   /// The ID of a specific version of the type. The version ID is the value at
@@ -3050,7 +3131,7 @@ class CloudFormation {
     return ListChangeSetsOutput.fromXml($result);
   }
 
-  /// Lists all exported output values in the account and region in which you
+  /// Lists all exported output values in the account and Region in which you
   /// call this action. Use this action to see the exported output values that
   /// you can import into other stacks. To import values, use the <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-importvalue.html">
@@ -3134,7 +3215,7 @@ class CloudFormation {
 
   /// Returns summary information about stack instances that are associated with
   /// the specified stack set. You can filter for stack instances that are
-  /// associated with a specific AWS account name or region.
+  /// associated with a specific AWS account name or Region.
   ///
   /// May throw [StackSetNotFoundException].
   ///
@@ -3160,7 +3241,7 @@ class CloudFormation {
   /// The name of the AWS account that you want to list stack instances for.
   ///
   /// Parameter [stackInstanceRegion] :
-  /// The name of the region where you want to list stack instances.
+  /// The name of the Region where you want to list stack instances.
   Future<ListStackInstancesOutput> listStackInstances({
     @_s.required String stackSetName,
     int maxResults,
@@ -3184,7 +3265,12 @@ class CloudFormation {
     _s.validateStringPattern(
       'stackInstanceAccount',
       stackInstanceAccount,
-      r'[0-9]{12}',
+      r'^[0-9]{12}$',
+    );
+    _s.validateStringPattern(
+      'stackInstanceRegion',
+      stackInstanceRegion,
+      r'^[a-zA-Z0-9-]{1,128}$',
     );
     final $request = <String, dynamic>{
       'Action': 'ListStackInstances',
@@ -3483,7 +3569,7 @@ class CloudFormation {
     return ListStacksOutput.fromXml($result);
   }
 
-  /// Returns a list of registration tokens for the specified type.
+  /// Returns a list of registration tokens for the specified type(s).
   ///
   /// May throw [CFNRegistryException].
   ///
@@ -3504,20 +3590,27 @@ class CloudFormation {
   /// Parameter [registrationStatusFilter] :
   /// The current status of the type registration request.
   ///
+  /// The default is <code>IN_PROGRESS</code>.
+  ///
   /// Parameter [type] :
   /// The kind of type.
   ///
   /// Currently the only valid value is <code>RESOURCE</code>.
   ///
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
+  ///
   /// Parameter [typeArn] :
   /// The Amazon Resource Name (ARN) of the type.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [typeName] :
   /// The name of the type.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   Future<ListTypeRegistrationsOutput> listTypeRegistrations({
     int maxResults,
     String nextToken,
@@ -3589,7 +3682,8 @@ class CloudFormation {
   /// The Amazon Resource Name (ARN) of the type for which you want version
   /// summary information.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [deprecatedStatus] :
   /// The deprecation status of the type versions that you want to get summary
@@ -3608,6 +3702,7 @@ class CloudFormation {
   /// longer be used in CloudFormation operations.
   /// </li>
   /// </ul>
+  /// The default is <code>LIVE</code>.
   ///
   /// Parameter [maxResults] :
   /// The maximum number of results to be returned with a single call. If the
@@ -3628,10 +3723,14 @@ class CloudFormation {
   ///
   /// Currently the only valid value is <code>RESOURCE</code>.
   ///
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
+  ///
   /// Parameter [typeName] :
   /// The name of the type for which you want version summary information.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   Future<ListTypeVersionsOutput> listTypeVersions({
     String arn,
     DeprecatedStatus deprecatedStatus,
@@ -3770,6 +3869,7 @@ class CloudFormation {
   /// Amazon account.
   /// </li>
   /// </ul>
+  /// The default is <code>PRIVATE</code>.
   Future<ListTypesOutput> listTypes({
     DeprecatedStatus deprecatedStatus,
     int maxResults,
@@ -3929,8 +4029,13 @@ class CloudFormation {
   /// </ul>
   /// For more information on how to develop types and ready them for
   /// registeration, see <a
-  /// href="cloudformation-cli/latest/userguide/resource-types.html">Creating
+  /// href="https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-types.html">Creating
   /// Resource Providers</a> in the <i>CloudFormation CLI User Guide</i>.
+  ///
+  /// You can have a maximum of 50 resource type versions registered at a time.
+  /// This maximum is per account and per region. Use <a
+  /// href="AWSCloudFormation/latest/APIReference/API_DeregisterType.html">DeregisterType</a>
+  /// to deregister specific resource type versions if necessary.
   ///
   /// Once you have initiated a registration request using <code>
   /// <a>RegisterType</a> </code>, you can use <code>
@@ -3948,6 +4053,14 @@ class CloudFormation {
   /// want to register, see <a
   /// href="https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-cli-submit.html">submit</a>
   /// in the <i>CloudFormation CLI User Guide</i>.
+  /// <note>
+  /// As part of registering a resource provider type, CloudFormation must be
+  /// able to access the S3 bucket which contains the schema handler package for
+  /// that resource provider. For more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry.html#registry-register-permissions">IAM
+  /// Permissions for Registering a Resource Provider</a> in the <i>AWS
+  /// CloudFormation User Guide</i>.
+  /// </note>
   ///
   /// Parameter [typeName] :
   /// The name of the type being registered.
@@ -4085,7 +4198,7 @@ class CloudFormation {
   ///
   /// Parameter [stackPolicyURL] :
   /// Location of a file containing the stack policy. The URL must point to a
-  /// policy (maximum size: 16 KB) located in an S3 bucket in the same region as
+  /// policy (maximum size: 16 KB) located in an S3 bucket in the same Region as
   /// the stack. You can specify either the <code>StackPolicyBody</code> or the
   /// <code>StackPolicyURL</code> parameter, but not both.
   Future<void> setStackPolicy({
@@ -4131,15 +4244,20 @@ class CloudFormation {
   /// The Amazon Resource Name (ARN) of the type for which you want version
   /// summary information.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [type] :
   /// The kind of type.
   ///
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
+  ///
   /// Parameter [typeName] :
   /// The name of the type.
   ///
-  /// Conditional: You must specify <code>TypeName</code> or <code>Arn</code>.
+  /// Conditional: You must specify either <code>TypeName</code> and
+  /// <code>Type</code>, or <code>Arn</code>.
   ///
   /// Parameter [versionId] :
   /// The ID of a specific version of the type. The version ID is the value at
@@ -4531,7 +4649,7 @@ class CloudFormation {
   /// Parameter [stackPolicyDuringUpdateURL] :
   /// Location of a file containing the temporary overriding stack policy. The
   /// URL must point to a policy (max size: 16KB) located in an S3 bucket in the
-  /// same region as the stack. You can specify either the
+  /// same Region as the stack. You can specify either the
   /// <code>StackPolicyDuringUpdateBody</code> or the
   /// <code>StackPolicyDuringUpdateURL</code> parameter, but not both.
   ///
@@ -4541,7 +4659,7 @@ class CloudFormation {
   ///
   /// Parameter [stackPolicyURL] :
   /// Location of a file containing the updated stack policy. The URL must point
-  /// to a policy (max size: 16KB) located in an S3 bucket in the same region as
+  /// to a policy (max size: 16KB) located in an S3 bucket in the same Region as
   /// the stack. You can specify either the <code>StackPolicyBody</code> or the
   /// <code>StackPolicyURL</code> parameter, but not both.
   ///
@@ -4693,10 +4811,10 @@ class CloudFormation {
   }
 
   /// Updates the parameter values for stack instances for the specified
-  /// accounts, within the specified regions. A stack instance refers to a stack
-  /// in a specific account and region.
+  /// accounts, within the specified Regions. A stack instance refers to a stack
+  /// in a specific account and Region.
   ///
-  /// You can only update stack instances in regions and accounts where they
+  /// You can only update stack instances in Regions and accounts where they
   /// already exist; to create additional stack instances, use <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_CreateStackInstances.html">CreateStackInstances</a>.
   ///
@@ -4722,19 +4840,34 @@ class CloudFormation {
   /// May throw [StaleRequestException].
   /// May throw [InvalidOperationException].
   ///
-  /// Parameter [accounts] :
-  /// The names of one or more AWS accounts for which you want to update
-  /// parameter values for stack instances. The overridden parameter values will
-  /// be applied to all stack instances in the specified accounts and regions.
-  ///
   /// Parameter [regions] :
-  /// The names of one or more regions in which you want to update parameter
+  /// The names of one or more Regions in which you want to update parameter
   /// values for stack instances. The overridden parameter values will be
-  /// applied to all stack instances in the specified accounts and regions.
+  /// applied to all stack instances in the specified accounts and Regions.
   ///
   /// Parameter [stackSetName] :
   /// The name or unique ID of the stack set associated with the stack
   /// instances.
+  ///
+  /// Parameter [accounts] :
+  /// [<code>Self-managed</code> permissions] The names of one or more AWS
+  /// accounts for which you want to update parameter values for stack
+  /// instances. The overridden parameter values will be applied to all stack
+  /// instances in the specified accounts and Regions.
+  ///
+  /// You can specify <code>Accounts</code> or <code>DeploymentTargets</code>,
+  /// but not both.
+  ///
+  /// Parameter [deploymentTargets] :
+  /// [<code>Service-managed</code> permissions] The AWS Organizations accounts
+  /// for which you want to update parameter values for stack instances. If your
+  /// update targets OUs, the overridden parameter values only apply to the
+  /// accounts that are currently in the target OUs and their child OUs.
+  /// Accounts added to the target OUs and their child OUs in the future won't
+  /// use the overridden values.
+  ///
+  /// You can specify <code>Accounts</code> or <code>DeploymentTargets</code>,
+  /// but not both.
   ///
   /// Parameter [operationId] :
   /// The unique identifier for this stack set operation.
@@ -4754,7 +4887,7 @@ class CloudFormation {
   /// specified stack instances.
   ///
   /// Any overridden parameter values will be applied to all stack instances in
-  /// the specified accounts and regions. When specifying parameters and their
+  /// the specified accounts and Regions. When specifying parameters and their
   /// values, be aware of how AWS CloudFormation sets parameter values during
   /// stack instance update operations:
   ///
@@ -4800,14 +4933,14 @@ class CloudFormation {
   /// with the new parameter, you can then override the parameter value using
   /// <code>UpdateStackInstances</code>.
   Future<UpdateStackInstancesOutput> updateStackInstances({
-    @_s.required List<String> accounts,
     @_s.required List<String> regions,
     @_s.required String stackSetName,
+    List<String> accounts,
+    DeploymentTargets deploymentTargets,
     String operationId,
     StackSetOperationPreferences operationPreferences,
     List<Parameter> parameterOverrides,
   }) async {
-    ArgumentError.checkNotNull(accounts, 'accounts');
     ArgumentError.checkNotNull(regions, 'regions');
     ArgumentError.checkNotNull(stackSetName, 'stackSetName');
     _s.validateStringPattern(
@@ -4830,9 +4963,10 @@ class CloudFormation {
       'Action': 'UpdateStackInstances',
       'Version': '2010-05-15',
     };
-    $request['Accounts'] = accounts;
     $request['Regions'] = regions;
     $request['StackSetName'] = stackSetName;
+    accounts?.also((arg) => $request['Accounts'] = arg);
+    deploymentTargets?.also((arg) => $request['DeploymentTargets'] = arg);
     operationId?.also((arg) => $request['OperationId'] = arg);
     operationPreferences?.also((arg) => $request['OperationPreferences'] = arg);
     parameterOverrides?.also((arg) => $request['ParameterOverrides'] = arg);
@@ -4847,7 +4981,7 @@ class CloudFormation {
   }
 
   /// Updates the stack set, and associated stack instances in the specified
-  /// accounts and regions.
+  /// accounts and Regions.
   ///
   /// Even if the stack set operation created by updating the stack set fails
   /// (completely or partially, below or above a specified failure tolerance),
@@ -4866,9 +5000,9 @@ class CloudFormation {
   /// The name or unique ID of the stack set that you want to update.
   ///
   /// Parameter [accounts] :
-  /// The accounts in which to update associated stack instances. If you specify
-  /// accounts, you must also specify the regions in which to update stack set
-  /// instances.
+  /// [<code>Self-managed</code> permissions] The accounts in which to update
+  /// associated stack instances. If you specify accounts, you must also specify
+  /// the Regions in which to update stack set instances.
   ///
   /// To update <i>all</i> the stack instances associated with this stack set,
   /// do not specify the <code>Accounts</code> or <code>Regions</code>
@@ -4878,10 +5012,10 @@ class CloudFormation {
   /// <code>TemplateBody</code> or <code>TemplateURL</code> properties are
   /// specified), or the <code>Parameters</code> property, AWS CloudFormation
   /// marks all stack instances with a status of <code>OUTDATED</code> prior to
-  /// updating the stack instances in the specified accounts and regions. If the
+  /// updating the stack instances in the specified accounts and Regions. If the
   /// stack set update does not include changes to the template or parameters,
   /// AWS CloudFormation updates the stack instances in the specified accounts
-  /// and regions, while leaving all other stack instances with their existing
+  /// and Regions, while leaving all other stack instances with their existing
   /// stack instance status.
   ///
   /// Parameter [administrationRoleARN] :
@@ -4899,6 +5033,14 @@ class CloudFormation {
   /// stack set, you must specify a customized administrator role, even if it is
   /// the same customized administrator role used with this stack set
   /// previously.
+  ///
+  /// Parameter [autoDeployment] :
+  /// [<code>Service-managed</code> permissions] Describes whether StackSets
+  /// automatically deploys to AWS Organizations accounts that are added to a
+  /// target organization or organizational unit (OU).
+  ///
+  /// If you specify <code>AutoDeployment</code>, do not specify
+  /// <code>DeploymentTargets</code> or <code>Regions</code>.
   ///
   /// Parameter [capabilities] :
   /// In some cases, you must explicitly acknowledge that your stack template
@@ -4997,6 +5139,23 @@ class CloudFormation {
   /// </important> </li>
   /// </ul>
   ///
+  /// Parameter [deploymentTargets] :
+  /// [<code>Service-managed</code> permissions] The AWS Organizations accounts
+  /// in which to update associated stack instances.
+  ///
+  /// To update all the stack instances associated with this stack set, do not
+  /// specify <code>DeploymentTargets</code> or <code>Regions</code>.
+  ///
+  /// If the stack set update includes changes to the template (that is, if
+  /// <code>TemplateBody</code> or <code>TemplateURL</code> is specified), or
+  /// the <code>Parameters</code>, AWS CloudFormation marks all stack instances
+  /// with a status of <code>OUTDATED</code> prior to updating the stack
+  /// instances in the specified accounts and Regions. If the stack set update
+  /// does not include changes to the template or parameters, AWS CloudFormation
+  /// updates the stack instances in the specified accounts and Regions, while
+  /// leaving all other stack instances with their existing stack instance
+  /// status.
+  ///
   /// Parameter [description] :
   /// A brief description of updates that you are making.
   ///
@@ -5036,9 +5195,31 @@ class CloudFormation {
   /// Parameter [parameters] :
   /// A list of input parameters for the stack set template.
   ///
+  /// Parameter [permissionModel] :
+  /// Describes how the IAM roles required for stack set operations are created.
+  /// You cannot modify <code>PermissionModel</code> if there are stack
+  /// instances associated with your stack set.
+  ///
+  /// <ul>
+  /// <li>
+  /// With <code>self-managed</code> permissions, you must create the
+  /// administrator and execution roles required to deploy to target accounts.
+  /// For more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html">Grant
+  /// Self-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// <li>
+  /// With <code>service-managed</code> permissions, StackSets automatically
+  /// creates the IAM roles required to deploy to accounts managed by AWS
+  /// Organizations. For more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html">Grant
+  /// Service-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// </ul>
+  ///
   /// Parameter [regions] :
-  /// The regions in which to update associated stack instances. If you specify
-  /// regions, you must also specify accounts in which to update stack set
+  /// The Regions in which to update associated stack instances. If you specify
+  /// Regions, you must also specify accounts in which to update stack set
   /// instances.
   ///
   /// To update <i>all</i> the stack instances associated with this stack set,
@@ -5049,10 +5230,10 @@ class CloudFormation {
   /// <code>TemplateBody</code> or <code>TemplateURL</code> properties are
   /// specified), or the <code>Parameters</code> property, AWS CloudFormation
   /// marks all stack instances with a status of <code>OUTDATED</code> prior to
-  /// updating the stack instances in the specified accounts and regions. If the
+  /// updating the stack instances in the specified accounts and Regions. If the
   /// stack set update does not include changes to the template or parameters,
   /// AWS CloudFormation updates the stack instances in the specified accounts
-  /// and regions, while leaving all other stack instances with their existing
+  /// and Regions, while leaving all other stack instances with their existing
   /// stack instance status.
   ///
   /// Parameter [tags] :
@@ -5123,12 +5304,15 @@ class CloudFormation {
     @_s.required String stackSetName,
     List<String> accounts,
     String administrationRoleARN,
+    AutoDeployment autoDeployment,
     List<String> capabilities,
+    DeploymentTargets deploymentTargets,
     String description,
     String executionRoleName,
     String operationId,
     StackSetOperationPreferences operationPreferences,
     List<Parameter> parameters,
+    PermissionModels permissionModel,
     List<String> regions,
     List<Tag> tags,
     String templateBody,
@@ -5190,12 +5374,15 @@ class CloudFormation {
     accounts?.also((arg) => $request['Accounts'] = arg);
     administrationRoleARN
         ?.also((arg) => $request['AdministrationRoleARN'] = arg);
+    autoDeployment?.also((arg) => $request['AutoDeployment'] = arg);
     capabilities?.also((arg) => $request['Capabilities'] = arg);
+    deploymentTargets?.also((arg) => $request['DeploymentTargets'] = arg);
     description?.also((arg) => $request['Description'] = arg);
     executionRoleName?.also((arg) => $request['ExecutionRoleName'] = arg);
     operationId?.also((arg) => $request['OperationId'] = arg);
     operationPreferences?.also((arg) => $request['OperationPreferences'] = arg);
     parameters?.also((arg) => $request['Parameters'] = arg);
+    permissionModel?.also((arg) => $request['PermissionModel'] = arg);
     regions?.also((arg) => $request['Regions'] = arg);
     tags?.also((arg) => $request['Tags'] = arg);
     templateBody?.also((arg) => $request['TemplateBody'] = arg);
@@ -5323,63 +5510,70 @@ class CloudFormation {
 
 /// Structure that contains the results of the account gate function which AWS
 /// CloudFormation invokes, if present, before proceeding with a stack set
-/// operation in an account and region.
+/// operation in an account and Region.
 ///
-/// For each account and region, AWS CloudFormation lets you specify a Lamdba
+/// For each account and Region, AWS CloudFormation lets you specify a Lamdba
 /// function that encapsulates any requirements that must be met before
 /// CloudFormation can proceed with a stack set operation in that account and
-/// region. CloudFormation invokes the function each time a stack set operation
-/// is requested for that account and region; if the function returns
+/// Region. CloudFormation invokes the function each time a stack set operation
+/// is requested for that account and Region; if the function returns
 /// <code>FAILED</code>, CloudFormation cancels the operation in that account
-/// and region, and sets the stack set operation result status for that account
-/// and region to <code>FAILED</code>.
+/// and Region, and sets the stack set operation result status for that account
+/// and Region to <code>FAILED</code>.
 ///
 /// For more information, see <a
 /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-account-gating.html">Configuring
 /// a target account gate</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccountGateResult {
   /// The status of the account gate function.
   ///
   /// <ul>
   /// <li>
   /// <code>SUCCEEDED</code>: The account gate function has determined that the
-  /// account and region passes any requirements for a stack set operation to
+  /// account and Region passes any requirements for a stack set operation to
   /// occur. AWS CloudFormation proceeds with the stack operation in that account
-  /// and region.
+  /// and Region.
   /// </li>
   /// <li>
   /// <code>FAILED</code>: The account gate function has determined that the
-  /// account and region does not meet the requirements for a stack set operation
+  /// account and Region does not meet the requirements for a stack set operation
   /// to occur. AWS CloudFormation cancels the stack set operation in that account
-  /// and region, and sets the stack set operation result status for that account
-  /// and region to <code>FAILED</code>.
+  /// and Region, and sets the stack set operation result status for that account
+  /// and Region to <code>FAILED</code>.
   /// </li>
   /// <li>
   /// <code>SKIPPED</code>: AWS CloudFormation has skipped calling the account
-  /// gate function for this account and region, for one of the following reasons:
+  /// gate function for this account and Region, for one of the following reasons:
   ///
   /// <ul>
   /// <li>
-  /// An account gate function has not been specified for the account and region.
+  /// An account gate function has not been specified for the account and Region.
   /// AWS CloudFormation proceeds with the stack set operation in this account and
-  /// region.
+  /// Region.
   /// </li>
   /// <li>
   /// The <code>AWSCloudFormationStackSetExecutionRole</code> of the stack set
   /// adminstration account lacks permissions to invoke the function. AWS
   /// CloudFormation proceeds with the stack set operation in this account and
-  /// region.
+  /// Region.
   /// </li>
   /// <li>
   /// Either no action is necessary, or no action is possible, on the stack. AWS
-  /// CloudFormation skips the stack set operation in this account and region.
+  /// CloudFormation skips the stack set operation in this account and Region.
   /// </li>
   /// </ul> </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final AccountGateStatus status;
 
-  /// The reason for the account gate status assigned to this account and region
+  /// The reason for the account gate status assigned to this account and Region
   /// for the stack set operation.
+  @_s.JsonKey(name: 'StatusReason')
   final String statusReason;
 
   AccountGateResult({
@@ -5395,8 +5589,11 @@ class AccountGateResult {
 }
 
 enum AccountGateStatus {
+  @_s.JsonValue('SUCCEEDED')
   succeeded,
+  @_s.JsonValue('FAILED')
   failed,
+  @_s.JsonValue('SKIPPED')
   skipped,
 }
 
@@ -5433,14 +5630,21 @@ extension on String {
 /// limits, see <a
 /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html">AWS
 /// CloudFormation Limits</a> in the <i>AWS CloudFormation User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccountLimit {
   /// The name of the account limit.
   ///
   /// Values: <code>ConcurrentResourcesLimit</code> | <code>StackLimit</code> |
   /// <code>StackOutputsLimit</code>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value that is associated with the account limit name.
+  @_s.JsonKey(name: 'Value')
   final int value;
 
   AccountLimit({
@@ -5455,9 +5659,51 @@ class AccountLimit {
   }
 }
 
+/// [<code>Service-managed</code> permissions] Describes whether StackSets
+/// automatically deploys to AWS Organizations accounts that are added to a
+/// target organization or organizational unit (OU).
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
+class AutoDeployment {
+  /// If set to <code>true</code>, StackSets automatically deploys additional
+  /// stack instances to AWS Organizations accounts that are added to a target
+  /// organization or organizational unit (OU) in the specified Regions. If an
+  /// account is removed from a target organization or OU, StackSets deletes stack
+  /// instances from the account in the specified Regions.
+  @_s.JsonKey(name: 'Enabled')
+  final bool enabled;
+
+  /// If set to <code>true</code>, stack resources are retained when an account is
+  /// removed from a target organization or OU. If set to <code>false</code>,
+  /// stack resources are deleted. Specify only if <code>Enabled</code> is set to
+  /// <code>True</code>.
+  @_s.JsonKey(name: 'RetainStacksOnAccountRemoval')
+  final bool retainStacksOnAccountRemoval;
+
+  AutoDeployment({
+    this.enabled,
+    this.retainStacksOnAccountRemoval,
+  });
+  factory AutoDeployment.fromXml(_s.XmlElement elem) {
+    return AutoDeployment(
+      enabled: _s.extractXmlBoolValue(elem, 'Enabled'),
+      retainStacksOnAccountRemoval:
+          _s.extractXmlBoolValue(elem, 'RetainStacksOnAccountRemoval'),
+    );
+  }
+
+  Map<String, dynamic> toJson() => _$AutoDeploymentToJson(this);
+}
+
 enum Capability {
+  @_s.JsonValue('CAPABILITY_IAM')
   capabilityIam,
+  @_s.JsonValue('CAPABILITY_NAMED_IAM')
   capabilityNamedIam,
+  @_s.JsonValue('CAPABILITY_AUTO_EXPAND')
   capabilityAutoExpand,
 }
 
@@ -5477,13 +5723,20 @@ extension on String {
 
 /// The <code>Change</code> structure describes the changes AWS CloudFormation
 /// will perform if you execute the change set.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Change {
   /// A <code>ResourceChange</code> structure that describes the resource and
   /// action that AWS CloudFormation will perform.
+  @_s.JsonKey(name: 'ResourceChange')
   final ResourceChange resourceChange;
 
   /// The type of entity that AWS CloudFormation changes. Currently, the only
   /// entity type is <code>Resource</code>.
+  @_s.JsonKey(name: 'Type')
   final ChangeType type;
 
   Change({
@@ -5501,9 +5754,13 @@ class Change {
 }
 
 enum ChangeAction {
+  @_s.JsonValue('Add')
   add,
+  @_s.JsonValue('Modify')
   modify,
+  @_s.JsonValue('Remove')
   remove,
+  @_s.JsonValue('Import')
   import,
 }
 
@@ -5524,10 +5781,15 @@ extension on String {
 }
 
 enum ChangeSetStatus {
+  @_s.JsonValue('CREATE_PENDING')
   createPending,
+  @_s.JsonValue('CREATE_IN_PROGRESS')
   createInProgress,
+  @_s.JsonValue('CREATE_COMPLETE')
   createComplete,
+  @_s.JsonValue('DELETE_COMPLETE')
   deleteComplete,
+  @_s.JsonValue('FAILED')
   failed,
 }
 
@@ -5551,17 +5813,26 @@ extension on String {
 
 /// The <code>ChangeSetSummary</code> structure describes a change set, its
 /// status, and the stack with which it's associated.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ChangeSetSummary {
   /// The ID of the change set.
+  @_s.JsonKey(name: 'ChangeSetId')
   final String changeSetId;
 
   /// The name of the change set.
+  @_s.JsonKey(name: 'ChangeSetName')
   final String changeSetName;
 
   /// The start time when the change set was created, in UTC.
+  @_s.JsonKey(name: 'CreationTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationTime;
 
   /// Descriptive information about the change set.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// If the change set execution status is <code>AVAILABLE</code>, you can
@@ -5570,21 +5841,26 @@ class ChangeSetSummary {
   /// <code>UNAVAILABLE</code> state because AWS CloudFormation is still creating
   /// it or in an <code>OBSOLETE</code> state because the stack was already
   /// updated.
+  @_s.JsonKey(name: 'ExecutionStatus')
   final ExecutionStatus executionStatus;
 
   /// The ID of the stack with which the change set is associated.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// The name of the stack with which the change set is associated.
+  @_s.JsonKey(name: 'StackName')
   final String stackName;
 
   /// The state of the change set, such as <code>CREATE_IN_PROGRESS</code>,
   /// <code>CREATE_COMPLETE</code>, or <code>FAILED</code>.
+  @_s.JsonKey(name: 'Status')
   final ChangeSetStatus status;
 
   /// A description of the change set's status. For example, if your change set is
   /// in the <code>FAILED</code> state, AWS CloudFormation shows the error
   /// message.
+  @_s.JsonKey(name: 'StatusReason')
   final String statusReason;
 
   ChangeSetSummary({
@@ -5616,8 +5892,11 @@ class ChangeSetSummary {
 }
 
 enum ChangeSetType {
+  @_s.JsonValue('CREATE')
   create,
+  @_s.JsonValue('UPDATE')
   update,
+  @_s.JsonValue('IMPORT')
   import,
 }
 
@@ -5636,10 +5915,15 @@ extension on String {
 }
 
 enum ChangeSource {
+  @_s.JsonValue('ResourceReference')
   resourceReference,
+  @_s.JsonValue('ParameterReference')
   parameterReference,
+  @_s.JsonValue('ResourceAttribute')
   resourceAttribute,
+  @_s.JsonValue('DirectModification')
   directModification,
+  @_s.JsonValue('Automatic')
   automatic,
 }
 
@@ -5662,6 +5946,7 @@ extension on String {
 }
 
 enum ChangeType {
+  @_s.JsonValue('Resource')
   resource,
 }
 
@@ -5676,6 +5961,11 @@ extension on String {
 }
 
 /// The output for a <a>ContinueUpdateRollback</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ContinueUpdateRollbackOutput {
   ContinueUpdateRollbackOutput();
   factory ContinueUpdateRollbackOutput.fromXml(
@@ -5686,11 +5976,18 @@ class ContinueUpdateRollbackOutput {
 }
 
 /// The output for the <a>CreateChangeSet</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateChangeSetOutput {
   /// The Amazon Resource Name (ARN) of the change set.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// The unique ID of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   CreateChangeSetOutput({
@@ -5705,8 +6002,14 @@ class CreateChangeSetOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateStackInstancesOutput {
   /// The unique identifier for this stack set operation.
+  @_s.JsonKey(name: 'OperationId')
   final String operationId;
 
   CreateStackInstancesOutput({
@@ -5720,8 +6023,14 @@ class CreateStackInstancesOutput {
 }
 
 /// The output for a <a>CreateStack</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateStackOutput {
   /// Unique identifier of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   CreateStackOutput({
@@ -5734,8 +6043,14 @@ class CreateStackOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateStackSetOutput {
   /// The ID of the stack set that you're creating.
+  @_s.JsonKey(name: 'StackSetId')
   final String stackSetId;
 
   CreateStackSetOutput({
@@ -5749,6 +6064,11 @@ class CreateStackSetOutput {
 }
 
 /// The output for the <a>DeleteChangeSet</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteChangeSetOutput {
   DeleteChangeSetOutput();
   factory DeleteChangeSetOutput.fromXml(
@@ -5758,8 +6078,14 @@ class DeleteChangeSetOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteStackInstancesOutput {
   /// The unique identifier for this stack set operation.
+  @_s.JsonKey(name: 'OperationId')
   final String operationId;
 
   DeleteStackInstancesOutput({
@@ -5772,6 +6098,11 @@ class DeleteStackInstancesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteStackSetOutput {
   DeleteStackSetOutput();
   factory DeleteStackSetOutput.fromXml(
@@ -5781,8 +6112,53 @@ class DeleteStackSetOutput {
   }
 }
 
+/// [<code>Service-managed</code> permissions] The AWS Organizations accounts to
+/// which StackSets deploys. StackSets does not deploy stack instances to the
+/// organization master account, even if the master account is in your
+/// organization or in an OU in your organization.
+///
+/// For update operations, you can specify either <code>Accounts</code> or
+/// <code>OrganizationalUnitIds</code>. For create and delete operations,
+/// specify <code>OrganizationalUnitIds</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
+class DeploymentTargets {
+  /// The names of one or more AWS accounts for which you want to deploy stack set
+  /// updates.
+  @_s.JsonKey(name: 'Accounts')
+  final List<String> accounts;
+
+  /// The organization root ID or organizational unit (OU) IDs to which StackSets
+  /// deploys.
+  @_s.JsonKey(name: 'OrganizationalUnitIds')
+  final List<String> organizationalUnitIds;
+
+  DeploymentTargets({
+    this.accounts,
+    this.organizationalUnitIds,
+  });
+  factory DeploymentTargets.fromXml(_s.XmlElement elem) {
+    return DeploymentTargets(
+      accounts: _s
+          .extractXmlChild(elem, 'Accounts')
+          ?.let((elem) => _s.extractXmlStringListValues(elem, 'Accounts')),
+      organizationalUnitIds: _s
+          .extractXmlChild(elem, 'OrganizationalUnitIds')
+          ?.let((elem) =>
+              _s.extractXmlStringListValues(elem, 'OrganizationalUnitIds')),
+    );
+  }
+
+  Map<String, dynamic> toJson() => _$DeploymentTargetsToJson(this);
+}
+
 enum DeprecatedStatus {
+  @_s.JsonValue('LIVE')
   live,
+  @_s.JsonValue('DEPRECATED')
   deprecated,
 }
 
@@ -5798,6 +6174,11 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeregisterTypeOutput {
   DeregisterTypeOutput();
   factory DeregisterTypeOutput.fromXml(
@@ -5808,13 +6189,20 @@ class DeregisterTypeOutput {
 }
 
 /// The output for the <a>DescribeAccountLimits</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAccountLimitsOutput {
   /// An account limit structure that contain a list of AWS CloudFormation account
   /// limits and their values.
+  @_s.JsonKey(name: 'AccountLimits')
   final List<AccountLimit> accountLimits;
 
   /// If the output exceeds 1 MB in size, a string that identifies the next page
   /// of limits. If no additional page exists, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeAccountLimitsOutput({
@@ -5834,25 +6222,36 @@ class DescribeAccountLimitsOutput {
 }
 
 /// The output for the <a>DescribeChangeSet</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeChangeSetOutput {
   /// If you execute the change set, the list of capabilities that were explicitly
   /// acknowledged when the change set was created.
+  @_s.JsonKey(name: 'Capabilities')
   final List<String> capabilities;
 
   /// The ARN of the change set.
+  @_s.JsonKey(name: 'ChangeSetId')
   final String changeSetId;
 
   /// The name of the change set.
+  @_s.JsonKey(name: 'ChangeSetName')
   final String changeSetName;
 
   /// A list of <code>Change</code> structures that describes the resources AWS
   /// CloudFormation changes if you execute the change set.
+  @_s.JsonKey(name: 'Changes')
   final List<Change> changes;
 
   /// The start time when the change set was created, in UTC.
+  @_s.JsonKey(name: 'CreationTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationTime;
 
   /// Information about the change set.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// If the change set execution status is <code>AVAILABLE</code>, you can
@@ -5861,14 +6260,17 @@ class DescribeChangeSetOutput {
   /// <code>UNAVAILABLE</code> state because AWS CloudFormation is still creating
   /// it or in an <code>OBSOLETE</code> state because the stack was already
   /// updated.
+  @_s.JsonKey(name: 'ExecutionStatus')
   final ExecutionStatus executionStatus;
 
   /// If the output exceeds 1 MB, a string that identifies the next page of
   /// changes. If there is no additional page, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// The ARNs of the Amazon Simple Notification Service (Amazon SNS) topics that
   /// will be associated with the stack if you execute the change set.
+  @_s.JsonKey(name: 'NotificationARNs')
   final List<String> notificationARNs;
 
   /// A list of <code>Parameter</code> structures that describes the input
@@ -5876,30 +6278,37 @@ class DescribeChangeSetOutput {
   /// information, see the <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_Parameter.html">Parameter</a>
   /// data type.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   /// The rollback triggers for AWS CloudFormation to monitor during stack
   /// creation and updating operations, and for the specified monitoring period
   /// afterwards.
+  @_s.JsonKey(name: 'RollbackConfiguration')
   final RollbackConfiguration rollbackConfiguration;
 
   /// The ARN of the stack that is associated with the change set.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// The name of the stack that is associated with the change set.
+  @_s.JsonKey(name: 'StackName')
   final String stackName;
 
   /// The current status of the change set, such as
   /// <code>CREATE_IN_PROGRESS</code>, <code>CREATE_COMPLETE</code>, or
   /// <code>FAILED</code>.
+  @_s.JsonKey(name: 'Status')
   final ChangeSetStatus status;
 
   /// A description of the change set's status. For example, if your attempt to
   /// create a change set failed, AWS CloudFormation shows the error message.
+  @_s.JsonKey(name: 'StatusReason')
   final String statusReason;
 
   /// If you execute the change set, the tags that will be associated with the
   /// stack.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   DescribeChangeSetOutput({
@@ -5954,6 +6363,11 @@ class DescribeChangeSetOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackDriftDetectionStatusOutput {
   /// The status of the stack drift detection operation.
   ///
@@ -5979,6 +6393,7 @@ class DescribeStackDriftDetectionStatusOutput {
   /// currently in progress.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DetectionStatus')
   final StackDriftDetectionStatus detectionStatus;
 
   /// The ID of the drift detection results of this operation.
@@ -5986,21 +6401,26 @@ class DescribeStackDriftDetectionStatusOutput {
   /// AWS CloudFormation generates new results, with a new drift detection ID,
   /// each time this operation is run. However, the number of reports AWS
   /// CloudFormation retains for any given stack, and for how long, may vary.
+  @_s.JsonKey(name: 'StackDriftDetectionId')
   final String stackDriftDetectionId;
 
   /// The ID of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// Time at which the stack drift detection operation was initiated.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   /// The reason the stack drift detection operation has its current status.
+  @_s.JsonKey(name: 'DetectionStatusReason')
   final String detectionStatusReason;
 
   /// Total number of stack resources that have drifted. This is NULL until the
   /// drift detection operation reaches a status of
   /// <code>DETECTION_COMPLETE</code>. This value will be 0 for stacks whose drift
   /// status is <code>IN_SYNC</code>.
+  @_s.JsonKey(name: 'DriftedStackResourceCount')
   final int driftedStackResourceCount;
 
   /// Status of the stack's actual configuration compared to its expected
@@ -6024,6 +6444,7 @@ class DescribeStackDriftDetectionStatusOutput {
   /// <code>UNKNOWN</code>: This value is reserved for future use.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'StackDriftStatus')
   final StackDriftStatus stackDriftStatus;
 
   DescribeStackDriftDetectionStatusOutput({
@@ -6056,12 +6477,19 @@ class DescribeStackDriftDetectionStatusOutput {
 }
 
 /// The output for a <a>DescribeStackEvents</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackEventsOutput {
   /// If the output exceeds 1 MB in size, a string that identifies the next page
   /// of events. If no additional page exists, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>StackEvents</code> structures.
+  @_s.JsonKey(name: 'StackEvents')
   final List<StackEvent> stackEvents;
 
   DescribeStackEventsOutput({
@@ -6079,8 +6507,14 @@ class DescribeStackEventsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackInstanceOutput {
   /// The stack instance that matches the specified request parameters.
+  @_s.JsonKey(name: 'StackInstance')
   final StackInstance stackInstance;
 
   DescribeStackInstanceOutput({
@@ -6095,6 +6529,11 @@ class DescribeStackInstanceOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackResourceDriftsOutput {
   /// Drift information for the resources that have been checked for drift in the
   /// specified stack. This includes actual and expected configuration values for
@@ -6107,6 +6546,7 @@ class DescribeStackResourceDriftsOutput {
   /// resources that support drift detection, see <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift-resource-list.html">Resources
   /// that Support Drift Detection</a>.
+  @_s.JsonKey(name: 'StackResourceDrifts')
   final List<StackResourceDrift> stackResourceDrifts;
 
   /// If the request doesn't return all of the remaining results,
@@ -6115,6 +6555,7 @@ class DescribeStackResourceDriftsOutput {
   /// token to the request object's <code>NextToken</code> parameter. If the
   /// request returns all results, <code>NextToken</code> is set to
   /// <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeStackResourceDriftsOutput({
@@ -6134,9 +6575,15 @@ class DescribeStackResourceDriftsOutput {
 }
 
 /// The output for a <a>DescribeStackResource</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackResourceOutput {
   /// A <code>StackResourceDetail</code> structure containing the description of
   /// the specified resource in the specified stack.
+  @_s.JsonKey(name: 'StackResourceDetail')
   final StackResourceDetail stackResourceDetail;
 
   DescribeStackResourceOutput({
@@ -6152,8 +6599,14 @@ class DescribeStackResourceOutput {
 }
 
 /// The output for a <a>DescribeStackResources</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackResourcesOutput {
   /// A list of <code>StackResource</code> structures.
+  @_s.JsonKey(name: 'StackResources')
   final List<StackResource> stackResources;
 
   DescribeStackResourcesOutput({
@@ -6170,8 +6623,14 @@ class DescribeStackResourcesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackSetOperationOutput {
   /// The specified stack set operation.
+  @_s.JsonKey(name: 'StackSetOperation')
   final StackSetOperation stackSetOperation;
 
   DescribeStackSetOperationOutput({
@@ -6186,8 +6645,14 @@ class DescribeStackSetOperationOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStackSetOutput {
   /// The specified stack set.
+  @_s.JsonKey(name: 'StackSet')
   final StackSet stackSet;
 
   DescribeStackSetOutput({
@@ -6202,12 +6667,19 @@ class DescribeStackSetOutput {
 }
 
 /// The output for a <a>DescribeStacks</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeStacksOutput {
   /// If the output exceeds 1 MB in size, a string that identifies the next page
   /// of stacks. If no additional page exists, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of stack structures.
+  @_s.JsonKey(name: 'Stacks')
   final List<Stack> stacks;
 
   DescribeStacksOutput({
@@ -6223,8 +6695,14 @@ class DescribeStacksOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTypeOutput {
   /// The Amazon Resource Name (ARN) of the type.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The ID of the default version of the type. The default version is used when
@@ -6232,6 +6710,7 @@ class DescribeTypeOutput {
   ///
   /// To set the default version of a type, use <code>
   /// <a>SetTypeDefaultVersion</a> </code>.
+  @_s.JsonKey(name: 'DefaultVersionId')
   final String defaultVersionId;
 
   /// The deprecation status of the type.
@@ -6248,12 +6727,15 @@ class DescribeTypeOutput {
   /// used in CloudFormation operations.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DeprecatedStatus')
   final DeprecatedStatus deprecatedStatus;
 
   /// The description of the registered type.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The URL of a page providing detailed documentation for this type.
+  @_s.JsonKey(name: 'DocumentationUrl')
   final String documentationUrl;
 
   /// The Amazon Resource Name (ARN) of the IAM execution role used to register
@@ -6264,12 +6746,15 @@ class DescribeTypeOutput {
   /// those AWS APIs, and provision that execution role in your account.
   /// CloudFormation then assumes that execution role to provide your resource
   /// type with the appropriate credentials.
+  @_s.JsonKey(name: 'ExecutionRoleArn')
   final String executionRoleArn;
 
   /// When the specified type version was registered.
+  @_s.JsonKey(name: 'LastUpdated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUpdated;
 
   /// Contains logging configuration information for a type.
+  @_s.JsonKey(name: 'LoggingConfig')
   final LoggingConfig loggingConfig;
 
   /// The provisioning behavior of the type. AWS CloudFormation determines the
@@ -6304,6 +6789,7 @@ class DescribeTypeOutput {
   /// </li>
   /// </ul> </li>
   /// </ul>
+  @_s.JsonKey(name: 'ProvisioningType')
   final ProvisioningType provisioningType;
 
   /// The schema that defines the type.
@@ -6311,20 +6797,25 @@ class DescribeTypeOutput {
   /// For more information on type schemas, see <a
   /// href="https://docs.aws.amazon.com/cloudformation-cli/latest/userguide/resource-type-schema.html">Resource
   /// Provider Schema</a> in the <i>CloudFormation CLI User Guide</i>.
+  @_s.JsonKey(name: 'Schema')
   final String schema;
 
   /// The URL of the source code for the type.
+  @_s.JsonKey(name: 'SourceUrl')
   final String sourceUrl;
 
   /// When the specified type version was registered.
+  @_s.JsonKey(name: 'TimeCreated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timeCreated;
 
   /// The kind of type.
   ///
   /// Currently the only valid value is <code>RESOURCE</code>.
+  @_s.JsonKey(name: 'Type')
   final RegistryType type;
 
   /// The name of the registered type.
+  @_s.JsonKey(name: 'TypeName')
   final String typeName;
 
   /// The scope at which the type is visible and usable in CloudFormation
@@ -6343,6 +6834,7 @@ class DescribeTypeOutput {
   /// Amazon account.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Visibility')
   final Visibility visibility;
 
   DescribeTypeOutput({
@@ -6389,17 +6881,25 @@ class DescribeTypeOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTypeRegistrationOutput {
   /// The description of the type registration request.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The current status of the type registration request.
+  @_s.JsonKey(name: 'ProgressStatus')
   final RegistrationStatus progressStatus;
 
   /// The Amazon Resource Name (ARN) of the type being registered.
   ///
   /// For registration requests with a <code>ProgressStatus</code> of other than
   /// <code>COMPLETE</code>, this will be <code>null</code>.
+  @_s.JsonKey(name: 'TypeArn')
   final String typeArn;
 
   /// The Amazon Resource Name (ARN) of this specific version of the type being
@@ -6407,6 +6907,7 @@ class DescribeTypeRegistrationOutput {
   ///
   /// For registration requests with a <code>ProgressStatus</code> of other than
   /// <code>COMPLETE</code>, this will be <code>null</code>.
+  @_s.JsonKey(name: 'TypeVersionArn')
   final String typeVersionArn;
 
   DescribeTypeRegistrationOutput({
@@ -6427,12 +6928,18 @@ class DescribeTypeRegistrationOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DetectStackDriftOutput {
   /// The ID of the drift detection results of this operation.
   ///
   /// AWS CloudFormation generates new results, with a new drift detection ID,
   /// each time this operation is run. However, the number of drift results AWS
   /// CloudFormation retains for any given stack, and for how long, may vary.
+  @_s.JsonKey(name: 'StackDriftDetectionId')
   final String stackDriftDetectionId;
 
   DetectStackDriftOutput({
@@ -6446,10 +6953,16 @@ class DetectStackDriftOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DetectStackResourceDriftOutput {
   /// Information about whether the resource's actual configuration has drifted
   /// from its expected template configuration, including actual and expected
   /// property values and any differences detected.
+  @_s.JsonKey(name: 'StackResourceDrift')
   final StackResourceDrift stackResourceDrift;
 
   DetectStackResourceDriftOutput({
@@ -6464,11 +6977,17 @@ class DetectStackResourceDriftOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DetectStackSetDriftOutput {
   /// The ID of the drift detection stack set operation.
   ///
   /// you can use this operation id with <code> <a>DescribeStackSetOperation</a>
   /// </code> to monitor the progress of the drift detection operation.
+  @_s.JsonKey(name: 'OperationId')
   final String operationId;
 
   DetectStackSetDriftOutput({
@@ -6482,8 +7001,11 @@ class DetectStackSetDriftOutput {
 }
 
 enum DifferenceType {
+  @_s.JsonValue('ADD')
   add,
+  @_s.JsonValue('REMOVE')
   remove,
+  @_s.JsonValue('NOT_EQUAL')
   notEqual,
 }
 
@@ -6502,9 +7024,15 @@ extension on String {
 }
 
 /// The output for a <a>EstimateTemplateCost</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EstimateTemplateCostOutput {
   /// An AWS Simple Monthly Calculator URL with a query string that describes the
   /// resources required to run the template.
+  @_s.JsonKey(name: 'Url')
   final String url;
 
   EstimateTemplateCostOutput({
@@ -6518,7 +7046,9 @@ class EstimateTemplateCostOutput {
 }
 
 enum EvaluationType {
+  @_s.JsonValue('Static')
   static,
+  @_s.JsonValue('Dynamic')
   dynamic,
 }
 
@@ -6535,6 +7065,11 @@ extension on String {
 }
 
 /// The output for the <a>ExecuteChangeSet</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ExecuteChangeSetOutput {
   ExecuteChangeSetOutput();
   factory ExecuteChangeSetOutput.fromXml(
@@ -6545,11 +7080,17 @@ class ExecuteChangeSetOutput {
 }
 
 enum ExecutionStatus {
+  @_s.JsonValue('UNAVAILABLE')
   unavailable,
+  @_s.JsonValue('AVAILABLE')
   available,
+  @_s.JsonValue('EXECUTE_IN_PROGRESS')
   executeInProgress,
+  @_s.JsonValue('EXECUTE_COMPLETE')
   executeComplete,
+  @_s.JsonValue('EXECUTE_FAILED')
   executeFailed,
+  @_s.JsonValue('OBSOLETE')
   obsolete,
 }
 
@@ -6575,19 +7116,27 @@ extension on String {
 
 /// The <code>Export</code> structure describes the exported output values for a
 /// stack.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Export {
   /// The stack that contains the exported output name and value.
+  @_s.JsonKey(name: 'ExportingStackId')
   final String exportingStackId;
 
   /// The name of exported output value. Use this name and the
   /// <code>Fn::ImportValue</code> function to import the associated value into
   /// other stacks. The name is defined in the <code>Export</code> field in the
   /// associated stack's <code>Outputs</code> section.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the exported output, such as a resource physical ID. This value
   /// is defined in the <code>Export</code> field in the associated stack's
   /// <code>Outputs</code> section.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Export({
@@ -6605,11 +7154,17 @@ class Export {
 }
 
 /// The output for the <a>GetStackPolicy</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetStackPolicyOutput {
   /// Structure containing the stack policy body. (For more information, go to <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/protect-stack-resources.html">
   /// Prevent Updates to Stack Resources</a> in the AWS CloudFormation User
   /// Guide.)
+  @_s.JsonKey(name: 'StackPolicyBody')
   final String stackPolicyBody;
 
   GetStackPolicyOutput({
@@ -6623,12 +7178,18 @@ class GetStackPolicyOutput {
 }
 
 /// The output for <a>GetTemplate</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetTemplateOutput {
   /// The stage of the template that you can retrieve. For stacks, the
   /// <code>Original</code> and <code>Processed</code> templates are always
   /// available. For change sets, the <code>Original</code> template is always
   /// available. After AWS CloudFormation finishes creating the change set, the
   /// <code>Processed</code> template becomes available.
+  @_s.JsonKey(name: 'StagesAvailable')
   final List<String> stagesAvailable;
 
   /// Structure containing the template body. (For more information, go to <a
@@ -6637,6 +7198,7 @@ class GetTemplateOutput {
   ///
   /// AWS CloudFormation returns the same template that was used when the stack
   /// was created.
+  @_s.JsonKey(name: 'TemplateBody')
   final String templateBody;
 
   GetTemplateOutput({
@@ -6653,6 +7215,11 @@ class GetTemplateOutput {
 }
 
 /// The output for the <a>GetTemplateSummary</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetTemplateSummaryOutput {
   /// The capabilities found within the template. If your template contains IAM
   /// resources, you must specify the CAPABILITY_IAM or CAPABILITY_NAMED_IAM value
@@ -6663,40 +7230,49 @@ class GetTemplateSummaryOutput {
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities">Acknowledging
   /// IAM Resources in AWS CloudFormation Templates</a>.
+  @_s.JsonKey(name: 'Capabilities')
   final List<String> capabilities;
 
   /// The list of resources that generated the values in the
   /// <code>Capabilities</code> response element.
+  @_s.JsonKey(name: 'CapabilitiesReason')
   final String capabilitiesReason;
 
   /// A list of the transforms that are declared in the template.
+  @_s.JsonKey(name: 'DeclaredTransforms')
   final List<String> declaredTransforms;
 
   /// The value that is defined in the <code>Description</code> property of the
   /// template.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The value that is defined for the <code>Metadata</code> property of the
   /// template.
+  @_s.JsonKey(name: 'Metadata')
   final String metadata;
 
   /// A list of parameter declarations that describe various properties for each
   /// parameter.
+  @_s.JsonKey(name: 'Parameters')
   final List<ParameterDeclaration> parameters;
 
   /// A list of resource identifier summaries that describe the target resources
   /// of an import operation and the properties you can provide during the import
   /// to identify the target resources. For example, <code>BucketName</code> is a
   /// possible identifier property for an <code>AWS::S3::Bucket</code> resource.
+  @_s.JsonKey(name: 'ResourceIdentifierSummaries')
   final List<ResourceIdentifierSummary> resourceIdentifierSummaries;
 
   /// A list of all the template resource types that are defined in the template,
   /// such as <code>AWS::EC2::Instance</code>, <code>AWS::Dynamo::Table</code>,
   /// and <code>Custom::MyCustomInstance</code>.
+  @_s.JsonKey(name: 'ResourceTypes')
   final List<String> resourceTypes;
 
   /// The AWS template format version, which identifies the capabilities of the
   /// template.
+  @_s.JsonKey(name: 'Version')
   final String version;
 
   GetTemplateSummaryOutput({
@@ -6739,19 +7315,33 @@ class GetTemplateSummaryOutput {
 }
 
 enum HandlerErrorCode {
+  @_s.JsonValue('NotUpdatable')
   notUpdatable,
+  @_s.JsonValue('InvalidRequest')
   invalidRequest,
+  @_s.JsonValue('AccessDenied')
   accessDenied,
+  @_s.JsonValue('InvalidCredentials')
   invalidCredentials,
+  @_s.JsonValue('AlreadyExists')
   alreadyExists,
+  @_s.JsonValue('NotFound')
   notFound,
+  @_s.JsonValue('ResourceConflict')
   resourceConflict,
+  @_s.JsonValue('Throttling')
   throttling,
+  @_s.JsonValue('ServiceLimitExceeded')
   serviceLimitExceeded,
+  @_s.JsonValue('NotStabilized')
   notStabilized,
+  @_s.JsonValue('GeneralServiceException')
   generalServiceException,
+  @_s.JsonValue('ServiceInternalError')
   serviceInternalError,
+  @_s.JsonValue('NetworkFailure')
   networkFailure,
+  @_s.JsonValue('InternalFailure')
   internalFailure,
 }
 
@@ -6792,13 +7382,20 @@ extension on String {
 }
 
 /// The output for the <a>ListChangeSets</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListChangeSetsOutput {
   /// If the output exceeds 1 MB, a string that identifies the next page of change
   /// sets. If there is no additional page, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>ChangeSetSummary</code> structures that provides the ID and
   /// status of each change set for the specified stack.
+  @_s.JsonKey(name: 'Summaries')
   final List<ChangeSetSummary> summaries;
 
   ListChangeSetsOutput({
@@ -6816,13 +7413,20 @@ class ListChangeSetsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListExportsOutput {
   /// The output for the <a>ListExports</a> action.
+  @_s.JsonKey(name: 'Exports')
   final List<Export> exports;
 
   /// If the output exceeds 100 exported output values, a string that identifies
   /// the next page of exports. If there is no additional page, this value is
   /// null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListExportsOutput({
@@ -6838,13 +7442,20 @@ class ListExportsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListImportsOutput {
   /// A list of stack names that are importing the specified exported output
   /// value.
+  @_s.JsonKey(name: 'Imports')
   final List<String> imports;
 
   /// A string that identifies the next page of exports. If there is no additional
   /// page, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListImportsOutput({
@@ -6861,16 +7472,23 @@ class ListImportsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListStackInstancesOutput {
   /// If the request doesn't return all of the remaining results,
   /// <code>NextToken</code> is set to a token. To retrieve the next set of
   /// results, call <code>ListStackInstances</code> again and assign that token to
   /// the request object's <code>NextToken</code> parameter. If the request
   /// returns all results, <code>NextToken</code> is set to <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>StackInstanceSummary</code> structures that contain
   /// information about the specified stack instances.
+  @_s.JsonKey(name: 'Summaries')
   final List<StackInstanceSummary> summaries;
 
   ListStackInstancesOutput({
@@ -6889,12 +7507,19 @@ class ListStackInstancesOutput {
 }
 
 /// The output for a <a>ListStackResources</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListStackResourcesOutput {
   /// If the output exceeds 1 MB, a string that identifies the next page of stack
   /// resources. If no additional page exists, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>StackResourceSummary</code> structures.
+  @_s.JsonKey(name: 'StackResourceSummaries')
   final List<StackResourceSummary> stackResourceSummaries;
 
   ListStackResourcesOutput({
@@ -6914,17 +7539,24 @@ class ListStackResourcesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListStackSetOperationResultsOutput {
   /// If the request doesn't return all results, <code>NextToken</code> is set to
   /// a token. To retrieve the next set of results, call
   /// <code>ListOperationResults</code> again and assign that token to the request
   /// object's <code>NextToken</code> parameter. If there are no remaining
   /// results, <code>NextToken</code> is set to <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>StackSetOperationResultSummary</code> structures that
   /// contain information about the specified operation results, for accounts and
-  /// regions that are included in the operation.
+  /// Regions that are included in the operation.
+  @_s.JsonKey(name: 'Summaries')
   final List<StackSetOperationResultSummary> summaries;
 
   ListStackSetOperationResultsOutput({
@@ -6942,16 +7574,23 @@ class ListStackSetOperationResultsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListStackSetOperationsOutput {
   /// If the request doesn't return all results, <code>NextToken</code> is set to
   /// a token. To retrieve the next set of results, call
   /// <code>ListOperationResults</code> again and assign that token to the request
   /// object's <code>NextToken</code> parameter. If there are no remaining
   /// results, <code>NextToken</code> is set to <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>StackSetOperationSummary</code> structures that contain
   /// summary information about operations for the specified stack set.
+  @_s.JsonKey(name: 'Summaries')
   final List<StackSetOperationSummary> summaries;
 
   ListStackSetOperationsOutput({
@@ -6969,16 +7608,23 @@ class ListStackSetOperationsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListStackSetsOutput {
   /// If the request doesn't return all of the remaining results,
   /// <code>NextToken</code> is set to a token. To retrieve the next set of
   /// results, call <code>ListStackInstances</code> again and assign that token to
   /// the request object's <code>NextToken</code> parameter. If the request
   /// returns all results, <code>NextToken</code> is set to <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>StackSetSummary</code> structures that contain information
   /// about the user's stack sets.
+  @_s.JsonKey(name: 'Summaries')
   final List<StackSetSummary> summaries;
 
   ListStackSetsOutput({
@@ -6997,13 +7643,20 @@ class ListStackSetsOutput {
 }
 
 /// The output for <a>ListStacks</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListStacksOutput {
   /// If the output exceeds 1 MB in size, a string that identifies the next page
   /// of stacks. If no additional page exists, this value is null.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>StackSummary</code> structures containing information about
   /// the specified stacks.
+  @_s.JsonKey(name: 'StackSummaries')
   final List<StackSummary> stackSummaries;
 
   ListStacksOutput({
@@ -7022,18 +7675,25 @@ class ListStacksOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListTypeRegistrationsOutput {
   /// If the request doesn't return all of the remaining results,
   /// <code>NextToken</code> is set to a token. To retrieve the next set of
   /// results, call this action again and assign that token to the request
   /// object's <code>NextToken</code> parameter. If the request returns all
   /// results, <code>NextToken</code> is set to <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of type registration tokens.
   ///
   /// Use <code> <a>DescribeTypeRegistration</a> </code> to return detailed
   /// information about a type registration request.
+  @_s.JsonKey(name: 'RegistrationTokenList')
   final List<String> registrationTokenList;
 
   ListTypeRegistrationsOutput({
@@ -7051,16 +7711,23 @@ class ListTypeRegistrationsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListTypeVersionsOutput {
   /// If the request doesn't return all of the remaining results,
   /// <code>NextToken</code> is set to a token. To retrieve the next set of
   /// results, call this action again and assign that token to the request
   /// object's <code>NextToken</code> parameter. If the request returns all
   /// results, <code>NextToken</code> is set to <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>TypeVersionSummary</code> structures that contain
   /// information about the specified type's versions.
+  @_s.JsonKey(name: 'TypeVersionSummaries')
   final List<TypeVersionSummary> typeVersionSummaries;
 
   ListTypeVersionsOutput({
@@ -7080,16 +7747,23 @@ class ListTypeVersionsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListTypesOutput {
   /// If the request doesn't return all of the remaining results,
   /// <code>NextToken</code> is set to a token. To retrieve the next set of
   /// results, call this action again and assign that token to the request
   /// object's <code>NextToken</code> parameter. If the request returns all
   /// results, <code>NextToken</code> is set to <code>null</code>.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// A list of <code>TypeSummary</code> structures that contain information about
   /// the specified types.
+  @_s.JsonKey(name: 'TypeSummaries')
   final List<TypeSummary> typeSummaries;
 
   ListTypesOutput({
@@ -7109,13 +7783,20 @@ class ListTypesOutput {
 }
 
 /// Contains logging configuration information for a type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LoggingConfig {
   /// The Amazon CloudWatch log group to which CloudFormation sends error logging
   /// information when invoking the type's handlers.
+  @_s.JsonKey(name: 'LogGroupName')
   final String logGroupName;
 
   /// The ARN of the role that CloudFormation should assume when sending log
   /// entries to CloudWatch logs.
+  @_s.JsonKey(name: 'LogRoleArn')
   final String logRoleArn;
 
   LoggingConfig({
@@ -7128,11 +7809,16 @@ class LoggingConfig {
       logRoleArn: _s.extractXmlStringValue(elem, 'LogRoleArn'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LoggingConfigToJson(this);
 }
 
 enum OnFailure {
+  @_s.JsonValue('DO_NOTHING')
   doNothing,
+  @_s.JsonValue('ROLLBACK')
   rollback,
+  @_s.JsonValue('DELETE')
   delete,
 }
 
@@ -7151,9 +7837,13 @@ extension on String {
 }
 
 enum OperationStatus {
+  @_s.JsonValue('PENDING')
   pending,
+  @_s.JsonValue('IN_PROGRESS')
   inProgress,
+  @_s.JsonValue('SUCCESS')
   success,
+  @_s.JsonValue('FAILED')
   failed,
 }
 
@@ -7174,17 +7864,26 @@ extension on String {
 }
 
 /// The Output data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Output {
   /// User defined description associated with the output.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The name of the export associated with the output.
+  @_s.JsonKey(name: 'ExportName')
   final String exportName;
 
   /// The key associated with the output.
+  @_s.JsonKey(name: 'OutputKey')
   final String outputKey;
 
   /// The value associated with the output.
+  @_s.JsonKey(name: 'OutputValue')
   final String outputValue;
 
   Output({
@@ -7204,24 +7903,33 @@ class Output {
 }
 
 /// The Parameter data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Parameter {
   /// The key associated with the parameter. If you don't specify a key and value
   /// for a particular parameter, AWS CloudFormation uses the default value that
   /// is specified in your template.
+  @_s.JsonKey(name: 'ParameterKey')
   final String parameterKey;
 
   /// The input value associated with the parameter.
+  @_s.JsonKey(name: 'ParameterValue')
   final String parameterValue;
 
   /// Read-only. The value that corresponds to a Systems Manager parameter key.
   /// This field is returned only for <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-ssm-parameter-types">
   /// <code>SSM</code> parameter types</a> in the template.
+  @_s.JsonKey(name: 'ResolvedValue')
   final String resolvedValue;
 
   /// During a stack update, use the existing parameter value that the stack is
   /// using for a given parameter key. If you specify <code>true</code>, do not
   /// specify a parameter value.
+  @_s.JsonKey(name: 'UsePreviousValue')
   final bool usePreviousValue;
 
   Parameter({
@@ -7238,13 +7946,21 @@ class Parameter {
       usePreviousValue: _s.extractXmlBoolValue(elem, 'UsePreviousValue'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ParameterToJson(this);
 }
 
 /// A set of criteria that AWS CloudFormation uses to validate parameter values.
 /// Although other constraints might be defined in the stack template, AWS
 /// CloudFormation returns only the <code>AllowedValues</code> property.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ParameterConstraints {
   /// A list of values that are permitted for a parameter.
+  @_s.JsonKey(name: 'AllowedValues')
   final List<String> allowedValues;
 
   ParameterConstraints({
@@ -7260,24 +7976,35 @@ class ParameterConstraints {
 }
 
 /// The ParameterDeclaration data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ParameterDeclaration {
   /// The default value of the parameter.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// The description that is associate with the parameter.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Flag that indicates whether the parameter value is shown as plain text in
   /// logs and in the AWS Management Console.
+  @_s.JsonKey(name: 'NoEcho')
   final bool noEcho;
 
   /// The criteria that AWS CloudFormation uses to validate parameter values.
+  @_s.JsonKey(name: 'ParameterConstraints')
   final ParameterConstraints parameterConstraints;
 
   /// The name that is associated with the parameter.
+  @_s.JsonKey(name: 'ParameterKey')
   final String parameterKey;
 
   /// The type of parameter.
+  @_s.JsonKey(name: 'ParameterType')
   final String parameterType;
 
   ParameterDeclaration({
@@ -7302,16 +8029,42 @@ class ParameterDeclaration {
   }
 }
 
+enum PermissionModels {
+  @_s.JsonValue('SERVICE_MANAGED')
+  serviceManaged,
+  @_s.JsonValue('SELF_MANAGED')
+  selfManaged,
+}
+
+extension on String {
+  PermissionModels toPermissionModels() {
+    switch (this) {
+      case 'SERVICE_MANAGED':
+        return PermissionModels.serviceManaged;
+      case 'SELF_MANAGED':
+        return PermissionModels.selfManaged;
+    }
+    throw Exception('Unknown enum value: $this');
+  }
+}
+
 /// Context information that enables AWS CloudFormation to uniquely identify a
 /// resource. AWS CloudFormation uses context key-value pairs in cases where a
 /// resource's logical and physical IDs are not enough to uniquely identify that
 /// resource. Each context key-value pair specifies a resource that contains the
 /// targeted resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PhysicalResourceIdContextKeyValuePair {
   /// The resource context key.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The resource context value.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   PhysicalResourceIdContextKeyValuePair({
@@ -7333,8 +8086,14 @@ class PhysicalResourceIdContextKeyValuePair {
 /// information, see <a
 /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html">Detecting
 /// Unregulated Configuration Changes to Stacks and Resources</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PropertyDifference {
   /// The actual property value of the resource property.
+  @_s.JsonKey(name: 'ActualValue')
   final String actualValue;
 
   /// The type of property difference.
@@ -7354,13 +8113,16 @@ class PropertyDifference {
   /// parameters).
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DifferenceType')
   final DifferenceType differenceType;
 
   /// The expected property value of the resource property, as defined in the
   /// stack template and any values specified as template parameters.
+  @_s.JsonKey(name: 'ExpectedValue')
   final String expectedValue;
 
   /// The fully-qualified path to the resource property.
+  @_s.JsonKey(name: 'PropertyPath')
   final String propertyPath;
 
   PropertyDifference({
@@ -7381,8 +8143,11 @@ class PropertyDifference {
 }
 
 enum ProvisioningType {
+  @_s.JsonValue('NON_PROVISIONABLE')
   nonProvisionable,
+  @_s.JsonValue('IMMUTABLE')
   immutable,
+  @_s.JsonValue('FULLY_MUTABLE')
   fullyMutable,
 }
 
@@ -7400,6 +8165,11 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RecordHandlerProgressOutput {
   RecordHandlerProgressOutput();
   factory RecordHandlerProgressOutput.fromXml(
@@ -7409,12 +8179,18 @@ class RecordHandlerProgressOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RegisterTypeOutput {
   /// The identifier for this registration request.
   ///
   /// Use this registration token when calling <code>
   /// <a>DescribeTypeRegistration</a> </code>, which returns information about the
   /// status and IDs of the type registration.
+  @_s.JsonKey(name: 'RegistrationToken')
   final String registrationToken;
 
   RegisterTypeOutput({
@@ -7428,8 +8204,11 @@ class RegisterTypeOutput {
 }
 
 enum RegistrationStatus {
+  @_s.JsonValue('COMPLETE')
   complete,
+  @_s.JsonValue('IN_PROGRESS')
   inProgress,
+  @_s.JsonValue('FAILED')
   failed,
 }
 
@@ -7448,6 +8227,7 @@ extension on String {
 }
 
 enum RegistryType {
+  @_s.JsonValue('RESOURCE')
   resource,
 }
 
@@ -7462,8 +8242,11 @@ extension on String {
 }
 
 enum Replacement {
+  @_s.JsonValue('True')
   $true,
+  @_s.JsonValue('False')
   $false,
+  @_s.JsonValue('Conditional')
   conditional,
 }
 
@@ -7482,8 +8265,11 @@ extension on String {
 }
 
 enum RequiresRecreation {
+  @_s.JsonValue('Never')
   never,
+  @_s.JsonValue('Conditionally')
   conditionally,
+  @_s.JsonValue('Always')
   always,
 }
 
@@ -7502,11 +8288,17 @@ extension on String {
 }
 
 enum ResourceAttribute {
+  @_s.JsonValue('Properties')
   properties,
+  @_s.JsonValue('Metadata')
   metadata,
+  @_s.JsonValue('CreationPolicy')
   creationPolicy,
+  @_s.JsonValue('UpdatePolicy')
   updatePolicy,
+  @_s.JsonValue('DeletionPolicy')
   deletionPolicy,
+  @_s.JsonValue('Tags')
   tags,
 }
 
@@ -7533,22 +8325,31 @@ extension on String {
 /// The <code>ResourceChange</code> structure describes the resource and the
 /// action that AWS CloudFormation will perform on it if you execute this change
 /// set.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceChange {
   /// The action that AWS CloudFormation takes on the resource, such as
   /// <code>Add</code> (adds a new resource), <code>Modify</code> (changes a
   /// resource), or <code>Remove</code> (deletes a resource).
+  @_s.JsonKey(name: 'Action')
   final ChangeAction action;
 
   /// For the <code>Modify</code> action, a list of
   /// <code>ResourceChangeDetail</code> structures that describes the changes that
   /// AWS CloudFormation will make to the resource.
+  @_s.JsonKey(name: 'Details')
   final List<ResourceChangeDetail> details;
 
   /// The resource's logical ID, which is defined in the stack's template.
+  @_s.JsonKey(name: 'LogicalResourceId')
   final String logicalResourceId;
 
   /// The resource's physical ID (resource name). Resources that you are adding
   /// don't have physical IDs because they haven't been created.
+  @_s.JsonKey(name: 'PhysicalResourceId')
   final String physicalResourceId;
 
   /// For the <code>Modify</code> action, indicates whether AWS CloudFormation
@@ -7567,15 +8368,18 @@ class ResourceChange {
   /// most impact. A <code>RequiresRecreation</code> value of <code>Always</code>
   /// has the most impact, followed by <code>Conditionally</code>, and then
   /// <code>Never</code>.
+  @_s.JsonKey(name: 'Replacement')
   final Replacement replacement;
 
   /// The type of AWS CloudFormation resource, such as
   /// <code>AWS::S3::Bucket</code>.
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// For the <code>Modify</code> action, indicates which resource attribute is
   /// triggering this update, such as a change in the resource attribute's
   /// <code>Metadata</code>, <code>Properties</code>, or <code>Tags</code>.
+  @_s.JsonKey(name: 'Scope')
   final List<String> scope;
 
   ResourceChange({
@@ -7609,6 +8413,11 @@ class ResourceChange {
 /// For a resource with <code>Modify</code> as the action, the
 /// <code>ResourceChange</code> structure describes the changes AWS
 /// CloudFormation will make to that resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceChangeDetail {
   /// The identity of the entity that triggered this change. This entity is a
   /// member of the group that is specified by the <code>ChangeSource</code>
@@ -7618,6 +8427,7 @@ class ResourceChangeDetail {
   ///
   /// If the <code>ChangeSource</code> value is <code>DirectModification</code>,
   /// no value is given for <code>CausingEntity</code>.
+  @_s.JsonKey(name: 'CausingEntity')
   final String causingEntity;
 
   /// The group to which the <code>CausingEntity</code> value belongs. There are
@@ -7653,6 +8463,7 @@ class ResourceChangeDetail {
   /// update on the parent stack.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ChangeSource')
   final ChangeSource changeSource;
 
   /// Indicates whether AWS CloudFormation can determine the target value, and
@@ -7672,11 +8483,13 @@ class ResourceChangeDetail {
   /// physical ID of the resource) might change, depending on if the resource is
   /// recreated. If the resource is recreated, it will have a new physical ID, so
   /// all references to that resource will also be updated.
+  @_s.JsonKey(name: 'Evaluation')
   final EvaluationType evaluation;
 
   /// A <code>ResourceTargetDefinition</code> structure that describes the field
   /// that AWS CloudFormation will change and whether the resource will be
   /// recreated.
+  @_s.JsonKey(name: 'Target')
   final ResourceTargetDefinition target;
 
   ResourceChangeDetail({
@@ -7702,18 +8515,26 @@ class ResourceChangeDetail {
 /// Describes the target resources of a specific type in your import template
 /// (for example, all <code>AWS::S3::Bucket</code> resources) and the properties
 /// you can provide during the import to identify resources of that type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceIdentifierSummary {
   /// The logical IDs of the target resources of the specified
   /// <code>ResourceType</code>, as defined in the import template.
+  @_s.JsonKey(name: 'LogicalResourceIds')
   final List<String> logicalResourceIds;
 
   /// The resource properties you can provide during the import to identify your
   /// target resources. For example, <code>BucketName</code> is a possible
   /// identifier property for <code>AWS::S3::Bucket</code> resources.
+  @_s.JsonKey(name: 'ResourceIdentifiers')
   final List<String> resourceIdentifiers;
 
   /// The template resource type of the target resources, such as
   /// <code>AWS::S3::Bucket</code>.
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   ResourceIdentifierSummary({
@@ -7733,7 +8554,9 @@ class ResourceIdentifierSummary {
 }
 
 enum ResourceSignalStatus {
+  @_s.JsonValue('SUCCESS')
   success,
+  @_s.JsonValue('FAILURE')
   failure,
 }
 
@@ -7750,21 +8573,37 @@ extension on String {
 }
 
 enum ResourceStatus {
+  @_s.JsonValue('CREATE_IN_PROGRESS')
   createInProgress,
+  @_s.JsonValue('CREATE_FAILED')
   createFailed,
+  @_s.JsonValue('CREATE_COMPLETE')
   createComplete,
+  @_s.JsonValue('DELETE_IN_PROGRESS')
   deleteInProgress,
+  @_s.JsonValue('DELETE_FAILED')
   deleteFailed,
+  @_s.JsonValue('DELETE_COMPLETE')
   deleteComplete,
+  @_s.JsonValue('DELETE_SKIPPED')
   deleteSkipped,
+  @_s.JsonValue('UPDATE_IN_PROGRESS')
   updateInProgress,
+  @_s.JsonValue('UPDATE_FAILED')
   updateFailed,
+  @_s.JsonValue('UPDATE_COMPLETE')
   updateComplete,
+  @_s.JsonValue('IMPORT_FAILED')
   importFailed,
+  @_s.JsonValue('IMPORT_COMPLETE')
   importComplete,
+  @_s.JsonValue('IMPORT_IN_PROGRESS')
   importInProgress,
+  @_s.JsonValue('IMPORT_ROLLBACK_IN_PROGRESS')
   importRollbackInProgress,
+  @_s.JsonValue('IMPORT_ROLLBACK_FAILED')
   importRollbackFailed,
+  @_s.JsonValue('IMPORT_ROLLBACK_COMPLETE')
   importRollbackComplete,
 }
 
@@ -7810,14 +8649,21 @@ extension on String {
 
 /// The field that AWS CloudFormation will change, such as the name of a
 /// resource's property, and whether the resource will be recreated.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceTargetDefinition {
   /// Indicates which resource attribute is triggering this update, such as a
   /// change in the resource attribute's <code>Metadata</code>,
   /// <code>Properties</code>, or <code>Tags</code>.
+  @_s.JsonKey(name: 'Attribute')
   final ResourceAttribute attribute;
 
   /// If the <code>Attribute</code> value is <code>Properties</code>, the name of
   /// the property. For all other attributes, the value is null.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// If the <code>Attribute</code> value is <code>Properties</code>, indicates
@@ -7827,6 +8673,7 @@ class ResourceTargetDefinition {
   /// <code>Conditionally</code> recreation, see the update behavior for that <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">property</a>
   /// in the AWS CloudFormation User Guide.
+  @_s.JsonKey(name: 'RequiresRecreation')
   final RequiresRecreation requiresRecreation;
 
   ResourceTargetDefinition({
@@ -7847,18 +8694,26 @@ class ResourceTargetDefinition {
 }
 
 /// Describes the target resource of an import operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ResourceToImport {
   /// The logical ID of the target resource as specified in the template.
+  @_s.JsonKey(name: 'LogicalResourceId')
   final String logicalResourceId;
 
   /// A key-value pair that identifies the target resource. The key is an
   /// identifier property (for example, <code>BucketName</code> for
   /// <code>AWS::S3::Bucket</code> resources) and the value is the actual property
   /// value (for example, <code>MyS3Bucket</code>).
+  @_s.JsonKey(name: 'ResourceIdentifier')
   final Map<String, String> resourceIdentifier;
 
   /// The type of resource to import into your stack, such as
   /// <code>AWS::S3::Bucket</code>.
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   ResourceToImport({
@@ -7866,6 +8721,7 @@ class ResourceToImport {
     @_s.required this.resourceIdentifier,
     @_s.required this.resourceType,
   });
+  Map<String, dynamic> toJson() => _$ResourceToImportToJson(this);
 }
 
 /// Structure containing the rollback triggers for AWS CloudFormation to monitor
@@ -7878,6 +8734,11 @@ class ResourceToImport {
 /// you've specified. For more information, see <a
 /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-rollback-triggers.html">Monitor
 /// and Roll Back Stack Operations</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class RollbackConfiguration {
   /// The amount of time, in minutes, during which CloudFormation should monitor
   /// all the rollback triggers after the stack creation or update operation
@@ -7897,6 +8758,7 @@ class RollbackConfiguration {
   /// specified rollback triggers during stack creation and update operations.
   /// Then, for update operations, it begins disposing of old resources
   /// immediately once the operation completes.
+  @_s.JsonKey(name: 'MonitoringTimeInMinutes')
   final int monitoringTimeInMinutes;
 
   /// The triggers to monitor during stack creation or update actions.
@@ -7926,6 +8788,7 @@ class RollbackConfiguration {
   /// </ul>
   /// If a specified trigger is missing, the entire stack operation fails and is
   /// rolled back.
+  @_s.JsonKey(name: 'RollbackTriggers')
   final List<RollbackTrigger> rollbackTriggers;
 
   RollbackConfiguration({
@@ -7943,22 +8806,31 @@ class RollbackConfiguration {
               .toList()),
     );
   }
+
+  Map<String, dynamic> toJson() => _$RollbackConfigurationToJson(this);
 }
 
 /// A rollback trigger AWS CloudFormation monitors during creation and updating
 /// of stacks. If any of the alarms you specify goes to ALARM state during the
 /// stack operation or within the specified monitoring period afterwards,
 /// CloudFormation rolls back the entire stack operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class RollbackTrigger {
   /// The Amazon Resource Name (ARN) of the rollback trigger.
   ///
   /// If a specified trigger is missing, the entire stack operation fails and is
   /// rolled back.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The resource type of the rollback trigger. Currently, <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-cw-alarm.html">AWS::CloudWatch::Alarm</a>
   /// is the only supported resource type.
+  @_s.JsonKey(name: 'Type')
   final String type;
 
   RollbackTrigger({
@@ -7971,8 +8843,15 @@ class RollbackTrigger {
       type: _s.extractXmlStringValue(elem, 'Type'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$RollbackTriggerToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetTypeDefaultVersionOutput {
   SetTypeDefaultVersionOutput();
   factory SetTypeDefaultVersionOutput.fromXml(
@@ -7983,26 +8862,38 @@ class SetTypeDefaultVersionOutput {
 }
 
 /// The Stack data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Stack {
   /// The time at which the stack was created.
+  @_s.JsonKey(name: 'CreationTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationTime;
 
   /// The name associated with the stack.
+  @_s.JsonKey(name: 'StackName')
   final String stackName;
 
   /// Current status of the stack.
+  @_s.JsonKey(name: 'StackStatus')
   final StackStatus stackStatus;
 
   /// The capabilities allowed in the stack.
+  @_s.JsonKey(name: 'Capabilities')
   final List<String> capabilities;
 
   /// The unique ID of the change set.
+  @_s.JsonKey(name: 'ChangeSetId')
   final String changeSetId;
 
   /// The time the stack was deleted.
+  @_s.JsonKey(name: 'DeletionTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime deletionTime;
 
   /// A user-defined description associated with the stack.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Boolean to enable or disable rollback on stack creation failures:
@@ -8015,6 +8906,7 @@ class Stack {
   /// <code>false</code>: enable rollback
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DisableRollback')
   final bool disableRollback;
 
   /// Information on whether a stack's actual configuration differs, or has
@@ -8023,6 +8915,7 @@ class Stack {
   /// information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html">Detecting
   /// Unregulated Configuration Changes to Stacks and Resources</a>.
+  @_s.JsonKey(name: 'DriftInformation')
   final StackDriftInformation driftInformation;
 
   /// Whether termination protection is enabled for the stack.
@@ -8033,19 +8926,25 @@ class Stack {
   /// changed directly on the nested stack. For more information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-protect-stacks.html">Protecting
   /// a Stack From Being Deleted</a> in the <i>AWS CloudFormation User Guide</i>.
+  @_s.JsonKey(name: 'EnableTerminationProtection')
   final bool enableTerminationProtection;
 
   /// The time the stack was last updated. This field will only be returned if the
   /// stack has been updated at least once.
+  @_s.JsonKey(
+      name: 'LastUpdatedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUpdatedTime;
 
   /// SNS topic ARNs to which stack related events are published.
+  @_s.JsonKey(name: 'NotificationARNs')
   final List<String> notificationARNs;
 
   /// A list of output structures.
+  @_s.JsonKey(name: 'Outputs')
   final List<Output> outputs;
 
   /// A list of <code>Parameter</code> structures.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   /// For nested stacks--stacks created as resources for another stack--the stack
@@ -8055,16 +8954,19 @@ class Stack {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html">Working
   /// with Nested Stacks</a> in the <i>AWS CloudFormation User Guide</i>.
+  @_s.JsonKey(name: 'ParentId')
   final String parentId;
 
   /// The Amazon Resource Name (ARN) of an AWS Identity and Access Management
   /// (IAM) role that is associated with the stack. During a stack operation, AWS
   /// CloudFormation uses this role's credentials to make calls on your behalf.
+  @_s.JsonKey(name: 'RoleARN')
   final String roleARN;
 
   /// The rollback triggers for AWS CloudFormation to monitor during stack
   /// creation and updating operations, and for the specified monitoring period
   /// afterwards.
+  @_s.JsonKey(name: 'RollbackConfiguration')
   final RollbackConfiguration rollbackConfiguration;
 
   /// For nested stacks--stacks created as resources for another stack--the stack
@@ -8073,18 +8975,23 @@ class Stack {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html">Working
   /// with Nested Stacks</a> in the <i>AWS CloudFormation User Guide</i>.
+  @_s.JsonKey(name: 'RootId')
   final String rootId;
 
   /// Unique identifier of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// Success/failure message associated with the stack status.
+  @_s.JsonKey(name: 'StackStatusReason')
   final String stackStatusReason;
 
   /// A list of <code>Tag</code>s that specify information about the stack.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// The amount of time within which stack creation should complete.
+  @_s.JsonKey(name: 'TimeoutInMinutes')
   final int timeoutInMinutes;
 
   Stack({
@@ -8154,8 +9061,11 @@ class Stack {
 }
 
 enum StackDriftDetectionStatus {
+  @_s.JsonValue('DETECTION_IN_PROGRESS')
   detectionInProgress,
+  @_s.JsonValue('DETECTION_FAILED')
   detectionFailed,
+  @_s.JsonValue('DETECTION_COMPLETE')
   detectionComplete,
 }
 
@@ -8177,6 +9087,11 @@ extension on String {
 /// or has <i>drifted</i>, from its expected configuration, as defined in the
 /// stack template and any values specified as template parameters. A stack is
 /// considered to have drifted if one or more of its resources have drifted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackDriftInformation {
   /// Status of the stack's actual configuration compared to its expected template
   /// configuration.
@@ -8199,10 +9114,13 @@ class StackDriftInformation {
   /// <code>UNKNOWN</code>: This value is reserved for future use.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'StackDriftStatus')
   final StackDriftStatus stackDriftStatus;
 
   /// Most recent time when a drift detection operation was initiated on the
   /// stack, or any of its individual resources that support drift detection.
+  @_s.JsonKey(
+      name: 'LastCheckTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastCheckTimestamp;
 
   StackDriftInformation({
@@ -8224,6 +9142,11 @@ class StackDriftInformation {
 /// or has <i>drifted</i>, from its expected configuration, as defined in the
 /// stack template and any values specified as template parameters. A stack is
 /// considered to have drifted if one or more of its resources have drifted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackDriftInformationSummary {
   /// Status of the stack's actual configuration compared to its expected template
   /// configuration.
@@ -8246,10 +9169,13 @@ class StackDriftInformationSummary {
   /// <code>UNKNOWN</code>: This value is reserved for future use.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'StackDriftStatus')
   final StackDriftStatus stackDriftStatus;
 
   /// Most recent time when a drift detection operation was initiated on the
   /// stack, or any of its individual resources that support drift detection.
+  @_s.JsonKey(
+      name: 'LastCheckTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastCheckTimestamp;
 
   StackDriftInformationSummary({
@@ -8268,9 +9194,13 @@ class StackDriftInformationSummary {
 }
 
 enum StackDriftStatus {
+  @_s.JsonValue('DRIFTED')
   drifted,
+  @_s.JsonValue('IN_SYNC')
   inSync,
+  @_s.JsonValue('UNKNOWN')
   unknown,
+  @_s.JsonValue('NOT_CHECKED')
   notChecked,
 }
 
@@ -8291,17 +9221,26 @@ extension on String {
 }
 
 /// The StackEvent data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackEvent {
   /// The unique ID of this event.
+  @_s.JsonKey(name: 'EventId')
   final String eventId;
 
   /// The unique ID name of the instance of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// The name associated with a stack.
+  @_s.JsonKey(name: 'StackName')
   final String stackName;
 
   /// Time the status was updated.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   /// The token passed to the operation that generated this event.
@@ -8320,27 +9259,34 @@ class StackEvent {
   /// console, each stack event would be assigned the same token in the following
   /// format:
   /// <code>Console-CreateStack-7f59c3cf-00d2-40c7-b2ff-e75db0987002</code>.
+  @_s.JsonKey(name: 'ClientRequestToken')
   final String clientRequestToken;
 
   /// The logical name of the resource specified in the template.
+  @_s.JsonKey(name: 'LogicalResourceId')
   final String logicalResourceId;
 
   /// The name or unique identifier associated with the physical instance of the
   /// resource.
+  @_s.JsonKey(name: 'PhysicalResourceId')
   final String physicalResourceId;
 
   /// BLOB of the properties used to create the resource.
+  @_s.JsonKey(name: 'ResourceProperties')
   final String resourceProperties;
 
   /// Current status of the resource.
+  @_s.JsonKey(name: 'ResourceStatus')
   final ResourceStatus resourceStatus;
 
   /// Success/failure message associated with the resource.
+  @_s.JsonKey(name: 'ResourceStatusReason')
   final String resourceStatusReason;
 
   /// Type of resource. (For more information, go to <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">
   /// AWS Resource Types Reference</a> in the AWS CloudFormation User Guide.)
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   StackEvent({
@@ -8375,15 +9321,22 @@ class StackEvent {
   }
 }
 
-/// An AWS CloudFormation stack, in a specific account and region, that's part
+/// An AWS CloudFormation stack, in a specific account and Region, that's part
 /// of a stack set operation. A stack instance is a reference to an attempted or
-/// actual stack in a given account within a given region. A stack instance can
+/// actual stack in a given account within a given Region. A stack instance can
 /// exist without a stack—for example, if the stack couldn't be created for some
 /// reason. A stack instance is associated with only one stack set. Each stack
 /// instance contains the ID of its associated stack set, as well as the ID of
 /// the actual stack and the stack status.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackInstance {
-  /// The name of the AWS account that the stack instance is associated with.
+  /// [<code>Self-managed</code> permissions] The name of the AWS account that the
+  /// stack instance is associated with.
+  @_s.JsonKey(name: 'Account')
   final String account;
 
   /// Status of the stack instance's actual configuration compared to the expected
@@ -8408,25 +9361,38 @@ class StackInstance {
   /// <code>UNKNOWN</code>: This value is reserved for future use.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DriftStatus')
   final StackDriftStatus driftStatus;
 
   /// Most recent time when CloudFormation performed a drift detection operation
   /// on the stack instance. This value will be <code>NULL</code> for any stack
   /// instance on which drift detection has not yet been performed.
+  @_s.JsonKey(
+      name: 'LastDriftCheckTimestamp',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime lastDriftCheckTimestamp;
+
+  /// Reserved for internal use. No data returned.
+  @_s.JsonKey(name: 'OrganizationalUnitId')
+  final String organizationalUnitId;
 
   /// A list of parameters from the stack set template whose values have been
   /// overridden in this stack instance.
+  @_s.JsonKey(name: 'ParameterOverrides')
   final List<Parameter> parameterOverrides;
 
-  /// The name of the AWS region that the stack instance is associated with.
+  /// The name of the AWS Region that the stack instance is associated with.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   /// The ID of the stack instance.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// The name or unique ID of the stack set that the stack instance is associated
   /// with.
+  @_s.JsonKey(name: 'StackSetId')
   final String stackSetId;
 
   /// The status of the stack instance, in terms of its synchronization with its
@@ -8460,16 +9426,19 @@ class StackInstance {
   /// <code>CURRENT</code>: The stack is currently up to date with the stack set.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final StackInstanceStatus status;
 
   /// The explanation for the specific status code that is assigned to this stack
   /// instance.
+  @_s.JsonKey(name: 'StatusReason')
   final String statusReason;
 
   StackInstance({
     this.account,
     this.driftStatus,
     this.lastDriftCheckTimestamp,
+    this.organizationalUnitId,
     this.parameterOverrides,
     this.region,
     this.stackId,
@@ -8484,6 +9453,8 @@ class StackInstance {
           _s.extractXmlStringValue(elem, 'DriftStatus')?.toStackDriftStatus(),
       lastDriftCheckTimestamp:
           _s.extractXmlDateTimeValue(elem, 'LastDriftCheckTimestamp'),
+      organizationalUnitId:
+          _s.extractXmlStringValue(elem, 'OrganizationalUnitId'),
       parameterOverrides: _s.extractXmlChild(elem, 'ParameterOverrides')?.let(
           (elem) => elem
               .findElements('ParameterOverrides')
@@ -8499,8 +9470,11 @@ class StackInstance {
 }
 
 enum StackInstanceStatus {
+  @_s.JsonValue('CURRENT')
   current,
+  @_s.JsonValue('OUTDATED')
   outdated,
+  @_s.JsonValue('INOPERABLE')
   inoperable,
 }
 
@@ -8519,8 +9493,15 @@ extension on String {
 }
 
 /// The structure that contains summary information about a stack instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackInstanceSummary {
-  /// The name of the AWS account that the stack instance is associated with.
+  /// [<code>Self-managed</code> permissions] The name of the AWS account that the
+  /// stack instance is associated with.
+  @_s.JsonKey(name: 'Account')
   final String account;
 
   /// Status of the stack instance's actual configuration compared to the expected
@@ -8545,21 +9526,33 @@ class StackInstanceSummary {
   /// <code>UNKNOWN</code>: This value is reserved for future use.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DriftStatus')
   final StackDriftStatus driftStatus;
 
   /// Most recent time when CloudFormation performed a drift detection operation
   /// on the stack instance. This value will be <code>NULL</code> for any stack
   /// instance on which drift detection has not yet been performed.
+  @_s.JsonKey(
+      name: 'LastDriftCheckTimestamp',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime lastDriftCheckTimestamp;
 
-  /// The name of the AWS region that the stack instance is associated with.
+  /// Reserved for internal use. No data returned.
+  @_s.JsonKey(name: 'OrganizationalUnitId')
+  final String organizationalUnitId;
+
+  /// The name of the AWS Region that the stack instance is associated with.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   /// The ID of the stack instance.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// The name or unique ID of the stack set that the stack instance is associated
   /// with.
+  @_s.JsonKey(name: 'StackSetId')
   final String stackSetId;
 
   /// The status of the stack instance, in terms of its synchronization with its
@@ -8593,16 +9586,19 @@ class StackInstanceSummary {
   /// <code>CURRENT</code>: The stack is currently up to date with the stack set.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final StackInstanceStatus status;
 
   /// The explanation for the specific status code assigned to this stack
   /// instance.
+  @_s.JsonKey(name: 'StatusReason')
   final String statusReason;
 
   StackInstanceSummary({
     this.account,
     this.driftStatus,
     this.lastDriftCheckTimestamp,
+    this.organizationalUnitId,
     this.region,
     this.stackId,
     this.stackSetId,
@@ -8616,6 +9612,8 @@ class StackInstanceSummary {
           _s.extractXmlStringValue(elem, 'DriftStatus')?.toStackDriftStatus(),
       lastDriftCheckTimestamp:
           _s.extractXmlDateTimeValue(elem, 'LastDriftCheckTimestamp'),
+      organizationalUnitId:
+          _s.extractXmlStringValue(elem, 'OrganizationalUnitId'),
       region: _s.extractXmlStringValue(elem, 'Region'),
       stackId: _s.extractXmlStringValue(elem, 'StackId'),
       stackSetId: _s.extractXmlStringValue(elem, 'StackSetId'),
@@ -8626,22 +9624,32 @@ class StackInstanceSummary {
 }
 
 /// The StackResource data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackResource {
   /// The logical name of the resource specified in the template.
+  @_s.JsonKey(name: 'LogicalResourceId')
   final String logicalResourceId;
 
   /// Current status of the resource.
+  @_s.JsonKey(name: 'ResourceStatus')
   final ResourceStatus resourceStatus;
 
   /// Type of resource. (For more information, go to <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">
   /// AWS Resource Types Reference</a> in the AWS CloudFormation User Guide.)
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// Time the status was updated.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   /// User defined description associated with the resource.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Information about whether the resource's actual configuration differs, or
@@ -8650,19 +9658,24 @@ class StackResource {
   /// information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html">Detecting
   /// Unregulated Configuration Changes to Stacks and Resources</a>.
+  @_s.JsonKey(name: 'DriftInformation')
   final StackResourceDriftInformation driftInformation;
 
   /// The name or unique identifier that corresponds to a physical instance ID of
   /// a resource supported by AWS CloudFormation.
+  @_s.JsonKey(name: 'PhysicalResourceId')
   final String physicalResourceId;
 
   /// Success/failure message associated with the resource.
+  @_s.JsonKey(name: 'ResourceStatusReason')
   final String resourceStatusReason;
 
   /// Unique identifier of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// The name associated with the stack.
+  @_s.JsonKey(name: 'StackName')
   final String stackName;
 
   StackResource({
@@ -8698,22 +9711,33 @@ class StackResource {
 }
 
 /// Contains detailed information about the specified stack resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackResourceDetail {
   /// Time the status was updated.
+  @_s.JsonKey(
+      name: 'LastUpdatedTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUpdatedTimestamp;
 
   /// The logical name of the resource specified in the template.
+  @_s.JsonKey(name: 'LogicalResourceId')
   final String logicalResourceId;
 
   /// Current status of the resource.
+  @_s.JsonKey(name: 'ResourceStatus')
   final ResourceStatus resourceStatus;
 
   /// Type of resource. ((For more information, go to <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">
   /// AWS Resource Types Reference</a> in the AWS CloudFormation User Guide.)
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// User defined description associated with the resource.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Information about whether the resource's actual configuration differs, or
@@ -8722,25 +9746,31 @@ class StackResourceDetail {
   /// information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html">Detecting
   /// Unregulated Configuration Changes to Stacks and Resources</a>.
+  @_s.JsonKey(name: 'DriftInformation')
   final StackResourceDriftInformation driftInformation;
 
   /// The content of the <code>Metadata</code> attribute declared for the
   /// resource. For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-metadata.html">Metadata
   /// Attribute</a> in the AWS CloudFormation User Guide.
+  @_s.JsonKey(name: 'Metadata')
   final String metadata;
 
   /// The name or unique identifier that corresponds to a physical instance ID of
   /// a resource supported by AWS CloudFormation.
+  @_s.JsonKey(name: 'PhysicalResourceId')
   final String physicalResourceId;
 
   /// Success/failure message associated with the resource.
+  @_s.JsonKey(name: 'ResourceStatusReason')
   final String resourceStatusReason;
 
   /// Unique identifier of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// The name associated with the stack.
+  @_s.JsonKey(name: 'StackName')
   final String stackName;
 
   StackResourceDetail({
@@ -8794,14 +9824,22 @@ class StackResourceDetail {
 /// Use <a>DetectStackResourceDrift</a> to detect drift on individual resources,
 /// or <a>DetectStackDrift</a> to detect drift on all resources in a given stack
 /// that support drift detection.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackResourceDrift {
   /// The logical name of the resource specified in the template.
+  @_s.JsonKey(name: 'LogicalResourceId')
   final String logicalResourceId;
 
   /// The type of the resource.
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// The ID of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// Status of the resource's actual configuration compared to its expected
@@ -8826,10 +9864,12 @@ class StackResourceDrift {
   /// value.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'StackResourceDriftStatus')
   final StackResourceDriftStatus stackResourceDriftStatus;
 
   /// Time at which AWS CloudFormation performed drift detection on the stack
   /// resource.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   /// A JSON structure containing the actual property values of the stack
@@ -8837,6 +9877,7 @@ class StackResourceDrift {
   ///
   /// For resources whose <code>StackResourceDriftStatus</code> is
   /// <code>DELETED</code>, this structure will not be present.
+  @_s.JsonKey(name: 'ActualProperties')
   final String actualProperties;
 
   /// A JSON structure containing the expected property values of the stack
@@ -8845,10 +9886,12 @@ class StackResourceDrift {
   ///
   /// For resources whose <code>StackResourceDriftStatus</code> is
   /// <code>DELETED</code>, this structure will not be present.
+  @_s.JsonKey(name: 'ExpectedProperties')
   final String expectedProperties;
 
   /// The name or unique identifier that corresponds to a physical instance ID of
   /// a resource supported by AWS CloudFormation.
+  @_s.JsonKey(name: 'PhysicalResourceId')
   final String physicalResourceId;
 
   /// Context information that enables AWS CloudFormation to uniquely identify a
@@ -8856,11 +9899,13 @@ class StackResourceDrift {
   /// resource's logical and physical IDs are not enough to uniquely identify that
   /// resource. Each context key-value pair specifies a unique resource that
   /// contains the targeted resource.
+  @_s.JsonKey(name: 'PhysicalResourceIdContext')
   final List<PhysicalResourceIdContextKeyValuePair> physicalResourceIdContext;
 
   /// A collection of the resource properties whose actual values differ from
   /// their expected values. These will be present only for resources whose
   /// <code>StackResourceDriftStatus</code> is <code>MODIFIED</code>.
+  @_s.JsonKey(name: 'PropertyDifferences')
   final List<PropertyDifference> propertyDifferences;
 
   StackResourceDrift({
@@ -8904,6 +9949,11 @@ class StackResourceDrift {
 
 /// Contains information about whether the resource's actual configuration
 /// differs, or has <i>drifted</i>, from its expected configuration.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackResourceDriftInformation {
   /// Status of the resource's actual configuration compared to its expected
   /// configuration
@@ -8930,10 +9980,13 @@ class StackResourceDriftInformation {
   /// expected configuration.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'StackResourceDriftStatus')
   final StackResourceDriftStatus stackResourceDriftStatus;
 
   /// When AWS CloudFormation last checked if the resource had drifted from its
   /// expected configuration.
+  @_s.JsonKey(
+      name: 'LastCheckTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastCheckTimestamp;
 
   StackResourceDriftInformation({
@@ -8953,6 +10006,11 @@ class StackResourceDriftInformation {
 
 /// Summarizes information about whether the resource's actual configuration
 /// differs, or has <i>drifted</i>, from its expected configuration.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackResourceDriftInformationSummary {
   /// Status of the resource's actual configuration compared to its expected
   /// configuration
@@ -8985,10 +10043,13 @@ class StackResourceDriftInformationSummary {
   /// expected configuration.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'StackResourceDriftStatus')
   final StackResourceDriftStatus stackResourceDriftStatus;
 
   /// When AWS CloudFormation last checked if the resource had drifted from its
   /// expected configuration.
+  @_s.JsonKey(
+      name: 'LastCheckTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastCheckTimestamp;
 
   StackResourceDriftInformationSummary({
@@ -9007,9 +10068,13 @@ class StackResourceDriftInformationSummary {
 }
 
 enum StackResourceDriftStatus {
+  @_s.JsonValue('IN_SYNC')
   inSync,
+  @_s.JsonValue('MODIFIED')
   modified,
+  @_s.JsonValue('DELETED')
   deleted,
+  @_s.JsonValue('NOT_CHECKED')
   notChecked,
 }
 
@@ -9030,19 +10095,29 @@ extension on String {
 }
 
 /// Contains high-level information about the specified stack resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackResourceSummary {
   /// Time the status was updated.
+  @_s.JsonKey(
+      name: 'LastUpdatedTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUpdatedTimestamp;
 
   /// The logical name of the resource specified in the template.
+  @_s.JsonKey(name: 'LogicalResourceId')
   final String logicalResourceId;
 
   /// Current status of the resource.
+  @_s.JsonKey(name: 'ResourceStatus')
   final ResourceStatus resourceStatus;
 
   /// Type of resource. (For more information, go to <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">
   /// AWS Resource Types Reference</a> in the AWS CloudFormation User Guide.)
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// Information about whether the resource's actual configuration differs, or
@@ -9051,13 +10126,16 @@ class StackResourceSummary {
   /// information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html">Detecting
   /// Unregulated Configuration Changes to Stacks and Resources</a>.
+  @_s.JsonKey(name: 'DriftInformation')
   final StackResourceDriftInformationSummary driftInformation;
 
   /// The name or unique identifier that corresponds to a physical instance ID of
   /// the resource.
+  @_s.JsonKey(name: 'PhysicalResourceId')
   final String physicalResourceId;
 
   /// Success/failure message associated with the resource.
+  @_s.JsonKey(name: 'ResourceStatusReason')
   final String resourceStatusReason;
 
   StackResourceSummary({
@@ -9088,10 +10166,15 @@ class StackResourceSummary {
 }
 
 /// A structure that contains information about a stack set. A stack set enables
-/// you to provision stacks into AWS accounts and across regions by using a
+/// you to provision stacks into AWS accounts and across Regions by using a
 /// single CloudFormation template. In the stack set, you specify the template
 /// to use, as well as any parameters and capabilities that the template
 /// requires.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackSet {
   /// The Amazon Resource Number (ARN) of the IAM role used to create or update
   /// the stack set.
@@ -9102,7 +10185,14 @@ class StackSet {
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs.html">Prerequisites:
   /// Granting Permissions for Stack Set Operations</a> in the <i>AWS
   /// CloudFormation User Guide</i>.
+  @_s.JsonKey(name: 'AdministrationRoleARN')
   final String administrationRoleARN;
+
+  /// [<code>Service-managed</code> permissions] Describes whether StackSets
+  /// automatically deploys to AWS Organizations accounts that are added to a
+  /// target organization or organizational unit (OU).
+  @_s.JsonKey(name: 'AutoDeployment')
+  final AutoDeployment autoDeployment;
 
   /// The capabilities that are allowed in the stack set. Some stack set templates
   /// might include resources that can affect permissions in your AWS account—for
@@ -9110,22 +10200,52 @@ class StackSet {
   /// more information, see <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities">Acknowledging
   /// IAM Resources in AWS CloudFormation Templates.</a>
+  @_s.JsonKey(name: 'Capabilities')
   final List<String> capabilities;
 
   /// A description of the stack set that you specify when the stack set is
   /// created or updated.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The name of the IAM execution role used to create or update the stack set.
   ///
   /// Use customized execution roles to control which stack resources users and
   /// groups can include in their stack sets.
+  @_s.JsonKey(name: 'ExecutionRoleName')
   final String executionRoleName;
 
+  /// Reserved for internal use. No data returned.
+  @_s.JsonKey(name: 'OrganizationalUnitIds')
+  final List<String> organizationalUnitIds;
+
   /// A list of input parameters for a stack set.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
+  /// Describes how the IAM roles required for stack set operations are created.
+  ///
+  /// <ul>
+  /// <li>
+  /// With <code>self-managed</code> permissions, you must create the
+  /// administrator and execution roles required to deploy to target accounts. For
+  /// more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html">Grant
+  /// Self-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// <li>
+  /// With <code>service-managed</code> permissions, StackSets automatically
+  /// creates the IAM roles required to deploy to accounts managed by AWS
+  /// Organizations. For more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html">Grant
+  /// Service-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// </ul>
+  @_s.JsonKey(name: 'PermissionModel')
+  final PermissionModels permissionModel;
+
   /// The Amazon Resource Number (ARN) of the stack set.
+  @_s.JsonKey(name: 'StackSetARN')
   final String stackSetARN;
 
   /// Detailed information about the drift status of the stack set.
@@ -9133,31 +10253,40 @@ class StackSet {
   /// For stack sets, contains information about the last <i>completed</i> drift
   /// operation performed on the stack set. Information about drift operations
   /// currently in progress is not included.
+  @_s.JsonKey(name: 'StackSetDriftDetectionDetails')
   final StackSetDriftDetectionDetails stackSetDriftDetectionDetails;
 
   /// The ID of the stack set.
+  @_s.JsonKey(name: 'StackSetId')
   final String stackSetId;
 
   /// The name that's associated with the stack set.
+  @_s.JsonKey(name: 'StackSetName')
   final String stackSetName;
 
   /// The status of the stack set.
+  @_s.JsonKey(name: 'Status')
   final StackSetStatus status;
 
   /// A list of tags that specify information about the stack set. A maximum
   /// number of 50 tags can be specified.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   /// The structure that contains the body of the template that was used to create
   /// or update the stack set.
+  @_s.JsonKey(name: 'TemplateBody')
   final String templateBody;
 
   StackSet({
     this.administrationRoleARN,
+    this.autoDeployment,
     this.capabilities,
     this.description,
     this.executionRoleName,
+    this.organizationalUnitIds,
     this.parameters,
+    this.permissionModel,
     this.stackSetARN,
     this.stackSetDriftDetectionDetails,
     this.stackSetId,
@@ -9170,15 +10299,25 @@ class StackSet {
     return StackSet(
       administrationRoleARN:
           _s.extractXmlStringValue(elem, 'AdministrationRoleARN'),
+      autoDeployment: _s
+          .extractXmlChild(elem, 'AutoDeployment')
+          ?.let((e) => AutoDeployment.fromXml(e)),
       capabilities: _s
           .extractXmlChild(elem, 'Capabilities')
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'Capabilities')),
       description: _s.extractXmlStringValue(elem, 'Description'),
       executionRoleName: _s.extractXmlStringValue(elem, 'ExecutionRoleName'),
+      organizationalUnitIds: _s
+          .extractXmlChild(elem, 'OrganizationalUnitIds')
+          ?.let((elem) =>
+              _s.extractXmlStringListValues(elem, 'OrganizationalUnitIds')),
       parameters: _s.extractXmlChild(elem, 'Parameters')?.let((elem) => elem
           .findElements('Parameters')
           .map((c) => Parameter.fromXml(c))
           .toList()),
+      permissionModel: _s
+          .extractXmlStringValue(elem, 'PermissionModel')
+          ?.toPermissionModels(),
       stackSetARN: _s.extractXmlStringValue(elem, 'StackSetARN'),
       stackSetDriftDetectionDetails: _s
           .extractXmlChild(elem, 'StackSetDriftDetectionDetails')
@@ -9206,6 +10345,11 @@ class StackSet {
 /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-drift.html">Detecting
 /// Unmanaged Changes in Stack Sets</a> in the <i>AWS CloudFormation User
 /// Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackSetDriftDetectionDetails {
   /// The status of the stack set drift detection operation.
   ///
@@ -9230,6 +10374,7 @@ class StackSetDriftDetectionDetails {
   /// <code>STOPPED</code>: The user has cancelled the drift detection operation.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DriftDetectionStatus')
   final StackSetDriftDetectionStatus driftDetectionStatus;
 
   /// Status of the stack set's actual configuration compared to its expected
@@ -9253,28 +10398,37 @@ class StackSetDriftDetectionDetails {
   /// stack match from the expected template and parameter configuration.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DriftStatus')
   final StackSetDriftStatus driftStatus;
 
   /// The number of stack instances that have drifted from the expected template
   /// and parameter configuration of the stack set. A stack instance is considered
   /// to have drifted if one or more of the resources in the associated stack do
   /// not match their expected configuration.
+  @_s.JsonKey(name: 'DriftedStackInstancesCount')
   final int driftedStackInstancesCount;
 
   /// The number of stack instances for which the drift detection operation
   /// failed.
+  @_s.JsonKey(name: 'FailedStackInstancesCount')
   final int failedStackInstancesCount;
 
   /// The number of stack instances that are currently being checked for drift.
+  @_s.JsonKey(name: 'InProgressStackInstancesCount')
   final int inProgressStackInstancesCount;
 
   /// The number of stack instances which match the expected template and
   /// parameter configuration of the stack set.
+  @_s.JsonKey(name: 'InSyncStackInstancesCount')
   final int inSyncStackInstancesCount;
 
   /// Most recent time when CloudFormation performed a drift detection operation
   /// on the stack set. This value will be <code>NULL</code> for any stack set on
   /// which drift detection has not yet been performed.
+  @_s.JsonKey(
+      name: 'LastDriftCheckTimestamp',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime lastDriftCheckTimestamp;
 
   /// The total number of stack instances belonging to this stack set.
@@ -9295,6 +10449,7 @@ class StackSetDriftDetectionDetails {
   /// Stack instances currently being checked for drift.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'TotalStackInstancesCount')
   final int totalStackInstancesCount;
 
   StackSetDriftDetectionDetails({
@@ -9332,10 +10487,15 @@ class StackSetDriftDetectionDetails {
 }
 
 enum StackSetDriftDetectionStatus {
+  @_s.JsonValue('COMPLETED')
   completed,
+  @_s.JsonValue('FAILED')
   failed,
+  @_s.JsonValue('PARTIAL_SUCCESS')
   partialSuccess,
+  @_s.JsonValue('IN_PROGRESS')
   inProgress,
+  @_s.JsonValue('STOPPED')
   stopped,
 }
 
@@ -9358,8 +10518,11 @@ extension on String {
 }
 
 enum StackSetDriftStatus {
+  @_s.JsonValue('DRIFTED')
   drifted,
+  @_s.JsonValue('IN_SYNC')
   inSync,
+  @_s.JsonValue('NOT_CHECKED')
   notChecked,
 }
 
@@ -9378,12 +10541,18 @@ extension on String {
 }
 
 /// The structure that contains information about a stack set operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackSetOperation {
   /// The type of stack set operation: <code>CREATE</code>, <code>UPDATE</code>,
   /// or <code>DELETE</code>. Create and delete operations affect only the
   /// specified stack set instances that are associated with the specified stack
   /// set. Update operations affect both the stack set itself, as well as
   /// <i>all</i> associated stack set instances.
+  @_s.JsonKey(name: 'Action')
   final StackSetOperationAction action;
 
   /// The Amazon Resource Number (ARN) of the IAM role used to perform this stack
@@ -9395,37 +10564,50 @@ class StackSetOperation {
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs.html">Define
   /// Permissions for Multiple Administrators</a> in the <i>AWS CloudFormation
   /// User Guide</i>.
+  @_s.JsonKey(name: 'AdministrationRoleARN')
   final String administrationRoleARN;
 
   /// The time at which the operation was initiated. Note that the creation times
   /// for the stack set operation might differ from the creation time of the
   /// individual stacks themselves. This is because AWS CloudFormation needs to
   /// perform preparatory work for the operation, such as dispatching the work to
-  /// the requested regions, before actually creating the first stacks.
+  /// the requested Regions, before actually creating the first stacks.
+  @_s.JsonKey(
+      name: 'CreationTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationTimestamp;
 
+  /// [<code>Service-managed</code> permissions] The AWS Organizations accounts
+  /// affected by the stack operation.
+  @_s.JsonKey(name: 'DeploymentTargets')
+  final DeploymentTargets deploymentTargets;
+
   /// The time at which the stack set operation ended, across all accounts and
-  /// regions specified. Note that this doesn't necessarily mean that the stack
-  /// set operation was successful, or even attempted, in each account or region.
+  /// Regions specified. Note that this doesn't necessarily mean that the stack
+  /// set operation was successful, or even attempted, in each account or Region.
+  @_s.JsonKey(name: 'EndTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTimestamp;
 
   /// The name of the IAM execution role used to create or update the stack set.
   ///
   /// Use customized execution roles to control which stack resources users and
   /// groups can include in their stack sets.
+  @_s.JsonKey(name: 'ExecutionRoleName')
   final String executionRoleName;
 
   /// The unique ID of a stack set operation.
+  @_s.JsonKey(name: 'OperationId')
   final String operationId;
 
   /// The preferences for how AWS CloudFormation performs this stack set
   /// operation.
+  @_s.JsonKey(name: 'OperationPreferences')
   final StackSetOperationPreferences operationPreferences;
 
   /// For stack set operations of action type <code>DELETE</code>, specifies
   /// whether to remove the stack instances from the specified stack set, but
   /// doesn't delete the stacks. You can't reassociate a retained stack, or add an
   /// existing, saved stack to a new stack set.
+  @_s.JsonKey(name: 'RetainStacks')
   final bool retainStacks;
 
   /// Detailed information about the drift status of the stack set. This includes
@@ -9438,9 +10620,11 @@ class StackSetOperation {
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-drift.html">Detecting
   /// Unmanaged Changes in Stack Sets</a> in the AWS CloudFormation User Guide.
+  @_s.JsonKey(name: 'StackSetDriftDetectionDetails')
   final StackSetDriftDetectionDetails stackSetDriftDetectionDetails;
 
   /// The ID of the stack set.
+  @_s.JsonKey(name: 'StackSetId')
   final String stackSetId;
 
   /// The status of the operation.
@@ -9449,11 +10633,18 @@ class StackSetOperation {
   /// <li>
   /// <code>FAILED</code>: The operation exceeded the specified failure tolerance.
   /// The failure tolerance value that you've set for an operation is applied for
-  /// each region during stack create and update operations. If the number of
-  /// failed stacks within a region exceeds the failure tolerance, the status of
-  /// the operation in the region is set to <code>FAILED</code>. This in turn sets
+  /// each Region during stack create and update operations. If the number of
+  /// failed stacks within a Region exceeds the failure tolerance, the status of
+  /// the operation in the Region is set to <code>FAILED</code>. This in turn sets
   /// the status of the operation as a whole to <code>FAILED</code>, and AWS
-  /// CloudFormation cancels the operation in any remaining regions.
+  /// CloudFormation cancels the operation in any remaining Regions.
+  /// </li>
+  /// <li>
+  /// <code>QUEUED</code>: [<code>Service-managed</code> permissions] For
+  /// automatic deployments that require a sequence of operations, the operation
+  /// is queued to be performed. For more information, see the <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-status-codes">stack
+  /// set operation status codes</a> in the AWS CloudFormation User Guide.
   /// </li>
   /// <li>
   /// <code>RUNNING</code>: The operation is currently being performed.
@@ -9470,12 +10661,14 @@ class StackSetOperation {
   /// specified stacks without exceeding the failure tolerance for the operation.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final StackSetOperationStatus status;
 
   StackSetOperation({
     this.action,
     this.administrationRoleARN,
     this.creationTimestamp,
+    this.deploymentTargets,
     this.endTimestamp,
     this.executionRoleName,
     this.operationId,
@@ -9492,6 +10685,9 @@ class StackSetOperation {
       administrationRoleARN:
           _s.extractXmlStringValue(elem, 'AdministrationRoleARN'),
       creationTimestamp: _s.extractXmlDateTimeValue(elem, 'CreationTimestamp'),
+      deploymentTargets: _s
+          .extractXmlChild(elem, 'DeploymentTargets')
+          ?.let((e) => DeploymentTargets.fromXml(e)),
       endTimestamp: _s.extractXmlDateTimeValue(elem, 'EndTimestamp'),
       executionRoleName: _s.extractXmlStringValue(elem, 'ExecutionRoleName'),
       operationId: _s.extractXmlStringValue(elem, 'OperationId'),
@@ -9510,9 +10706,13 @@ class StackSetOperation {
 }
 
 enum StackSetOperationAction {
+  @_s.JsonValue('CREATE')
   create,
+  @_s.JsonValue('UPDATE')
   update,
+  @_s.JsonValue('DELETE')
   delete,
+  @_s.JsonValue('DETECT_DRIFT')
   detectDrift,
 }
 
@@ -9539,26 +10739,33 @@ extension on String {
 /// see <a
 /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-ops-options">Stack
 /// set operation options</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class StackSetOperationPreferences {
-  /// The number of accounts, per region, for which this operation can fail before
-  /// AWS CloudFormation stops the operation in that region. If the operation is
-  /// stopped in a region, AWS CloudFormation doesn't attempt the operation in any
-  /// subsequent regions.
+  /// The number of accounts, per Region, for which this operation can fail before
+  /// AWS CloudFormation stops the operation in that Region. If the operation is
+  /// stopped in a Region, AWS CloudFormation doesn't attempt the operation in any
+  /// subsequent Regions.
   ///
   /// Conditional: You must specify either <code>FailureToleranceCount</code> or
   /// <code>FailureTolerancePercentage</code> (but not both).
+  @_s.JsonKey(name: 'FailureToleranceCount')
   final int failureToleranceCount;
 
-  /// The percentage of accounts, per region, for which this stack operation can
-  /// fail before AWS CloudFormation stops the operation in that region. If the
-  /// operation is stopped in a region, AWS CloudFormation doesn't attempt the
-  /// operation in any subsequent regions.
+  /// The percentage of accounts, per Region, for which this stack operation can
+  /// fail before AWS CloudFormation stops the operation in that Region. If the
+  /// operation is stopped in a Region, AWS CloudFormation doesn't attempt the
+  /// operation in any subsequent Regions.
   ///
   /// When calculating the number of accounts based on the specified percentage,
   /// AWS CloudFormation rounds <i>down</i> to the next whole number.
   ///
   /// Conditional: You must specify either <code>FailureToleranceCount</code> or
   /// <code>FailureTolerancePercentage</code>, but not both.
+  @_s.JsonKey(name: 'FailureTolerancePercentage')
   final int failureTolerancePercentage;
 
   /// The maximum number of accounts in which to perform this operation at one
@@ -9572,6 +10779,7 @@ class StackSetOperationPreferences {
   ///
   /// Conditional: You must specify either <code>MaxConcurrentCount</code> or
   /// <code>MaxConcurrentPercentage</code>, but not both.
+  @_s.JsonKey(name: 'MaxConcurrentCount')
   final int maxConcurrentCount;
 
   /// The maximum percentage of accounts in which to perform this operation at one
@@ -9588,9 +10796,11 @@ class StackSetOperationPreferences {
   ///
   /// Conditional: You must specify either <code>MaxConcurrentCount</code> or
   /// <code>MaxConcurrentPercentage</code>, but not both.
+  @_s.JsonKey(name: 'MaxConcurrentPercentage')
   final int maxConcurrentPercentage;
 
-  /// The order of the regions in where you want to perform the stack operation.
+  /// The order of the Regions in where you want to perform the stack operation.
+  @_s.JsonKey(name: 'RegionOrder')
   final List<String> regionOrder;
 
   StackSetOperationPreferences({
@@ -9614,13 +10824,20 @@ class StackSetOperationPreferences {
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'RegionOrder')),
     );
   }
+
+  Map<String, dynamic> toJson() => _$StackSetOperationPreferencesToJson(this);
 }
 
 enum StackSetOperationResultStatus {
+  @_s.JsonValue('PENDING')
   pending,
+  @_s.JsonValue('RUNNING')
   running,
+  @_s.JsonValue('SUCCEEDED')
   succeeded,
+  @_s.JsonValue('FAILED')
   failed,
+  @_s.JsonValue('CANCELLED')
   cancelled,
 }
 
@@ -9643,56 +10860,72 @@ extension on String {
 }
 
 /// The structure that contains information about a specified operation's
-/// results for a given account in a given region.
+/// results for a given account in a given Region.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackSetOperationResultSummary {
-  /// The name of the AWS account for this operation result.
+  /// [<code>Self-managed</code> permissions] The name of the AWS account for this
+  /// operation result.
+  @_s.JsonKey(name: 'Account')
   final String account;
 
   /// The results of the account gate function AWS CloudFormation invokes, if
   /// present, before proceeding with stack set operations in an account
+  @_s.JsonKey(name: 'AccountGateResult')
   final AccountGateResult accountGateResult;
 
-  /// The name of the AWS region for this operation result.
+  /// Reserved for internal use. No data returned.
+  @_s.JsonKey(name: 'OrganizationalUnitId')
+  final String organizationalUnitId;
+
+  /// The name of the AWS Region for this operation result.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   /// The result status of the stack set operation for the given account in the
-  /// given region.
+  /// given Region.
   ///
   /// <ul>
   /// <li>
-  /// <code>CANCELLED</code>: The operation in the specified account and region
+  /// <code>CANCELLED</code>: The operation in the specified account and Region
   /// has been cancelled. This is either because a user has stopped the stack set
   /// operation, or because the failure tolerance of the stack set operation has
   /// been exceeded.
   /// </li>
   /// <li>
-  /// <code>FAILED</code>: The operation in the specified account and region
+  /// <code>FAILED</code>: The operation in the specified account and Region
   /// failed.
   ///
-  /// If the stack set operation fails in enough accounts within a region, the
+  /// If the stack set operation fails in enough accounts within a Region, the
   /// failure tolerance for the stack set operation as a whole might be exceeded.
   /// </li>
   /// <li>
-  /// <code>RUNNING</code>: The operation in the specified account and region is
+  /// <code>RUNNING</code>: The operation in the specified account and Region is
   /// currently in progress.
   /// </li>
   /// <li>
-  /// <code>PENDING</code>: The operation in the specified account and region has
+  /// <code>PENDING</code>: The operation in the specified account and Region has
   /// yet to start.
   /// </li>
   /// <li>
-  /// <code>SUCCEEDED</code>: The operation in the specified account and region
+  /// <code>SUCCEEDED</code>: The operation in the specified account and Region
   /// completed successfully.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final StackSetOperationResultStatus status;
 
   /// The reason for the assigned result status.
+  @_s.JsonKey(name: 'StatusReason')
   final String statusReason;
 
   StackSetOperationResultSummary({
     this.account,
     this.accountGateResult,
+    this.organizationalUnitId,
     this.region,
     this.status,
     this.statusReason,
@@ -9703,6 +10936,8 @@ class StackSetOperationResultSummary {
       accountGateResult: _s
           .extractXmlChild(elem, 'AccountGateResult')
           ?.let((e) => AccountGateResult.fromXml(e)),
+      organizationalUnitId:
+          _s.extractXmlStringValue(elem, 'OrganizationalUnitId'),
       region: _s.extractXmlStringValue(elem, 'Region'),
       status: _s
           .extractXmlStringValue(elem, 'Status')
@@ -9713,11 +10948,18 @@ class StackSetOperationResultSummary {
 }
 
 enum StackSetOperationStatus {
+  @_s.JsonValue('RUNNING')
   running,
+  @_s.JsonValue('SUCCEEDED')
   succeeded,
+  @_s.JsonValue('FAILED')
   failed,
+  @_s.JsonValue('STOPPING')
   stopping,
+  @_s.JsonValue('STOPPED')
   stopped,
+  @_s.JsonValue('QUEUED')
+  queued,
 }
 
 extension on String {
@@ -9733,6 +10975,8 @@ extension on String {
         return StackSetOperationStatus.stopping;
       case 'STOPPED':
         return StackSetOperationStatus.stopped;
+      case 'QUEUED':
+        return StackSetOperationStatus.queued;
     }
     throw Exception('Unknown enum value: $this');
   }
@@ -9740,27 +10984,37 @@ extension on String {
 
 /// The structures that contain summary information about the specified
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackSetOperationSummary {
   /// The type of operation: <code>CREATE</code>, <code>UPDATE</code>, or
   /// <code>DELETE</code>. Create and delete operations affect only the specified
   /// stack instances that are associated with the specified stack set. Update
   /// operations affect both the stack set itself as well as <i>all</i> associated
   /// stack set instances.
+  @_s.JsonKey(name: 'Action')
   final StackSetOperationAction action;
 
   /// The time at which the operation was initiated. Note that the creation times
   /// for the stack set operation might differ from the creation time of the
   /// individual stacks themselves. This is because AWS CloudFormation needs to
   /// perform preparatory work for the operation, such as dispatching the work to
-  /// the requested regions, before actually creating the first stacks.
+  /// the requested Regions, before actually creating the first stacks.
+  @_s.JsonKey(
+      name: 'CreationTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationTimestamp;
 
   /// The time at which the stack set operation ended, across all accounts and
-  /// regions specified. Note that this doesn't necessarily mean that the stack
-  /// set operation was successful, or even attempted, in each account or region.
+  /// Regions specified. Note that this doesn't necessarily mean that the stack
+  /// set operation was successful, or even attempted, in each account or Region.
+  @_s.JsonKey(name: 'EndTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTimestamp;
 
   /// The unique ID of the stack set operation.
+  @_s.JsonKey(name: 'OperationId')
   final String operationId;
 
   /// The overall status of the operation.
@@ -9769,11 +11023,18 @@ class StackSetOperationSummary {
   /// <li>
   /// <code>FAILED</code>: The operation exceeded the specified failure tolerance.
   /// The failure tolerance value that you've set for an operation is applied for
-  /// each region during stack create and update operations. If the number of
-  /// failed stacks within a region exceeds the failure tolerance, the status of
-  /// the operation in the region is set to <code>FAILED</code>. This in turn sets
+  /// each Region during stack create and update operations. If the number of
+  /// failed stacks within a Region exceeds the failure tolerance, the status of
+  /// the operation in the Region is set to <code>FAILED</code>. This in turn sets
   /// the status of the operation as a whole to <code>FAILED</code>, and AWS
-  /// CloudFormation cancels the operation in any remaining regions.
+  /// CloudFormation cancels the operation in any remaining Regions.
+  /// </li>
+  /// <li>
+  /// <code>QUEUED</code>: [<code>Service-managed</code> permissions] For
+  /// automatic deployments that require a sequence of operations, the operation
+  /// is queued to be performed. For more information, see the <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-concepts.html#stackset-status-codes">stack
+  /// set operation status codes</a> in the AWS CloudFormation User Guide.
   /// </li>
   /// <li>
   /// <code>RUNNING</code>: The operation is currently being performed.
@@ -9790,6 +11051,7 @@ class StackSetOperationSummary {
   /// specified stacks without exceeding the failure tolerance for the operation.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final StackSetOperationStatus status;
 
   StackSetOperationSummary({
@@ -9813,7 +11075,9 @@ class StackSetOperationSummary {
 }
 
 enum StackSetStatus {
+  @_s.JsonValue('ACTIVE')
   active,
+  @_s.JsonValue('DELETED')
   deleted,
 }
 
@@ -9831,9 +11095,21 @@ extension on String {
 
 /// The structures that contain summary information about the specified stack
 /// set.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackSetSummary {
+  /// [<code>Service-managed</code> permissions] Describes whether StackSets
+  /// automatically deploys to AWS Organizations accounts that are added to a
+  /// target organizational unit (OU).
+  @_s.JsonKey(name: 'AutoDeployment')
+  final AutoDeployment autoDeployment;
+
   /// A description of the stack set that you specify when the stack set is
   /// created or updated.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Status of the stack set's actual configuration compared to its expected
@@ -9860,37 +11136,74 @@ class StackSetSummary {
   /// <code>UNKNOWN</code>: This value is reserved for future use.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DriftStatus')
   final StackDriftStatus driftStatus;
 
   /// Most recent time when CloudFormation performed a drift detection operation
   /// on the stack set. This value will be <code>NULL</code> for any stack set on
   /// which drift detection has not yet been performed.
+  @_s.JsonKey(
+      name: 'LastDriftCheckTimestamp',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime lastDriftCheckTimestamp;
 
+  /// Describes how the IAM roles required for stack set operations are created.
+  ///
+  /// <ul>
+  /// <li>
+  /// With <code>self-managed</code> permissions, you must create the
+  /// administrator and execution roles required to deploy to target accounts. For
+  /// more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-self-managed.html">Grant
+  /// Self-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// <li>
+  /// With <code>service-managed</code> permissions, StackSets automatically
+  /// creates the IAM roles required to deploy to accounts managed by AWS
+  /// Organizations. For more information, see <a
+  /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stacksets-prereqs-service-managed.html">Grant
+  /// Service-Managed Stack Set Permissions</a>.
+  /// </li>
+  /// </ul>
+  @_s.JsonKey(name: 'PermissionModel')
+  final PermissionModels permissionModel;
+
   /// The ID of the stack set.
+  @_s.JsonKey(name: 'StackSetId')
   final String stackSetId;
 
   /// The name of the stack set.
+  @_s.JsonKey(name: 'StackSetName')
   final String stackSetName;
 
   /// The status of the stack set.
+  @_s.JsonKey(name: 'Status')
   final StackSetStatus status;
 
   StackSetSummary({
+    this.autoDeployment,
     this.description,
     this.driftStatus,
     this.lastDriftCheckTimestamp,
+    this.permissionModel,
     this.stackSetId,
     this.stackSetName,
     this.status,
   });
   factory StackSetSummary.fromXml(_s.XmlElement elem) {
     return StackSetSummary(
+      autoDeployment: _s
+          .extractXmlChild(elem, 'AutoDeployment')
+          ?.let((e) => AutoDeployment.fromXml(e)),
       description: _s.extractXmlStringValue(elem, 'Description'),
       driftStatus:
           _s.extractXmlStringValue(elem, 'DriftStatus')?.toStackDriftStatus(),
       lastDriftCheckTimestamp:
           _s.extractXmlDateTimeValue(elem, 'LastDriftCheckTimestamp'),
+      permissionModel: _s
+          .extractXmlStringValue(elem, 'PermissionModel')
+          ?.toPermissionModels(),
       stackSetId: _s.extractXmlStringValue(elem, 'StackSetId'),
       stackSetName: _s.extractXmlStringValue(elem, 'StackSetName'),
       status: _s.extractXmlStringValue(elem, 'Status')?.toStackSetStatus(),
@@ -9899,27 +11212,49 @@ class StackSetSummary {
 }
 
 enum StackStatus {
+  @_s.JsonValue('CREATE_IN_PROGRESS')
   createInProgress,
+  @_s.JsonValue('CREATE_FAILED')
   createFailed,
+  @_s.JsonValue('CREATE_COMPLETE')
   createComplete,
+  @_s.JsonValue('ROLLBACK_IN_PROGRESS')
   rollbackInProgress,
+  @_s.JsonValue('ROLLBACK_FAILED')
   rollbackFailed,
+  @_s.JsonValue('ROLLBACK_COMPLETE')
   rollbackComplete,
+  @_s.JsonValue('DELETE_IN_PROGRESS')
   deleteInProgress,
+  @_s.JsonValue('DELETE_FAILED')
   deleteFailed,
+  @_s.JsonValue('DELETE_COMPLETE')
   deleteComplete,
+  @_s.JsonValue('UPDATE_IN_PROGRESS')
   updateInProgress,
+  @_s.JsonValue('UPDATE_COMPLETE_CLEANUP_IN_PROGRESS')
   updateCompleteCleanupInProgress,
+  @_s.JsonValue('UPDATE_COMPLETE')
   updateComplete,
+  @_s.JsonValue('UPDATE_ROLLBACK_IN_PROGRESS')
   updateRollbackInProgress,
+  @_s.JsonValue('UPDATE_ROLLBACK_FAILED')
   updateRollbackFailed,
+  @_s.JsonValue('UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS')
   updateRollbackCompleteCleanupInProgress,
+  @_s.JsonValue('UPDATE_ROLLBACK_COMPLETE')
   updateRollbackComplete,
+  @_s.JsonValue('REVIEW_IN_PROGRESS')
   reviewInProgress,
+  @_s.JsonValue('IMPORT_IN_PROGRESS')
   importInProgress,
+  @_s.JsonValue('IMPORT_COMPLETE')
   importComplete,
+  @_s.JsonValue('IMPORT_ROLLBACK_IN_PROGRESS')
   importRollbackInProgress,
+  @_s.JsonValue('IMPORT_ROLLBACK_FAILED')
   importRollbackFailed,
+  @_s.JsonValue('IMPORT_ROLLBACK_COMPLETE')
   importRollbackComplete,
 }
 
@@ -9976,17 +11311,26 @@ extension on String {
 }
 
 /// The StackSummary Data Type
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StackSummary {
   /// The time the stack was created.
+  @_s.JsonKey(name: 'CreationTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationTime;
 
   /// The name associated with the stack.
+  @_s.JsonKey(name: 'StackName')
   final String stackName;
 
   /// The current status of the stack.
+  @_s.JsonKey(name: 'StackStatus')
   final StackStatus stackStatus;
 
   /// The time the stack was deleted.
+  @_s.JsonKey(name: 'DeletionTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime deletionTime;
 
   /// Summarizes information on whether a stack's actual configuration differs, or
@@ -9995,10 +11339,13 @@ class StackSummary {
   /// information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-stack-drift.html">Detecting
   /// Unregulated Configuration Changes to Stacks and Resources</a>.
+  @_s.JsonKey(name: 'DriftInformation')
   final StackDriftInformationSummary driftInformation;
 
   /// The time the stack was last updated. This field will only be returned if the
   /// stack has been updated at least once.
+  @_s.JsonKey(
+      name: 'LastUpdatedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUpdatedTime;
 
   /// For nested stacks--stacks created as resources for another stack--the stack
@@ -10008,6 +11355,7 @@ class StackSummary {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html">Working
   /// with Nested Stacks</a> in the <i>AWS CloudFormation User Guide</i>.
+  @_s.JsonKey(name: 'ParentId')
   final String parentId;
 
   /// For nested stacks--stacks created as resources for another stack--the stack
@@ -10016,15 +11364,19 @@ class StackSummary {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-nested-stacks.html">Working
   /// with Nested Stacks</a> in the <i>AWS CloudFormation User Guide</i>.
+  @_s.JsonKey(name: 'RootId')
   final String rootId;
 
   /// Unique stack identifier.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   /// Success/Failure message associated with the stack status.
+  @_s.JsonKey(name: 'StackStatusReason')
   final String stackStatusReason;
 
   /// The template description of the template used to create the stack.
+  @_s.JsonKey(name: 'TemplateDescription')
   final String templateDescription;
 
   StackSummary({
@@ -10061,6 +11413,11 @@ class StackSummary {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StopStackSetOperationOutput {
   StopStackSetOperationOutput();
   factory StopStackSetOperationOutput.fromXml(
@@ -10072,14 +11429,21 @@ class StopStackSetOperationOutput {
 
 /// The Tag type enables you to specify a key-value pair that can be used to
 /// store information about an AWS CloudFormation stack.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// <i>Required</i>. A string used to identify this tag. You can specify a
   /// maximum of 128 characters for a tag key. Tags owned by Amazon Web Services
   /// (AWS) have the reserved prefix: <code>aws:</code>.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// <i>Required</i>. A string containing the value for this tag. You can specify
   /// a maximum of 256 characters for a tag value.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -10092,21 +11456,32 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// The TemplateParameter data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TemplateParameter {
   /// The default value associated with the parameter.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// User defined description associated with the parameter.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Flag indicating whether the parameter should be displayed as plain text in
   /// logs and UIs.
+  @_s.JsonKey(name: 'NoEcho')
   final bool noEcho;
 
   /// The name associated with the parameter.
+  @_s.JsonKey(name: 'ParameterKey')
   final String parameterKey;
 
   TemplateParameter({
@@ -10126,7 +11501,9 @@ class TemplateParameter {
 }
 
 enum TemplateStage {
+  @_s.JsonValue('Original')
   original,
+  @_s.JsonValue('Processed')
   processed,
 }
 
@@ -10143,27 +11520,38 @@ extension on String {
 }
 
 /// Contains summary information about the specified CloudFormation type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TypeSummary {
   /// The ID of the default version of the type. The default version is used when
   /// the type version is not specified.
   ///
   /// To set the default version of a type, use <code>
   /// <a>SetTypeDefaultVersion</a> </code>.
+  @_s.JsonKey(name: 'DefaultVersionId')
   final String defaultVersionId;
 
   /// The description of the type.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// When the current default version of the type was registered.
+  @_s.JsonKey(name: 'LastUpdated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastUpdated;
 
   /// The kind of type.
+  @_s.JsonKey(name: 'Type')
   final RegistryType type;
 
   /// The Amazon Resource Name (ARN) of the type.
+  @_s.JsonKey(name: 'TypeArn')
   final String typeArn;
 
   /// The name of the type.
+  @_s.JsonKey(name: 'TypeName')
   final String typeName;
 
   TypeSummary({
@@ -10188,25 +11576,36 @@ class TypeSummary {
 
 /// Contains summary information about a specific version of a CloudFormation
 /// type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TypeVersionSummary {
   /// The Amazon Resource Name (ARN) of the type version.
+  @_s.JsonKey(name: 'Arn')
   final String arn;
 
   /// The description of the type version.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// When the version was registered.
+  @_s.JsonKey(name: 'TimeCreated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timeCreated;
 
   /// The kind of type.
+  @_s.JsonKey(name: 'Type')
   final RegistryType type;
 
   /// The name of the type.
+  @_s.JsonKey(name: 'TypeName')
   final String typeName;
 
   /// The ID of a specific version of the type. The version ID is the value at the
   /// end of the Amazon Resource Name (ARN) assigned to the type version when it
   /// is registered.
+  @_s.JsonKey(name: 'VersionId')
   final String versionId;
 
   TypeVersionSummary({
@@ -10229,8 +11628,14 @@ class TypeVersionSummary {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateStackInstancesOutput {
   /// The unique identifier for this stack set operation.
+  @_s.JsonKey(name: 'OperationId')
   final String operationId;
 
   UpdateStackInstancesOutput({
@@ -10244,8 +11649,14 @@ class UpdateStackInstancesOutput {
 }
 
 /// The output for an <a>UpdateStack</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateStackOutput {
   /// Unique identifier of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   UpdateStackOutput({
@@ -10258,8 +11669,14 @@ class UpdateStackOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateStackSetOutput {
   /// The unique ID for this stack set operation.
+  @_s.JsonKey(name: 'OperationId')
   final String operationId;
 
   UpdateStackSetOutput({
@@ -10272,8 +11689,14 @@ class UpdateStackSetOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateTerminationProtectionOutput {
   /// The unique ID of the stack.
+  @_s.JsonKey(name: 'StackId')
   final String stackId;
 
   UpdateTerminationProtectionOutput({
@@ -10287,6 +11710,11 @@ class UpdateTerminationProtectionOutput {
 }
 
 /// The output for <a>ValidateTemplate</a> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ValidateTemplateOutput {
   /// The capabilities found within the template. If your template contains IAM
   /// resources, you must specify the CAPABILITY_IAM or CAPABILITY_NAMED_IAM value
@@ -10297,19 +11725,24 @@ class ValidateTemplateOutput {
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-iam-template.html#capabilities">Acknowledging
   /// IAM Resources in AWS CloudFormation Templates</a>.
+  @_s.JsonKey(name: 'Capabilities')
   final List<String> capabilities;
 
   /// The list of resources that generated the values in the
   /// <code>Capabilities</code> response element.
+  @_s.JsonKey(name: 'CapabilitiesReason')
   final String capabilitiesReason;
 
   /// A list of the transforms that are declared in the template.
+  @_s.JsonKey(name: 'DeclaredTransforms')
   final List<String> declaredTransforms;
 
   /// The description found within the template.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// A list of <code>TemplateParameter</code> structures.
+  @_s.JsonKey(name: 'Parameters')
   final List<TemplateParameter> parameters;
 
   ValidateTemplateOutput({
@@ -10337,7 +11770,9 @@ class ValidateTemplateOutput {
 }
 
 enum Visibility {
+  @_s.JsonValue('PUBLIC')
   public,
+  @_s.JsonValue('PRIVATE')
   private,
 }
 

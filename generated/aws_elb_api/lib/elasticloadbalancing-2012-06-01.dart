@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'elasticloadbalancing-2012-06-01.g.dart';
 
 /// A load balancer can distribute incoming traffic across your EC2 instances.
 /// This enables you to increase the availability of your application. The load
@@ -1351,22 +1361,31 @@ class ElasticLoadBalancing {
 }
 
 /// Information about the <code>AccessLog</code> attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AccessLog {
   /// Specifies whether access logs are enabled for the load balancer.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// The interval for publishing the access logs. You can specify an interval of
   /// either 5 minutes or 60 minutes.
   ///
   /// Default: 60 minutes
+  @_s.JsonKey(name: 'EmitInterval')
   final int emitInterval;
 
   /// The name of the Amazon S3 bucket where the access logs are stored.
+  @_s.JsonKey(name: 'S3BucketName')
   final String s3BucketName;
 
   /// The logical hierarchy you created for your Amazon S3 bucket, for example
   /// <code>my-bucket-prefix/prod</code>. If the prefix is not provided, the log
   /// is placed at the root level of the bucket.
+  @_s.JsonKey(name: 'S3BucketPrefix')
   final String s3BucketPrefix;
 
   AccessLog({
@@ -1383,11 +1402,19 @@ class AccessLog {
       s3BucketPrefix: _s.extractXmlStringValue(elem, 'S3BucketPrefix'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$AccessLogToJson(this);
 }
 
 /// Contains the output of EnableAvailabilityZonesForLoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AddAvailabilityZonesOutput {
   /// The updated list of Availability Zones for the load balancer.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<String> availabilityZones;
 
   AddAvailabilityZonesOutput({
@@ -1402,6 +1429,11 @@ class AddAvailabilityZonesOutput {
 }
 
 /// Contains the output of AddTags.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AddTagsOutput {
   AddTagsOutput();
   factory AddTagsOutput.fromXml(
@@ -1412,11 +1444,18 @@ class AddTagsOutput {
 }
 
 /// This data type is reserved.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AdditionalAttribute {
   /// This parameter is reserved.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// This parameter is reserved.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   AdditionalAttribute({
@@ -1429,15 +1468,24 @@ class AdditionalAttribute {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$AdditionalAttributeToJson(this);
 }
 
 /// Information about a policy for application-controlled session stickiness.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AppCookieStickinessPolicy {
   /// The name of the application cookie used for stickiness.
+  @_s.JsonKey(name: 'CookieName')
   final String cookieName;
 
   /// The mnemonic name for the policy being created. The name must be unique
   /// within a set of policies for this load balancer.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   AppCookieStickinessPolicy({
@@ -1453,8 +1501,14 @@ class AppCookieStickinessPolicy {
 }
 
 /// Contains the output of ApplySecurityGroupsToLoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplySecurityGroupsToLoadBalancerOutput {
   /// The IDs of the security groups associated with the load balancer.
+  @_s.JsonKey(name: 'SecurityGroups')
   final List<String> securityGroups;
 
   ApplySecurityGroupsToLoadBalancerOutput({
@@ -1469,8 +1523,14 @@ class ApplySecurityGroupsToLoadBalancerOutput {
 }
 
 /// Contains the output of AttachLoadBalancerToSubnets.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AttachLoadBalancerToSubnetsOutput {
   /// The IDs of the subnets attached to the load balancer.
+  @_s.JsonKey(name: 'Subnets')
   final List<String> subnets;
 
   AttachLoadBalancerToSubnetsOutput({
@@ -1486,11 +1546,18 @@ class AttachLoadBalancerToSubnetsOutput {
 }
 
 /// Information about the configuration of an EC2 instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BackendServerDescription {
   /// The port on which the EC2 instance is listening.
+  @_s.JsonKey(name: 'InstancePort')
   final int instancePort;
 
   /// The names of the policies enabled for the EC2 instance.
+  @_s.JsonKey(name: 'PolicyNames')
   final List<String> policyNames;
 
   BackendServerDescription({
@@ -1508,8 +1575,14 @@ class BackendServerDescription {
 }
 
 /// Contains the output of ConfigureHealthCheck.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConfigureHealthCheckOutput {
   /// The updated health check.
+  @_s.JsonKey(name: 'HealthCheck')
   final HealthCheck healthCheck;
 
   ConfigureHealthCheckOutput({
@@ -1525,12 +1598,19 @@ class ConfigureHealthCheckOutput {
 }
 
 /// Information about the <code>ConnectionDraining</code> attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ConnectionDraining {
   /// Specifies whether connection draining is enabled for the load balancer.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// The maximum time, in seconds, to keep the existing connections open before
   /// deregistering the instances.
+  @_s.JsonKey(name: 'Timeout')
   final int timeout;
 
   ConnectionDraining({
@@ -1543,12 +1623,20 @@ class ConnectionDraining {
       timeout: _s.extractXmlIntValue(elem, 'Timeout'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ConnectionDrainingToJson(this);
 }
 
 /// Information about the <code>ConnectionSettings</code> attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ConnectionSettings {
   /// The time, in seconds, that the connection is allowed to be idle (no data has
   /// been sent over the connection) before it is closed by the load balancer.
+  @_s.JsonKey(name: 'IdleTimeout')
   final int idleTimeout;
 
   ConnectionSettings({
@@ -1559,11 +1647,19 @@ class ConnectionSettings {
       idleTimeout: _s.extractXmlIntValue(elem, 'IdleTimeout'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ConnectionSettingsToJson(this);
 }
 
 /// Contains the output for CreateLoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateAccessPointOutput {
   /// The DNS name of the load balancer.
+  @_s.JsonKey(name: 'DNSName')
   final String dNSName;
 
   CreateAccessPointOutput({
@@ -1577,6 +1673,11 @@ class CreateAccessPointOutput {
 }
 
 /// Contains the output for CreateAppCookieStickinessPolicy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateAppCookieStickinessPolicyOutput {
   CreateAppCookieStickinessPolicyOutput();
   factory CreateAppCookieStickinessPolicyOutput.fromXml(
@@ -1587,6 +1688,11 @@ class CreateAppCookieStickinessPolicyOutput {
 }
 
 /// Contains the output for CreateLBCookieStickinessPolicy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateLBCookieStickinessPolicyOutput {
   CreateLBCookieStickinessPolicyOutput();
   factory CreateLBCookieStickinessPolicyOutput.fromXml(
@@ -1597,6 +1703,11 @@ class CreateLBCookieStickinessPolicyOutput {
 }
 
 /// Contains the parameters for CreateLoadBalancerListener.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateLoadBalancerListenerOutput {
   CreateLoadBalancerListenerOutput();
   factory CreateLoadBalancerListenerOutput.fromXml(
@@ -1607,6 +1718,11 @@ class CreateLoadBalancerListenerOutput {
 }
 
 /// Contains the output of CreateLoadBalancerPolicy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateLoadBalancerPolicyOutput {
   CreateLoadBalancerPolicyOutput();
   factory CreateLoadBalancerPolicyOutput.fromXml(
@@ -1617,9 +1733,15 @@ class CreateLoadBalancerPolicyOutput {
 }
 
 /// Information about the <code>CrossZoneLoadBalancing</code> attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class CrossZoneLoadBalancing {
   /// Specifies whether cross-zone load balancing is enabled for the load
   /// balancer.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   CrossZoneLoadBalancing({
@@ -1630,9 +1752,16 @@ class CrossZoneLoadBalancing {
       enabled: _s.extractXmlBoolValue(elem, 'Enabled'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$CrossZoneLoadBalancingToJson(this);
 }
 
 /// Contains the output of DeleteLoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteAccessPointOutput {
   DeleteAccessPointOutput();
   factory DeleteAccessPointOutput.fromXml(
@@ -1643,6 +1772,11 @@ class DeleteAccessPointOutput {
 }
 
 /// Contains the output of DeleteLoadBalancerListeners.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteLoadBalancerListenerOutput {
   DeleteLoadBalancerListenerOutput();
   factory DeleteLoadBalancerListenerOutput.fromXml(
@@ -1653,6 +1787,11 @@ class DeleteLoadBalancerListenerOutput {
 }
 
 /// Contains the output of DeleteLoadBalancerPolicy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteLoadBalancerPolicyOutput {
   DeleteLoadBalancerPolicyOutput();
   factory DeleteLoadBalancerPolicyOutput.fromXml(
@@ -1663,8 +1802,14 @@ class DeleteLoadBalancerPolicyOutput {
 }
 
 /// Contains the output of DeregisterInstancesFromLoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeregisterEndPointsOutput {
   /// The remaining instances registered with the load balancer.
+  @_s.JsonKey(name: 'Instances')
   final List<Instance> instances;
 
   DeregisterEndPointsOutput({
@@ -1681,12 +1826,19 @@ class DeregisterEndPointsOutput {
 }
 
 /// Contains the parameters for DescribeLoadBalancers.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAccessPointsOutput {
   /// Information about the load balancers.
+  @_s.JsonKey(name: 'LoadBalancerDescriptions')
   final List<LoadBalancerDescription> loadBalancerDescriptions;
 
   /// The marker to use when requesting the next set of results. If there are no
   /// additional results, the string is empty.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   DescribeAccessPointsOutput({
@@ -1706,12 +1858,19 @@ class DescribeAccessPointsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAccountLimitsOutput {
   /// Information about the limits.
+  @_s.JsonKey(name: 'Limits')
   final List<Limit> limits;
 
   /// The marker to use when requesting the next set of results. If there are no
   /// additional results, the string is empty.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   DescribeAccountLimitsOutput({
@@ -1728,8 +1887,14 @@ class DescribeAccountLimitsOutput {
 }
 
 /// Contains the output for DescribeInstanceHealth.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEndPointStateOutput {
   /// Information about the health of the instances.
+  @_s.JsonKey(name: 'InstanceStates')
   final List<InstanceState> instanceStates;
 
   DescribeEndPointStateOutput({
@@ -1747,8 +1912,14 @@ class DescribeEndPointStateOutput {
 }
 
 /// Contains the output of DescribeLoadBalancerAttributes.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLoadBalancerAttributesOutput {
   /// Information about the load balancer attributes.
+  @_s.JsonKey(name: 'LoadBalancerAttributes')
   final LoadBalancerAttributes loadBalancerAttributes;
 
   DescribeLoadBalancerAttributesOutput({
@@ -1764,8 +1935,14 @@ class DescribeLoadBalancerAttributesOutput {
 }
 
 /// Contains the output of DescribeLoadBalancerPolicies.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLoadBalancerPoliciesOutput {
   /// Information about the policies.
+  @_s.JsonKey(name: 'PolicyDescriptions')
   final List<PolicyDescription> policyDescriptions;
 
   DescribeLoadBalancerPoliciesOutput({
@@ -1783,8 +1960,14 @@ class DescribeLoadBalancerPoliciesOutput {
 }
 
 /// Contains the output of DescribeLoadBalancerPolicyTypes.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLoadBalancerPolicyTypesOutput {
   /// Information about the policy types.
+  @_s.JsonKey(name: 'PolicyTypeDescriptions')
   final List<PolicyTypeDescription> policyTypeDescriptions;
 
   DescribeLoadBalancerPolicyTypesOutput({
@@ -1803,8 +1986,14 @@ class DescribeLoadBalancerPolicyTypesOutput {
 }
 
 /// Contains the output for DescribeTags.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTagsOutput {
   /// Information about the tags.
+  @_s.JsonKey(name: 'TagDescriptions')
   final List<TagDescription> tagDescriptions;
 
   DescribeTagsOutput({
@@ -1822,8 +2011,14 @@ class DescribeTagsOutput {
 }
 
 /// Contains the output of DetachLoadBalancerFromSubnets.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DetachLoadBalancerFromSubnetsOutput {
   /// The IDs of the remaining subnets for the load balancer.
+  @_s.JsonKey(name: 'Subnets')
   final List<String> subnets;
 
   DetachLoadBalancerFromSubnetsOutput({
@@ -1839,13 +2034,20 @@ class DetachLoadBalancerFromSubnetsOutput {
 }
 
 /// Information about a health check.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class HealthCheck {
   /// The number of consecutive health checks successes required before moving the
   /// instance to the <code>Healthy</code> state.
+  @_s.JsonKey(name: 'HealthyThreshold')
   final int healthyThreshold;
 
   /// The approximate interval, in seconds, between health checks of an individual
   /// instance.
+  @_s.JsonKey(name: 'Interval')
   final int interval;
 
   /// The instance being checked. The protocol is either TCP, HTTP, HTTPS, or SSL.
@@ -1866,16 +2068,19 @@ class HealthCheck {
   ///
   /// The total length of the HTTP ping target must be 1024 16-bit Unicode
   /// characters or less.
+  @_s.JsonKey(name: 'Target')
   final String target;
 
   /// The amount of time, in seconds, during which no response means a failed
   /// health check.
   ///
   /// This value must be less than the <code>Interval</code> value.
+  @_s.JsonKey(name: 'Timeout')
   final int timeout;
 
   /// The number of consecutive health check failures required before moving the
   /// instance to the <code>Unhealthy</code> state.
+  @_s.JsonKey(name: 'UnhealthyThreshold')
   final int unhealthyThreshold;
 
   HealthCheck({
@@ -1894,11 +2099,19 @@ class HealthCheck {
       unhealthyThreshold: _s.extractXmlIntValue(elem, 'UnhealthyThreshold'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$HealthCheckToJson(this);
 }
 
 /// The ID of an EC2 instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Instance {
   /// The instance ID.
+  @_s.JsonKey(name: 'InstanceId')
   final String instanceId;
 
   Instance({
@@ -1909,9 +2122,16 @@ class Instance {
       instanceId: _s.extractXmlStringValue(elem, 'InstanceId'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$InstanceToJson(this);
 }
 
 /// Information about the state of an EC2 instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InstanceState {
   /// A description of the instance state. This string can contain one or more of
   /// the following messages.
@@ -1957,21 +2177,25 @@ class InstanceState {
   /// <code>Instance is in terminated state.</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The ID of the instance.
+  @_s.JsonKey(name: 'InstanceId')
   final String instanceId;
 
   /// Information about the cause of <code>OutOfService</code> instances.
   /// Specifically, whether the cause is Elastic Load Balancing or the instance.
   ///
   /// Valid values: <code>ELB</code> | <code>Instance</code> | <code>N/A</code>
+  @_s.JsonKey(name: 'ReasonCode')
   final String reasonCode;
 
   /// The current state of the instance.
   ///
   /// Valid values: <code>InService</code> | <code>OutOfService</code> |
   /// <code>Unknown</code>
+  @_s.JsonKey(name: 'State')
   final String state;
 
   InstanceState({
@@ -1991,14 +2215,21 @@ class InstanceState {
 }
 
 /// Information about a policy for duration-based session stickiness.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LBCookieStickinessPolicy {
   /// The time period, in seconds, after which the cookie should be considered
   /// stale. If this parameter is not specified, the stickiness session lasts for
   /// the duration of the browser session.
+  @_s.JsonKey(name: 'CookieExpirationPeriod')
   final int cookieExpirationPeriod;
 
   /// The name of the policy. This name must be unique within the set of policies
   /// for this load balancer.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   LBCookieStickinessPolicy({
@@ -2016,8 +2247,14 @@ class LBCookieStickinessPolicy {
 
 /// Information about an Elastic Load Balancing resource limit for your AWS
 /// account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Limit {
   /// The maximum value of the limit.
+  @_s.JsonKey(name: 'Max')
   final String max;
 
   /// The name of the limit. The possible values are:
@@ -2033,6 +2270,7 @@ class Limit {
   /// classic-registered-instances
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   Limit({
@@ -2054,17 +2292,25 @@ class Limit {
 /// href="http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-listener-config.html">Listeners
 /// for Your Classic Load Balancer</a> in the <i>Classic Load Balancers
 /// Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Listener {
   /// The port on which the instance is listening.
+  @_s.JsonKey(name: 'InstancePort')
   final int instancePort;
 
   /// The port on which the load balancer is listening. On EC2-VPC, you can
   /// specify any port from the range 1-65535. On EC2-Classic, you can specify any
   /// port from the following list: 25, 80, 443, 465, 587, 1024-65535.
+  @_s.JsonKey(name: 'LoadBalancerPort')
   final int loadBalancerPort;
 
   /// The load balancer transport protocol to use for routing: HTTP, HTTPS, TCP,
   /// or SSL.
+  @_s.JsonKey(name: 'Protocol')
   final String protocol;
 
   /// The protocol to use for routing traffic to instances: HTTP, HTTPS, TCP, or
@@ -2080,9 +2326,11 @@ class Listener {
   /// If there is another listener with the same <code>InstancePort</code> whose
   /// <code>InstanceProtocol</code> is HTTP or TCP, the listener's
   /// <code>InstanceProtocol</code> must be HTTP or TCP.
+  @_s.JsonKey(name: 'InstanceProtocol')
   final String instanceProtocol;
 
   /// The Amazon Resource Name (ARN) of the server certificate.
+  @_s.JsonKey(name: 'SSLCertificateId')
   final String sSLCertificateId;
 
   Listener({
@@ -2101,14 +2349,23 @@ class Listener {
       sSLCertificateId: _s.extractXmlStringValue(elem, 'SSLCertificateId'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ListenerToJson(this);
 }
 
 /// The policies enabled for a listener.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListenerDescription {
   /// The listener.
+  @_s.JsonKey(name: 'Listener')
   final Listener listener;
 
   /// The policies. If there are no policies enabled, the list is empty.
+  @_s.JsonKey(name: 'PolicyNames')
   final List<String> policyNames;
 
   ListenerDescription({
@@ -2127,6 +2384,11 @@ class ListenerDescription {
 }
 
 /// The attributes for a load balancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LoadBalancerAttributes {
   /// If enabled, the load balancer captures detailed information of all requests
   /// and delivers the information to the Amazon S3 bucket that you specify.
@@ -2134,9 +2396,11 @@ class LoadBalancerAttributes {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html">Enable
   /// Access Logs</a> in the <i>Classic Load Balancers Guide</i>.
+  @_s.JsonKey(name: 'AccessLog')
   final AccessLog accessLog;
 
   /// This parameter is reserved.
+  @_s.JsonKey(name: 'AdditionalAttributes')
   final List<AdditionalAttribute> additionalAttributes;
 
   /// If enabled, the load balancer allows existing requests to complete before
@@ -2146,6 +2410,7 @@ class LoadBalancerAttributes {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-conn-drain.html">Configure
   /// Connection Draining</a> in the <i>Classic Load Balancers Guide</i>.
+  @_s.JsonKey(name: 'ConnectionDraining')
   final ConnectionDraining connectionDraining;
 
   /// If enabled, the load balancer allows the connections to remain idle (no data
@@ -2156,6 +2421,7 @@ class LoadBalancerAttributes {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html">Configure
   /// Idle Connection Timeout</a> in the <i>Classic Load Balancers Guide</i>.
+  @_s.JsonKey(name: 'ConnectionSettings')
   final ConnectionSettings connectionSettings;
 
   /// If enabled, the load balancer routes the request traffic evenly across all
@@ -2164,6 +2430,7 @@ class LoadBalancerAttributes {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-disable-crosszone-lb.html">Configure
   /// Cross-Zone Load Balancing</a> in the <i>Classic Load Balancers Guide</i>.
+  @_s.JsonKey(name: 'CrossZoneLoadBalancing')
   final CrossZoneLoadBalancing crossZoneLoadBalancing;
 
   LoadBalancerAttributes({
@@ -2195,14 +2462,23 @@ class LoadBalancerAttributes {
           ?.let((e) => CrossZoneLoadBalancing.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LoadBalancerAttributesToJson(this);
 }
 
 /// Information about a load balancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancerDescription {
   /// The Availability Zones for the load balancer.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<String> availabilityZones;
 
   /// Information about your EC2 instances.
+  @_s.JsonKey(name: 'BackendServerDescriptions')
   final List<BackendServerDescription> backendServerDescriptions;
 
   /// The DNS name of the load balancer.
@@ -2210,30 +2486,39 @@ class LoadBalancerDescription {
   /// For more information, see <a
   /// href="http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/using-domain-names-with-elb.html">Configure
   /// a Custom Domain Name</a> in the <i>Classic Load Balancers Guide</i>.
+  @_s.JsonKey(name: 'CanonicalHostedZoneName')
   final String canonicalHostedZoneName;
 
   /// The ID of the Amazon Route 53 hosted zone for the load balancer.
+  @_s.JsonKey(name: 'CanonicalHostedZoneNameID')
   final String canonicalHostedZoneNameID;
 
   /// The date and time the load balancer was created.
+  @_s.JsonKey(name: 'CreatedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdTime;
 
   /// The DNS name of the load balancer.
+  @_s.JsonKey(name: 'DNSName')
   final String dNSName;
 
   /// Information about the health checks conducted on the load balancer.
+  @_s.JsonKey(name: 'HealthCheck')
   final HealthCheck healthCheck;
 
   /// The IDs of the instances for the load balancer.
+  @_s.JsonKey(name: 'Instances')
   final List<Instance> instances;
 
   /// The listeners for the load balancer.
+  @_s.JsonKey(name: 'ListenerDescriptions')
   final List<ListenerDescription> listenerDescriptions;
 
   /// The name of the load balancer.
+  @_s.JsonKey(name: 'LoadBalancerName')
   final String loadBalancerName;
 
   /// The policies defined for the load balancer.
+  @_s.JsonKey(name: 'Policies')
   final Policies policies;
 
   /// The type of load balancer. Valid only for load balancers in a VPC.
@@ -2243,22 +2528,27 @@ class LoadBalancerDescription {
   ///
   /// If <code>Scheme</code> is <code>internal</code>, the load balancer has a
   /// public DNS name that resolves to a private IP address.
+  @_s.JsonKey(name: 'Scheme')
   final String scheme;
 
   /// The security groups for the load balancer. Valid only for load balancers in
   /// a VPC.
+  @_s.JsonKey(name: 'SecurityGroups')
   final List<String> securityGroups;
 
   /// The security group for the load balancer, which you can use as part of your
   /// inbound rules for your registered instances. To only allow traffic from load
   /// balancers, add a security group rule that specifies this source security
   /// group as the inbound source.
+  @_s.JsonKey(name: 'SourceSecurityGroup')
   final SourceSecurityGroup sourceSecurityGroup;
 
   /// The IDs of the subnets for the load balancer.
+  @_s.JsonKey(name: 'Subnets')
   final List<String> subnets;
 
   /// The ID of the VPC for the load balancer.
+  @_s.JsonKey(name: 'VPCId')
   final String vPCId;
 
   LoadBalancerDescription({
@@ -2326,11 +2616,18 @@ class LoadBalancerDescription {
 }
 
 /// Contains the output of ModifyLoadBalancerAttributes.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyLoadBalancerAttributesOutput {
   /// Information about the load balancer attributes.
+  @_s.JsonKey(name: 'LoadBalancerAttributes')
   final LoadBalancerAttributes loadBalancerAttributes;
 
   /// The name of the load balancer.
+  @_s.JsonKey(name: 'LoadBalancerName')
   final String loadBalancerName;
 
   ModifyLoadBalancerAttributesOutput({
@@ -2348,15 +2645,23 @@ class ModifyLoadBalancerAttributesOutput {
 }
 
 /// The policies for a load balancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Policies {
   /// The stickiness policies created using
   /// <a>CreateAppCookieStickinessPolicy</a>.
+  @_s.JsonKey(name: 'AppCookieStickinessPolicies')
   final List<AppCookieStickinessPolicy> appCookieStickinessPolicies;
 
   /// The stickiness policies created using <a>CreateLBCookieStickinessPolicy</a>.
+  @_s.JsonKey(name: 'LBCookieStickinessPolicies')
   final List<LBCookieStickinessPolicy> lBCookieStickinessPolicies;
 
   /// The policies other than the stickiness policies.
+  @_s.JsonKey(name: 'OtherPolicies')
   final List<String> otherPolicies;
 
   Policies({
@@ -2386,25 +2691,40 @@ class Policies {
 }
 
 /// Information about a policy attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class PolicyAttribute {
   /// The name of the attribute.
+  @_s.JsonKey(name: 'AttributeName')
   final String attributeName;
 
   /// The value of the attribute.
+  @_s.JsonKey(name: 'AttributeValue')
   final String attributeValue;
 
   PolicyAttribute({
     this.attributeName,
     this.attributeValue,
   });
+  Map<String, dynamic> toJson() => _$PolicyAttributeToJson(this);
 }
 
 /// Information about a policy attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyAttributeDescription {
   /// The name of the attribute.
+  @_s.JsonKey(name: 'AttributeName')
   final String attributeName;
 
   /// The value of the attribute.
+  @_s.JsonKey(name: 'AttributeValue')
   final String attributeValue;
 
   PolicyAttributeDescription({
@@ -2420,12 +2740,19 @@ class PolicyAttributeDescription {
 }
 
 /// Information about a policy attribute type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyAttributeTypeDescription {
   /// The name of the attribute.
+  @_s.JsonKey(name: 'AttributeName')
   final String attributeName;
 
   /// The type of the attribute. For example, <code>Boolean</code> or
   /// <code>Integer</code>.
+  @_s.JsonKey(name: 'AttributeType')
   final String attributeType;
 
   /// The cardinality of the attribute.
@@ -2446,12 +2773,15 @@ class PolicyAttributeTypeDescription {
   /// ONE_OR_MORE(1..*0) : Required. Multiple values are allowed
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Cardinality')
   final String cardinality;
 
   /// The default value of the attribute, if applicable.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// A description of the attribute.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   PolicyAttributeTypeDescription({
@@ -2473,14 +2803,22 @@ class PolicyAttributeTypeDescription {
 }
 
 /// Information about a policy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyDescription {
   /// The policy attributes.
+  @_s.JsonKey(name: 'PolicyAttributeDescriptions')
   final List<PolicyAttributeDescription> policyAttributeDescriptions;
 
   /// The name of the policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   /// The name of the policy type.
+  @_s.JsonKey(name: 'PolicyTypeName')
   final String policyTypeName;
 
   PolicyDescription({
@@ -2503,15 +2841,23 @@ class PolicyDescription {
 }
 
 /// Information about a policy type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyTypeDescription {
   /// A description of the policy type.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The description of the policy attributes associated with the policies
   /// defined by Elastic Load Balancing.
+  @_s.JsonKey(name: 'PolicyAttributeTypeDescriptions')
   final List<PolicyAttributeTypeDescription> policyAttributeTypeDescriptions;
 
   /// The name of the policy type.
+  @_s.JsonKey(name: 'PolicyTypeName')
   final String policyTypeName;
 
   PolicyTypeDescription({
@@ -2534,8 +2880,14 @@ class PolicyTypeDescription {
 }
 
 /// Contains the output of RegisterInstancesWithLoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RegisterEndPointsOutput {
   /// The updated list of instances for the load balancer.
+  @_s.JsonKey(name: 'Instances')
   final List<Instance> instances;
 
   RegisterEndPointsOutput({
@@ -2552,8 +2904,14 @@ class RegisterEndPointsOutput {
 }
 
 /// Contains the output for DisableAvailabilityZonesForLoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RemoveAvailabilityZonesOutput {
   /// The remaining Availability Zones for the load balancer.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<String> availabilityZones;
 
   RemoveAvailabilityZonesOutput({
@@ -2568,6 +2926,11 @@ class RemoveAvailabilityZonesOutput {
 }
 
 /// Contains the output of RemoveTags.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RemoveTagsOutput {
   RemoveTagsOutput();
   factory RemoveTagsOutput.fromXml(
@@ -2578,6 +2941,11 @@ class RemoveTagsOutput {
 }
 
 /// Contains the output of SetLoadBalancerListenerSSLCertificate.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetLoadBalancerListenerSSLCertificateOutput {
   SetLoadBalancerListenerSSLCertificateOutput();
   factory SetLoadBalancerListenerSSLCertificateOutput.fromXml(
@@ -2588,6 +2956,11 @@ class SetLoadBalancerListenerSSLCertificateOutput {
 }
 
 /// Contains the output of SetLoadBalancerPoliciesForBackendServer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetLoadBalancerPoliciesForBackendServerOutput {
   SetLoadBalancerPoliciesForBackendServerOutput();
   factory SetLoadBalancerPoliciesForBackendServerOutput.fromXml(
@@ -2598,6 +2971,11 @@ class SetLoadBalancerPoliciesForBackendServerOutput {
 }
 
 /// Contains the output of SetLoadBalancePoliciesOfListener.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetLoadBalancerPoliciesOfListenerOutput {
   SetLoadBalancerPoliciesOfListenerOutput();
   factory SetLoadBalancerPoliciesOfListenerOutput.fromXml(
@@ -2608,11 +2986,18 @@ class SetLoadBalancerPoliciesOfListenerOutput {
 }
 
 /// Information about a source security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SourceSecurityGroup {
   /// The name of the security group.
+  @_s.JsonKey(name: 'GroupName')
   final String groupName;
 
   /// The owner of the security group.
+  @_s.JsonKey(name: 'OwnerAlias')
   final String ownerAlias;
 
   SourceSecurityGroup({
@@ -2628,11 +3013,18 @@ class SourceSecurityGroup {
 }
 
 /// Information about a tag.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The key of the tag.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value of the tag.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -2645,14 +3037,23 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// The tags associated with a load balancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagDescription {
   /// The name of the load balancer.
+  @_s.JsonKey(name: 'LoadBalancerName')
   final String loadBalancerName;
 
   /// The tags.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   TagDescription({
@@ -2669,13 +3070,20 @@ class TagDescription {
 }
 
 /// The key of a tag.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TagKeyOnly {
   /// The name of the key.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   TagKeyOnly({
     this.key,
   });
+  Map<String, dynamic> toJson() => _$TagKeyOnlyToJson(this);
 }
 
 class AccessPointNotFoundException extends _s.GenericAwsException {

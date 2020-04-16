@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'elasticache-2015-02-02.g.dart';
 
 /// Amazon ElastiCache is a web service that makes it easier to set up, operate,
 /// and scale a distributed cache in the cloud.
@@ -496,6 +506,9 @@ class ElastiCache {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -1007,8 +1020,73 @@ class ElastiCache {
     return CreateCacheSubnetGroupResult.fromXml($result);
   }
 
+  /// Global Datastore for Redis offers fully managed, fast, reliable and secure
+  /// cross-region replication. Using Global Datastore for Redis, you can create
+  /// cross-region read replica clusters for ElastiCache for Redis to enable
+  /// low-latency reads and disaster recovery across regions. For more
+  /// information, see <a
+  /// href="/AmazonElastiCache/latest/red-ug/Redis-Global-Clusters.html">Replication
+  /// Across Regions Using Global Datastore</a>.
+  ///
+  /// <ul>
+  /// <li>
+  /// The <b>GlobalReplicationGroupId</b> is the name of the Global Datastore.
+  /// </li>
+  /// <li>
+  /// The <b>PrimaryReplicationGroupId</b> represents the name of the primary
+  /// cluster that accepts writes and will replicate updates to the secondary
+  /// cluster.
+  /// </li>
+  /// </ul>
+  ///
+  /// May throw [ReplicationGroupNotFoundFault].
+  /// May throw [InvalidReplicationGroupStateFault].
+  /// May throw [GlobalReplicationGroupAlreadyExistsFault].
+  /// May throw [ServiceLinkedRoleNotFoundFault].
+  /// May throw [InvalidParameterValueException].
+  ///
+  /// Parameter [globalReplicationGroupIdSuffix] :
+  /// The suffix for name of a Global Datastore. The suffix guarantees
+  /// uniqueness of the Global Datastore name across multiple regions.
+  ///
+  /// Parameter [primaryReplicationGroupId] :
+  /// The name of the primary cluster that accepts writes and will replicate
+  /// updates to the secondary cluster.
+  ///
+  /// Parameter [globalReplicationGroupDescription] :
+  /// Provides details of the Global Datastore
+  Future<CreateGlobalReplicationGroupResult> createGlobalReplicationGroup({
+    @_s.required String globalReplicationGroupIdSuffix,
+    @_s.required String primaryReplicationGroupId,
+    String globalReplicationGroupDescription,
+  }) async {
+    ArgumentError.checkNotNull(
+        globalReplicationGroupIdSuffix, 'globalReplicationGroupIdSuffix');
+    ArgumentError.checkNotNull(
+        primaryReplicationGroupId, 'primaryReplicationGroupId');
+    final $request = <String, dynamic>{
+      'Action': 'CreateGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['GlobalReplicationGroupIdSuffix'] = globalReplicationGroupIdSuffix;
+    $request['PrimaryReplicationGroupId'] = primaryReplicationGroupId;
+    globalReplicationGroupDescription
+        ?.also((arg) => $request['GlobalReplicationGroupDescription'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'CreateGlobalReplicationGroupResult',
+    );
+    return CreateGlobalReplicationGroupResult.fromXml($result);
+  }
+
   /// Creates a Redis (cluster mode disabled) or a Redis (cluster mode enabled)
   /// replication group.
+  ///
+  /// This API can be used to create a standalone regional replication group or
+  /// a secondary replication group associated with a Global Datastore.
   ///
   /// A Redis (cluster mode disabled) replication group is a collection of
   /// clusters, where one of the clusters is a read/write primary and the others
@@ -1049,6 +1127,8 @@ class ElastiCache {
   /// May throw [InvalidVPCNetworkStateFault].
   /// May throw [TagQuotaPerResourceExceeded].
   /// May throw [NodeGroupsPerReplicationGroupQuotaExceededFault].
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
   /// May throw [InvalidParameterValueException].
   /// May throw [InvalidParameterCombinationException].
   ///
@@ -1170,6 +1250,9 @@ class ElastiCache {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -1301,8 +1384,11 @@ class ElastiCache {
   /// earlier engine version, you must delete the existing cluster or
   /// replication group and create it anew with the earlier engine version.
   ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
   /// Parameter [kmsKeyId] :
-  /// The ID of the KMS key used to encrypt the disk on the cluster.
+  /// The ID of the KMS key used to encrypt the disk in the cluster.
   ///
   /// Parameter [nodeGroupConfiguration] :
   /// A list of node group (shard) configuration options. Each node group
@@ -1508,6 +1594,7 @@ class ElastiCache {
     String cacheSubnetGroupName,
     String engine,
     String engineVersion,
+    String globalReplicationGroupId,
     String kmsKeyId,
     List<NodeGroupConfiguration> nodeGroupConfiguration,
     String notificationTopicArn,
@@ -1550,6 +1637,8 @@ class ElastiCache {
     cacheSubnetGroupName?.also((arg) => $request['CacheSubnetGroupName'] = arg);
     engine?.also((arg) => $request['Engine'] = arg);
     engineVersion?.also((arg) => $request['EngineVersion'] = arg);
+    globalReplicationGroupId
+        ?.also((arg) => $request['GlobalReplicationGroupId'] = arg);
     kmsKeyId?.also((arg) => $request['KmsKeyId'] = arg);
     nodeGroupConfiguration
         ?.also((arg) => $request['NodeGroupConfiguration'] = arg);
@@ -1636,7 +1725,71 @@ class ElastiCache {
     return CreateSnapshotResult.fromXml($result);
   }
 
-  /// Dynamically decreases the number of replics in a Redis (cluster mode
+  /// Decreases the number of node groups in a Global Datastore
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
+  /// May throw [InvalidParameterValueException].
+  /// May throw [InvalidParameterCombinationException].
+  ///
+  /// Parameter [applyImmediately] :
+  /// Indicates that the shard reconfiguration process begins immediately. At
+  /// present, the only permitted value for this parameter is true.
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
+  /// Parameter [nodeGroupCount] :
+  /// The number of node groups (shards) that results from the modification of
+  /// the shard configuration
+  ///
+  /// Parameter [globalNodeGroupsToRemove] :
+  /// If the value of NodeGroupCount is less than the current number of node
+  /// groups (shards), then either NodeGroupsToRemove or NodeGroupsToRetain is
+  /// required. NodeGroupsToRemove is a list of NodeGroupIds to remove from the
+  /// cluster. ElastiCache for Redis will attempt to remove all node groups
+  /// listed by NodeGroupsToRemove from the cluster.
+  ///
+  /// Parameter [globalNodeGroupsToRetain] :
+  /// If the value of NodeGroupCount is less than the current number of node
+  /// groups (shards), then either NodeGroupsToRemove or NodeGroupsToRetain is
+  /// required. NodeGroupsToRemove is a list of NodeGroupIds to remove from the
+  /// cluster. ElastiCache for Redis will attempt to remove all node groups
+  /// listed by NodeGroupsToRemove from the cluster.
+  Future<DecreaseNodeGroupsInGlobalReplicationGroupResult>
+      decreaseNodeGroupsInGlobalReplicationGroup({
+    @_s.required bool applyImmediately,
+    @_s.required String globalReplicationGroupId,
+    @_s.required int nodeGroupCount,
+    List<String> globalNodeGroupsToRemove,
+    List<String> globalNodeGroupsToRetain,
+  }) async {
+    ArgumentError.checkNotNull(applyImmediately, 'applyImmediately');
+    ArgumentError.checkNotNull(
+        globalReplicationGroupId, 'globalReplicationGroupId');
+    ArgumentError.checkNotNull(nodeGroupCount, 'nodeGroupCount');
+    final $request = <String, dynamic>{
+      'Action': 'DecreaseNodeGroupsInGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['ApplyImmediately'] = applyImmediately;
+    $request['GlobalReplicationGroupId'] = globalReplicationGroupId;
+    $request['NodeGroupCount'] = nodeGroupCount;
+    globalNodeGroupsToRemove
+        ?.also((arg) => $request['GlobalNodeGroupsToRemove'] = arg);
+    globalNodeGroupsToRetain
+        ?.also((arg) => $request['GlobalNodeGroupsToRetain'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'DecreaseNodeGroupsInGlobalReplicationGroupResult',
+    );
+    return DecreaseNodeGroupsInGlobalReplicationGroupResult.fromXml($result);
+  }
+
+  /// Dynamically decreases the number of replicas in a Redis (cluster mode
   /// disabled) replication group or the number of replica nodes in one or more
   /// node groups (shards) of a Redis (cluster mode enabled) replication group.
   /// This operation is performed with no cluster down time.
@@ -1887,6 +2040,64 @@ class ElastiCache {
       requestUri: '/',
       exceptionFnMap: _exceptionFns,
     );
+  }
+
+  /// Deleting a Global Datastore is a two-step process:
+  ///
+  /// <ul>
+  /// <li>
+  /// First, you must <a>DisassociateGlobalReplicationGroup</a> to remove the
+  /// secondary clusters in the Global Datastore.
+  /// </li>
+  /// <li>
+  /// Once the Global Datastore contains only the primary cluster, you can use
+  /// DeleteGlobalReplicationGroup API to delete the Global Datastore while
+  /// retainining the primary cluster using Retain…= true.
+  /// </li>
+  /// </ul>
+  /// Since the Global Datastore has only a primary cluster, you can delete the
+  /// Global Datastore while retaining the primary by setting
+  /// <code>RetainPrimaryCluster=true</code>.
+  ///
+  /// When you receive a successful response from this operation, Amazon
+  /// ElastiCache immediately begins deleting the selected resources; you cannot
+  /// cancel or revert this operation.
+  /// <note>
+  /// This operation is valid for Redis only.
+  /// </note>
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
+  /// May throw [InvalidParameterValueException].
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
+  /// Parameter [retainPrimaryReplicationGroup] :
+  /// If set to <code>true</code>, the primary replication is retained as a
+  /// standalone replication group.
+  Future<DeleteGlobalReplicationGroupResult> deleteGlobalReplicationGroup({
+    @_s.required String globalReplicationGroupId,
+    @_s.required bool retainPrimaryReplicationGroup,
+  }) async {
+    ArgumentError.checkNotNull(
+        globalReplicationGroupId, 'globalReplicationGroupId');
+    ArgumentError.checkNotNull(
+        retainPrimaryReplicationGroup, 'retainPrimaryReplicationGroup');
+    final $request = <String, dynamic>{
+      'Action': 'DeleteGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['GlobalReplicationGroupId'] = globalReplicationGroupId;
+    $request['RetainPrimaryReplicationGroup'] = retainPrimaryReplicationGroup;
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'DeleteGlobalReplicationGroupResult',
+    );
+    return DeleteGlobalReplicationGroupResult.fromXml($result);
   }
 
   /// Deletes an existing replication group. By default, this operation deletes
@@ -2473,6 +2684,55 @@ class ElastiCache {
     return EventsMessage.fromXml($result);
   }
 
+  /// Returns information about a particular global replication group. If no
+  /// identifier is specified, returns information about all Global Datastores.
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidParameterValueException].
+  /// May throw [InvalidParameterCombinationException].
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
+  /// Parameter [marker] :
+  /// An optional marker returned from a prior request. Use this marker for
+  /// pagination of results from this operation. If this parameter is specified,
+  /// the response includes only records beyond the marker, up to the value
+  /// specified by <code>MaxRecords</code>.
+  ///
+  /// Parameter [maxRecords] :
+  /// The maximum number of records to include in the response. If more records
+  /// exist than the specified MaxRecords value, a marker is included in the
+  /// response so that the remaining results can be retrieved.
+  ///
+  /// Parameter [showMemberInfo] :
+  /// Returns the list of members that comprise the Global Datastore.
+  Future<DescribeGlobalReplicationGroupsResult>
+      describeGlobalReplicationGroups({
+    String globalReplicationGroupId,
+    String marker,
+    int maxRecords,
+    bool showMemberInfo,
+  }) async {
+    final $request = <String, dynamic>{
+      'Action': 'DescribeGlobalReplicationGroups',
+      'Version': '2015-02-02',
+    };
+    globalReplicationGroupId
+        ?.also((arg) => $request['GlobalReplicationGroupId'] = arg);
+    marker?.also((arg) => $request['Marker'] = arg);
+    maxRecords?.also((arg) => $request['MaxRecords'] = arg);
+    showMemberInfo?.also((arg) => $request['ShowMemberInfo'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'DescribeGlobalReplicationGroupsResult',
+    );
+    return DescribeGlobalReplicationGroupsResult.fromXml($result);
+  }
+
   /// Returns information about a particular replication group. If no identifier
   /// is specified, <code>DescribeReplicationGroups</code> returns information
   /// about all replication groups.
@@ -2559,6 +2819,9 @@ class ElastiCache {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -2739,6 +3002,9 @@ class ElastiCache {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -3084,6 +3350,145 @@ class ElastiCache {
       resultWrapper: 'DescribeUpdateActionsResult',
     );
     return UpdateActionsMessage.fromXml($result);
+  }
+
+  /// Remove a secondary cluster from the Global Datastore using the Global
+  /// Datastore name. The secondary cluster will no longer receive updates from
+  /// the primary cluster, but will remain as a standalone cluster in that AWS
+  /// region.
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
+  /// May throw [InvalidParameterValueException].
+  /// May throw [InvalidParameterCombinationException].
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
+  /// Parameter [replicationGroupId] :
+  /// The name of the secondary cluster you wish to remove from the Global
+  /// Datastore
+  ///
+  /// Parameter [replicationGroupRegion] :
+  /// The AWS region of secondary cluster you wish to remove from the Global
+  /// Datastore
+  Future<DisassociateGlobalReplicationGroupResult>
+      disassociateGlobalReplicationGroup({
+    @_s.required String globalReplicationGroupId,
+    @_s.required String replicationGroupId,
+    @_s.required String replicationGroupRegion,
+  }) async {
+    ArgumentError.checkNotNull(
+        globalReplicationGroupId, 'globalReplicationGroupId');
+    ArgumentError.checkNotNull(replicationGroupId, 'replicationGroupId');
+    ArgumentError.checkNotNull(
+        replicationGroupRegion, 'replicationGroupRegion');
+    final $request = <String, dynamic>{
+      'Action': 'DisassociateGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['GlobalReplicationGroupId'] = globalReplicationGroupId;
+    $request['ReplicationGroupId'] = replicationGroupId;
+    $request['ReplicationGroupRegion'] = replicationGroupRegion;
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'DisassociateGlobalReplicationGroupResult',
+    );
+    return DisassociateGlobalReplicationGroupResult.fromXml($result);
+  }
+
+  /// Used to failover the primary region to a selected secondary region.
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
+  /// May throw [InvalidParameterValueException].
+  /// May throw [InvalidParameterCombinationException].
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
+  /// Parameter [primaryRegion] :
+  /// The AWS region of the primary cluster of the Global Datastore
+  ///
+  /// Parameter [primaryReplicationGroupId] :
+  /// The name of the primary replication group
+  Future<FailoverGlobalReplicationGroupResult> failoverGlobalReplicationGroup({
+    @_s.required String globalReplicationGroupId,
+    @_s.required String primaryRegion,
+    @_s.required String primaryReplicationGroupId,
+  }) async {
+    ArgumentError.checkNotNull(
+        globalReplicationGroupId, 'globalReplicationGroupId');
+    ArgumentError.checkNotNull(primaryRegion, 'primaryRegion');
+    ArgumentError.checkNotNull(
+        primaryReplicationGroupId, 'primaryReplicationGroupId');
+    final $request = <String, dynamic>{
+      'Action': 'FailoverGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['GlobalReplicationGroupId'] = globalReplicationGroupId;
+    $request['PrimaryRegion'] = primaryRegion;
+    $request['PrimaryReplicationGroupId'] = primaryReplicationGroupId;
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'FailoverGlobalReplicationGroupResult',
+    );
+    return FailoverGlobalReplicationGroupResult.fromXml($result);
+  }
+
+  /// Increase the number of node groups in the Global Datastore
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
+  /// May throw [InvalidParameterValueException].
+  ///
+  /// Parameter [applyImmediately] :
+  /// Indicates that the process begins immediately. At present, the only
+  /// permitted value for this parameter is true.
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
+  /// Parameter [nodeGroupCount] :
+  /// The number of node groups you wish to add
+  ///
+  /// Parameter [regionalConfigurations] :
+  /// Describes the replication group IDs, the AWS regions where they are stored
+  /// and the shard configuration for each that comprise the Global Datastore
+  Future<IncreaseNodeGroupsInGlobalReplicationGroupResult>
+      increaseNodeGroupsInGlobalReplicationGroup({
+    @_s.required bool applyImmediately,
+    @_s.required String globalReplicationGroupId,
+    @_s.required int nodeGroupCount,
+    List<RegionalConfiguration> regionalConfigurations,
+  }) async {
+    ArgumentError.checkNotNull(applyImmediately, 'applyImmediately');
+    ArgumentError.checkNotNull(
+        globalReplicationGroupId, 'globalReplicationGroupId');
+    ArgumentError.checkNotNull(nodeGroupCount, 'nodeGroupCount');
+    final $request = <String, dynamic>{
+      'Action': 'IncreaseNodeGroupsInGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['ApplyImmediately'] = applyImmediately;
+    $request['GlobalReplicationGroupId'] = globalReplicationGroupId;
+    $request['NodeGroupCount'] = nodeGroupCount;
+    regionalConfigurations
+        ?.also((arg) => $request['RegionalConfigurations'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'IncreaseNodeGroupsInGlobalReplicationGroupResult',
+    );
+    return IncreaseNodeGroupsInGlobalReplicationGroupResult.fromXml($result);
   }
 
   /// Dynamically increases the number of replics in a Redis (cluster mode
@@ -3663,6 +4068,7 @@ class ElastiCache {
   /// May throw [InvalidCacheParameterGroupStateFault].
   /// May throw [InvalidParameterValueException].
   /// May throw [InvalidParameterCombinationException].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
   ///
   /// Parameter [cacheParameterGroupName] :
   /// The name of the cache parameter group to modify.
@@ -3737,6 +4143,69 @@ class ElastiCache {
       resultWrapper: 'ModifyCacheSubnetGroupResult',
     );
     return ModifyCacheSubnetGroupResult.fromXml($result);
+  }
+
+  /// Modifies the settings for a Global Datastore.
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
+  /// May throw [InvalidParameterValueException].
+  ///
+  /// Parameter [applyImmediately] :
+  /// If true, this parameter causes the modifications in this request and any
+  /// pending modifications to be applied, asynchronously and as soon as
+  /// possible, regardless of the PreferredMaintenanceWindow setting for the
+  /// replication group. If false, changes to the nodes in the replication group
+  /// are applied on the next maintenance reboot, or the next failure reboot,
+  /// whichever occurs first.
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  ///
+  /// Parameter [automaticFailoverEnabled] :
+  /// Determines whether a read replica is automatically promoted to read/write
+  /// primary if the existing primary encounters a failure.
+  ///
+  /// Parameter [cacheNodeType] :
+  /// A valid cache node type that you want to scale this Global Datastore to.
+  ///
+  /// Parameter [engineVersion] :
+  /// The upgraded version of the cache engine to be run on the clusters in the
+  /// Global Datastore.
+  ///
+  /// Parameter [globalReplicationGroupDescription] :
+  /// A description of the Global Datastore
+  Future<ModifyGlobalReplicationGroupResult> modifyGlobalReplicationGroup({
+    @_s.required bool applyImmediately,
+    @_s.required String globalReplicationGroupId,
+    bool automaticFailoverEnabled,
+    String cacheNodeType,
+    String engineVersion,
+    String globalReplicationGroupDescription,
+  }) async {
+    ArgumentError.checkNotNull(applyImmediately, 'applyImmediately');
+    ArgumentError.checkNotNull(
+        globalReplicationGroupId, 'globalReplicationGroupId');
+    final $request = <String, dynamic>{
+      'Action': 'ModifyGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['ApplyImmediately'] = applyImmediately;
+    $request['GlobalReplicationGroupId'] = globalReplicationGroupId;
+    automaticFailoverEnabled
+        ?.also((arg) => $request['AutomaticFailoverEnabled'] = arg);
+    cacheNodeType?.also((arg) => $request['CacheNodeType'] = arg);
+    engineVersion?.also((arg) => $request['EngineVersion'] = arg);
+    globalReplicationGroupDescription
+        ?.also((arg) => $request['GlobalReplicationGroupDescription'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'ModifyGlobalReplicationGroupResult',
+    );
+    return ModifyGlobalReplicationGroupResult.fromXml($result);
   }
 
   /// Modifies the settings for a replication group.
@@ -4181,6 +4650,42 @@ class ElastiCache {
     return PurchaseReservedCacheNodesOfferingResult.fromXml($result);
   }
 
+  /// Redistribute slots to ensure unifirom distribution across existing shards
+  /// in the cluster.
+  ///
+  /// May throw [GlobalReplicationGroupNotFoundFault].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
+  /// May throw [InvalidParameterValueException].
+  ///
+  /// Parameter [applyImmediately] :
+  /// If <code>True</code>, redistribution is applied immediately.
+  ///
+  /// Parameter [globalReplicationGroupId] :
+  /// The name of the Global Datastore
+  Future<RebalanceSlotsInGlobalReplicationGroupResult>
+      rebalanceSlotsInGlobalReplicationGroup({
+    @_s.required bool applyImmediately,
+    @_s.required String globalReplicationGroupId,
+  }) async {
+    ArgumentError.checkNotNull(applyImmediately, 'applyImmediately');
+    ArgumentError.checkNotNull(
+        globalReplicationGroupId, 'globalReplicationGroupId');
+    final $request = <String, dynamic>{
+      'Action': 'RebalanceSlotsInGlobalReplicationGroup',
+      'Version': '2015-02-02',
+    };
+    $request['ApplyImmediately'] = applyImmediately;
+    $request['GlobalReplicationGroupId'] = globalReplicationGroupId;
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'RebalanceSlotsInGlobalReplicationGroupResult',
+    );
+    return RebalanceSlotsInGlobalReplicationGroupResult.fromXml($result);
+  }
+
   /// Reboots some, or all, of the cache nodes within a provisioned cluster.
   /// This operation applies any modified cache parameter groups to the cluster.
   /// The reboot operation takes place as soon as possible, and results in a
@@ -4286,6 +4791,7 @@ class ElastiCache {
   /// May throw [CacheParameterGroupNotFoundFault].
   /// May throw [InvalidParameterValueException].
   /// May throw [InvalidParameterCombinationException].
+  /// May throw [InvalidGlobalReplicationGroupStateFault].
   ///
   /// Parameter [cacheParameterGroupName] :
   /// The name of the cache parameter group to reset.
@@ -4533,7 +5039,9 @@ class ElastiCache {
 }
 
 enum AZMode {
+  @_s.JsonValue('single-az')
   singleAz,
+  @_s.JsonValue('cross-az')
   crossAz,
 }
 
@@ -4551,13 +5059,18 @@ extension on String {
 
 /// Represents the allowed node types you can use to modify your cluster or
 /// replication group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AllowedNodeTypeModificationsMessage {
   /// A string list, each element of which specifies a cache node type which you
-  /// can use to scale your cluster or replication group.
-  ///
-  /// When scaling down on a Redis cluster or replication group using
-  /// <code>ModifyCacheCluster</code> or <code>ModifyReplicationGroup</code>, use
-  /// a value from this list for the <code>CacheNodeType</code> parameter.
+  /// can use to scale your cluster or replication group. When scaling down a
+  /// Redis cluster or replication group using ModifyCacheCluster or
+  /// ModifyReplicationGroup, use a value from this list for the CacheNodeType
+  /// parameter.
+  @_s.JsonKey(name: 'ScaleDownModifications')
   final List<String> scaleDownModifications;
 
   /// A string list, each element of which specifies a cache node type which you
@@ -4566,6 +5079,7 @@ class AllowedNodeTypeModificationsMessage {
   /// When scaling up a Redis cluster or replication group using
   /// <code>ModifyCacheCluster</code> or <code>ModifyReplicationGroup</code>, use
   /// a value from this list for the <code>CacheNodeType</code> parameter.
+  @_s.JsonKey(name: 'ScaleUpModifications')
   final List<String> scaleUpModifications;
 
   AllowedNodeTypeModificationsMessage({
@@ -4587,7 +5101,9 @@ class AllowedNodeTypeModificationsMessage {
 }
 
 enum AuthTokenUpdateStatus {
+  @_s.JsonValue('SETTING')
   setting,
+  @_s.JsonValue('ROTATING')
   rotating,
 }
 
@@ -4604,7 +5120,9 @@ extension on String {
 }
 
 enum AuthTokenUpdateStrategyType {
+  @_s.JsonValue('SET')
   set,
+  @_s.JsonValue('ROTATE')
   rotate,
 }
 
@@ -4620,7 +5138,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AuthorizeCacheSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'CacheSecurityGroup')
   final CacheSecurityGroup cacheSecurityGroup;
 
   AuthorizeCacheSecurityGroupIngressResult({
@@ -4636,9 +5160,13 @@ class AuthorizeCacheSecurityGroupIngressResult {
 }
 
 enum AutomaticFailoverStatus {
+  @_s.JsonValue('enabled')
   enabled,
+  @_s.JsonValue('disabled')
   disabled,
+  @_s.JsonValue('enabling')
   enabling,
+  @_s.JsonValue('disabling')
   disabling,
 }
 
@@ -4659,8 +5187,14 @@ extension on String {
 }
 
 /// Describes an Availability Zone in which the cluster is launched.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AvailabilityZone {
   /// The name of the Availability Zone.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   AvailabilityZone({
@@ -4674,6 +5208,11 @@ class AvailabilityZone {
 }
 
 /// Contains all of the attributes of a specific cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheCluster {
   /// A flag that enables encryption at-rest when set to <code>true</code>.
   ///
@@ -4687,25 +5226,37 @@ class CacheCluster {
   /// later.
   ///
   /// Default: <code>false</code>
+  @_s.JsonKey(name: 'AtRestEncryptionEnabled')
   final bool atRestEncryptionEnabled;
 
   /// A flag that enables using an <code>AuthToken</code> (password) when issuing
   /// Redis commands.
   ///
   /// Default: <code>false</code>
+  @_s.JsonKey(name: 'AuthTokenEnabled')
   final bool authTokenEnabled;
 
   /// The date the auth token was last modified
+  @_s.JsonKey(
+      name: 'AuthTokenLastModifiedDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime authTokenLastModifiedDate;
 
   /// This parameter is currently disabled.
+  @_s.JsonKey(name: 'AutoMinorVersionUpgrade')
   final bool autoMinorVersionUpgrade;
 
   /// The date and time when the cluster was created.
+  @_s.JsonKey(
+      name: 'CacheClusterCreateTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime cacheClusterCreateTime;
 
   /// The user-supplied identifier of the cluster. This identifier is a unique key
   /// that identifies a cluster.
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The current state of this cluster, one of the following values:
@@ -4713,6 +5264,7 @@ class CacheCluster {
   /// <code>deleting</code>, <code>incompatible-network</code>,
   /// <code>modifying</code>, <code>rebooting cluster nodes</code>,
   /// <code>restore-failed</code>, or <code>snapshotting</code>.
+  @_s.JsonKey(name: 'CacheClusterStatus')
   final String cacheClusterStatus;
 
   /// The name of the compute and memory capacity node type for the cluster.
@@ -4738,6 +5290,9 @@ class CacheCluster {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -4813,23 +5368,29 @@ class CacheCluster {
   /// later.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'CacheNodeType')
   final String cacheNodeType;
 
   /// A list of cache nodes that are members of the cluster.
+  @_s.JsonKey(name: 'CacheNodes')
   final List<CacheNode> cacheNodes;
 
   /// Status of the cache parameter group.
+  @_s.JsonKey(name: 'CacheParameterGroup')
   final CacheParameterGroupStatus cacheParameterGroup;
 
   /// A list of cache security group elements, composed of name and status
   /// sub-elements.
+  @_s.JsonKey(name: 'CacheSecurityGroups')
   final List<CacheSecurityGroupMembership> cacheSecurityGroups;
 
   /// The name of the cache subnet group associated with the cluster.
+  @_s.JsonKey(name: 'CacheSubnetGroupName')
   final String cacheSubnetGroupName;
 
   /// The URL of the web page where you can download the latest ElastiCache client
   /// library.
+  @_s.JsonKey(name: 'ClientDownloadLandingPage')
   final String clientDownloadLandingPage;
 
   /// Represents a Memcached cluster endpoint which, if Automatic Discovery is
@@ -4838,29 +5399,36 @@ class CacheCluster {
   /// <code>.cfg</code> in it.
   ///
   /// Example: <code>mem-3.9dvc4r<u>.cfg</u>.usw2.cache.amazonaws.com:11211</code>
+  @_s.JsonKey(name: 'ConfigurationEndpoint')
   final Endpoint configurationEndpoint;
 
   /// The name of the cache engine (<code>memcached</code> or <code>redis</code>)
   /// to be used for this cluster.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The version of the cache engine that is used in this cluster.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// Describes a notification topic and its status. Notification topics are used
   /// for publishing ElastiCache events to subscribers using Amazon Simple
   /// Notification Service (SNS).
+  @_s.JsonKey(name: 'NotificationConfiguration')
   final NotificationConfiguration notificationConfiguration;
 
   /// The number of cache nodes in the cluster.
   ///
   /// For clusters running Redis, this value must be 1. For clusters running
   /// Memcached, this value must be between 1 and 20.
+  @_s.JsonKey(name: 'NumCacheNodes')
   final int numCacheNodes;
+  @_s.JsonKey(name: 'PendingModifiedValues')
   final PendingModifiedValues pendingModifiedValues;
 
   /// The name of the Availability Zone in which the cluster is located or
   /// "Multiple" if the cache nodes are located in different Availability Zones.
+  @_s.JsonKey(name: 'PreferredAvailabilityZone')
   final String preferredAvailabilityZone;
 
   /// Specifies the weekly time range during which maintenance on the cluster is
@@ -4893,13 +5461,16 @@ class CacheCluster {
   /// </li>
   /// </ul>
   /// Example: <code>sun:23:00-mon:01:30</code>
+  @_s.JsonKey(name: 'PreferredMaintenanceWindow')
   final String preferredMaintenanceWindow;
 
   /// The replication group to which this cluster belongs. If this field is empty,
   /// the cluster is not associated with any replication group.
+  @_s.JsonKey(name: 'ReplicationGroupId')
   final String replicationGroupId;
 
   /// A list of VPC Security Groups associated with the cluster.
+  @_s.JsonKey(name: 'SecurityGroups')
   final List<SecurityGroupMembership> securityGroups;
 
   /// The number of days for which ElastiCache retains automatic cluster snapshots
@@ -4910,12 +5481,14 @@ class CacheCluster {
   /// If the value of SnapshotRetentionLimit is set to zero (0), backups are
   /// turned off.
   /// </important>
+  @_s.JsonKey(name: 'SnapshotRetentionLimit')
   final int snapshotRetentionLimit;
 
   /// The daily time range (in UTC) during which ElastiCache begins taking a daily
   /// snapshot of your cluster.
   ///
   /// Example: <code>05:00-09:00</code>
+  @_s.JsonKey(name: 'SnapshotWindow')
   final String snapshotWindow;
 
   /// A flag that enables in-transit encryption when set to <code>true</code>.
@@ -4930,6 +5503,7 @@ class CacheCluster {
   /// later.
   ///
   /// Default: <code>false</code>
+  @_s.JsonKey(name: 'TransitEncryptionEnabled')
   final bool transitEncryptionEnabled;
 
   CacheCluster({
@@ -5022,12 +5596,19 @@ class CacheCluster {
 }
 
 /// Represents the output of a <code>DescribeCacheClusters</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheClusterMessage {
   /// A list of clusters. Each item in the list contains detailed information
   /// about one cluster.
+  @_s.JsonKey(name: 'CacheClusters')
   final List<CacheCluster> cacheClusters;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   CacheClusterMessage({
@@ -5047,11 +5628,18 @@ class CacheClusterMessage {
 }
 
 /// Provides all of the details about a particular cache engine version.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheEngineVersion {
   /// The description of the cache engine.
+  @_s.JsonKey(name: 'CacheEngineDescription')
   final String cacheEngineDescription;
 
   /// The description of the cache engine version.
+  @_s.JsonKey(name: 'CacheEngineVersionDescription')
   final String cacheEngineVersionDescription;
 
   /// The name of the cache parameter group family associated with this cache
@@ -5060,12 +5648,15 @@ class CacheEngineVersion {
   /// Valid values are: <code>memcached1.4</code> | <code>memcached1.5</code> |
   /// <code>redis2.6</code> | <code>redis2.8</code> | <code>redis3.2</code> |
   /// <code>redis4.0</code> | <code>redis5.0</code> |
+  @_s.JsonKey(name: 'CacheParameterGroupFamily')
   final String cacheParameterGroupFamily;
 
   /// The name of the cache engine.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The version number of the cache engine.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   CacheEngineVersion({
@@ -5090,12 +5681,19 @@ class CacheEngineVersion {
 }
 
 /// Represents the output of a <a>DescribeCacheEngineVersions</a> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheEngineVersionMessage {
   /// A list of cache engine version details. Each element in the list contains
   /// detailed information about one cache engine version.
+  @_s.JsonKey(name: 'CacheEngineVersions')
   final List<CacheEngineVersion> cacheEngineVersions;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   CacheEngineVersionMessage({
@@ -5139,6 +5737,9 @@ class CacheEngineVersionMessage {
 /// <b>M4 node types:</b> <code>cache.m4.large</code>,
 /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
 /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+///
+/// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+/// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
 ///
 /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
 /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -5214,29 +5815,44 @@ class CacheEngineVersionMessage {
 /// later.
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheNode {
   /// The date and time when the cache node was created.
+  @_s.JsonKey(
+      name: 'CacheNodeCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime cacheNodeCreateTime;
 
   /// The cache node identifier. A node ID is a numeric identifier (0001, 0002,
   /// etc.). The combination of cluster ID and node ID uniquely identifies every
   /// cache node used in a customer's AWS account.
+  @_s.JsonKey(name: 'CacheNodeId')
   final String cacheNodeId;
 
-  /// The current state of this cache node.
+  /// The current state of this cache node, one of the following values:
+  /// <code>available</code>, <code>creating</code>, <code>rebooting</code>, or
+  /// <code>deleting</code>.
+  @_s.JsonKey(name: 'CacheNodeStatus')
   final String cacheNodeStatus;
 
   /// The Availability Zone where this node was created and now resides.
+  @_s.JsonKey(name: 'CustomerAvailabilityZone')
   final String customerAvailabilityZone;
 
   /// The hostname for connecting to this cache node.
+  @_s.JsonKey(name: 'Endpoint')
   final Endpoint endpoint;
 
   /// The status of the parameter group applied to this cache node.
+  @_s.JsonKey(name: 'ParameterGroupStatus')
   final String parameterGroupStatus;
 
   /// The ID of the primary node to which this read replica node is synchronized.
   /// If this field is empty, this node is not associated with a primary cluster.
+  @_s.JsonKey(name: 'SourceCacheNodeId')
   final String sourceCacheNodeId;
 
   CacheNode({
@@ -5269,12 +5885,19 @@ class CacheNode {
 /// applied to. For example, in a Redis cluster, a <code>cache.m1.large</code>
 /// cache node type would have a larger <code>maxmemory</code> value than a
 /// <code>cache.m1.small</code> type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheNodeTypeSpecificParameter {
   /// The valid range of values for the parameter.
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
 
   /// A list of cache node types and their corresponding values for this
   /// parameter.
+  @_s.JsonKey(name: 'CacheNodeTypeSpecificValues')
   final List<CacheNodeTypeSpecificValue> cacheNodeTypeSpecificValues;
 
   /// Indicates whether a change to the parameter is applied immediately or
@@ -5283,26 +5906,33 @@ class CacheNodeTypeSpecificParameter {
   /// <a
   /// href="https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Clusters.Rebooting.html">Rebooting
   /// a Cluster</a>.
+  @_s.JsonKey(name: 'ChangeType')
   final ChangeType changeType;
 
   /// The valid data type for the parameter.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// A description of the parameter.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Indicates whether (<code>true</code>) or not (<code>false</code>) the
   /// parameter can be modified. Some parameters have security or operational
   /// implications that prevent them from being changed.
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
 
   /// The earliest cache engine version to which the parameter can apply.
+  @_s.JsonKey(name: 'MinimumEngineVersion')
   final String minimumEngineVersion;
 
   /// The name of the parameter.
+  @_s.JsonKey(name: 'ParameterName')
   final String parameterName;
 
   /// The source of the parameter value.
+  @_s.JsonKey(name: 'Source')
   final String source;
 
   CacheNodeTypeSpecificParameter({
@@ -5338,11 +5968,18 @@ class CacheNodeTypeSpecificParameter {
 }
 
 /// A value that applies only to a certain cache node type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheNodeTypeSpecificValue {
   /// The cache node type for which this value applies.
+  @_s.JsonKey(name: 'CacheNodeType')
   final String cacheNodeType;
 
   /// The value for the cache node type.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   CacheNodeTypeSpecificValue({
@@ -5358,30 +5995,52 @@ class CacheNodeTypeSpecificValue {
 }
 
 /// The status of the service update on the cache node
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheNodeUpdateStatus {
   /// The node ID of the cache cluster
+  @_s.JsonKey(name: 'CacheNodeId')
   final String cacheNodeId;
 
   /// The deletion date of the node
+  @_s.JsonKey(
+      name: 'NodeDeletionDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime nodeDeletionDate;
 
   /// The end date of the update for a node
+  @_s.JsonKey(
+      name: 'NodeUpdateEndDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime nodeUpdateEndDate;
 
   /// Reflects whether the update was initiated by the customer or automatically
   /// applied
+  @_s.JsonKey(name: 'NodeUpdateInitiatedBy')
   final NodeUpdateInitiatedBy nodeUpdateInitiatedBy;
 
   /// The date when the update is triggered
+  @_s.JsonKey(
+      name: 'NodeUpdateInitiatedDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime nodeUpdateInitiatedDate;
 
   /// The start date of the update for a node
+  @_s.JsonKey(
+      name: 'NodeUpdateStartDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime nodeUpdateStartDate;
 
   /// The update status of the node
+  @_s.JsonKey(name: 'NodeUpdateStatus')
   final NodeUpdateStatus nodeUpdateStatus;
 
   /// The date when the NodeUpdateStatus was last modified&gt;
+  @_s.JsonKey(
+      name: 'NodeUpdateStatusModifiedDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime nodeUpdateStatusModifiedDate;
 
   CacheNodeUpdateStatus({
@@ -5416,6 +6075,11 @@ class CacheNodeUpdateStatus {
 }
 
 /// Represents the output of a <code>CreateCacheParameterGroup</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheParameterGroup {
   /// The name of the cache parameter group family that this cache parameter group
   /// is compatible with.
@@ -5423,18 +6087,26 @@ class CacheParameterGroup {
   /// Valid values are: <code>memcached1.4</code> | <code>memcached1.5</code> |
   /// <code>redis2.6</code> | <code>redis2.8</code> | <code>redis3.2</code> |
   /// <code>redis4.0</code> | <code>redis5.0</code> |
+  @_s.JsonKey(name: 'CacheParameterGroupFamily')
   final String cacheParameterGroupFamily;
 
   /// The name of the cache parameter group.
+  @_s.JsonKey(name: 'CacheParameterGroupName')
   final String cacheParameterGroupName;
 
   /// The description for this cache parameter group.
+  @_s.JsonKey(name: 'Description')
   final String description;
+
+  /// Indicates whether the parameter group is associated with a Global Datastore
+  @_s.JsonKey(name: 'IsGlobal')
+  final bool isGlobal;
 
   CacheParameterGroup({
     this.cacheParameterGroupFamily,
     this.cacheParameterGroupName,
     this.description,
+    this.isGlobal,
   });
   factory CacheParameterGroup.fromXml(_s.XmlElement elem) {
     return CacheParameterGroup(
@@ -5443,20 +6115,29 @@ class CacheParameterGroup {
       cacheParameterGroupName:
           _s.extractXmlStringValue(elem, 'CacheParameterGroupName'),
       description: _s.extractXmlStringValue(elem, 'Description'),
+      isGlobal: _s.extractXmlBoolValue(elem, 'IsGlobal'),
     );
   }
 }
 
 /// Represents the output of a <code>DescribeCacheParameters</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheParameterGroupDetails {
   /// A list of parameters specific to a particular cache node type. Each element
   /// in the list contains detailed information about one parameter.
+  @_s.JsonKey(name: 'CacheNodeTypeSpecificParameters')
   final List<CacheNodeTypeSpecificParameter> cacheNodeTypeSpecificParameters;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of <a>Parameter</a> instances.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   CacheParameterGroupDetails({
@@ -5491,8 +6172,14 @@ class CacheParameterGroupDetails {
 /// <code>ResetCacheParameterGroup</code>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheParameterGroupNameMessage {
   /// The name of the cache parameter group.
+  @_s.JsonKey(name: 'CacheParameterGroupName')
   final String cacheParameterGroupName;
 
   CacheParameterGroupNameMessage({
@@ -5507,15 +6194,23 @@ class CacheParameterGroupNameMessage {
 }
 
 /// Status of the cache parameter group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheParameterGroupStatus {
   /// A list of the cache node IDs which need to be rebooted for parameter changes
   /// to be applied. A node ID is a numeric identifier (0001, 0002, etc.).
+  @_s.JsonKey(name: 'CacheNodeIdsToReboot')
   final List<String> cacheNodeIdsToReboot;
 
   /// The name of the cache parameter group.
+  @_s.JsonKey(name: 'CacheParameterGroupName')
   final String cacheParameterGroupName;
 
   /// The status of parameter updates.
+  @_s.JsonKey(name: 'ParameterApplyStatus')
   final String parameterApplyStatus;
 
   CacheParameterGroupStatus({
@@ -5538,12 +6233,19 @@ class CacheParameterGroupStatus {
 
 /// Represents the output of a <code>DescribeCacheParameterGroups</code>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheParameterGroupsMessage {
   /// A list of cache parameter groups. Each element in the list contains detailed
   /// information about one cache parameter group.
+  @_s.JsonKey(name: 'CacheParameterGroups')
   final List<CacheParameterGroup> cacheParameterGroups;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   CacheParameterGroupsMessage({
@@ -5576,18 +6278,27 @@ class CacheParameterGroupsMessage {
 /// <code>RevokeCacheSecurityGroupIngress</code>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheSecurityGroup {
   /// The name of the cache security group.
+  @_s.JsonKey(name: 'CacheSecurityGroupName')
   final String cacheSecurityGroupName;
 
   /// The description of the cache security group.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// A list of Amazon EC2 security groups that are associated with this cache
   /// security group.
+  @_s.JsonKey(name: 'EC2SecurityGroups')
   final List<EC2SecurityGroup> eC2SecurityGroups;
 
   /// The AWS account ID of the cache security group owner.
+  @_s.JsonKey(name: 'OwnerId')
   final String ownerId;
 
   CacheSecurityGroup({
@@ -5612,13 +6323,20 @@ class CacheSecurityGroup {
 }
 
 /// Represents a cluster's status within a particular cache security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheSecurityGroupMembership {
   /// The name of the cache security group.
+  @_s.JsonKey(name: 'CacheSecurityGroupName')
   final String cacheSecurityGroupName;
 
   /// The membership status in the cache security group. The status changes when a
   /// cache security group is modified, or when the cache security groups assigned
   /// to a cluster are modified.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   CacheSecurityGroupMembership({
@@ -5636,12 +6354,19 @@ class CacheSecurityGroupMembership {
 
 /// Represents the output of a <code>DescribeCacheSecurityGroups</code>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheSecurityGroupMessage {
   /// A list of cache security groups. Each element in the list contains detailed
   /// information about one group.
+  @_s.JsonKey(name: 'CacheSecurityGroups')
   final List<CacheSecurityGroup> cacheSecurityGroups;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   CacheSecurityGroupMessage({
@@ -5670,18 +6395,27 @@ class CacheSecurityGroupMessage {
 /// <code>ModifyCacheSubnetGroup</code>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheSubnetGroup {
   /// The description of the cache subnet group.
+  @_s.JsonKey(name: 'CacheSubnetGroupDescription')
   final String cacheSubnetGroupDescription;
 
   /// The name of the cache subnet group.
+  @_s.JsonKey(name: 'CacheSubnetGroupName')
   final String cacheSubnetGroupName;
 
   /// A list of subnets associated with the cache subnet group.
+  @_s.JsonKey(name: 'Subnets')
   final List<Subnet> subnets;
 
   /// The Amazon Virtual Private Cloud identifier (VPC ID) of the cache subnet
   /// group.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   CacheSubnetGroup({
@@ -5704,12 +6438,19 @@ class CacheSubnetGroup {
 }
 
 /// Represents the output of a <code>DescribeCacheSubnetGroups</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CacheSubnetGroupMessage {
   /// A list of cache subnet groups. Each element in the list contains detailed
   /// information about one group.
+  @_s.JsonKey(name: 'CacheSubnetGroups')
   final List<CacheSubnetGroup> cacheSubnetGroups;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   CacheSubnetGroupMessage({
@@ -5729,7 +6470,9 @@ class CacheSubnetGroupMessage {
 }
 
 enum ChangeType {
+  @_s.JsonValue('immediate')
   immediate,
+  @_s.JsonValue('requires-reboot')
   requiresReboot,
 }
 
@@ -5745,7 +6488,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CompleteMigrationResponse {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   CompleteMigrationResponse({
@@ -5763,6 +6512,11 @@ class CompleteMigrationResponse {
 /// Node group (shard) configuration options when adding or removing replicas.
 /// Each node group (shard) configuration has the following members:
 /// NodeGroupId, NewReplicaCount, and PreferredAvailabilityZones.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ConfigureShard {
   /// The number of replicas you want in this node group at the end of this
   /// operation. The maximum value for <code>NewReplicaCount</code> is 5. The
@@ -5788,6 +6542,7 @@ class ConfigureShard {
   /// a replica if your primary node fails)
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'NewReplicaCount')
   final int newReplicaCount;
 
   /// The 4-digit id for the node group you are configuring. For Redis (cluster
@@ -5795,6 +6550,7 @@ class ConfigureShard {
   /// a Redis (cluster mode enabled)'s node group's (shard's) id, see <a
   /// href="https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/shard-find-id.html">Finding
   /// a Shard's Id</a>.
+  @_s.JsonKey(name: 'NodeGroupId')
   final String nodeGroupId;
 
   /// A list of <code>PreferredAvailabilityZone</code> strings that specify which
@@ -5803,6 +6559,7 @@ class ConfigureShard {
   /// <code>NewReplicaCount</code> plus 1 to account for the primary node. If this
   /// member of <code>ReplicaConfiguration</code> is omitted, ElastiCache for
   /// Redis selects the availability zone for each of the replicas.
+  @_s.JsonKey(name: 'PreferredAvailabilityZones')
   final List<String> preferredAvailabilityZones;
 
   ConfigureShard({
@@ -5810,9 +6567,16 @@ class ConfigureShard {
     @_s.required this.nodeGroupId,
     this.preferredAvailabilityZones,
   });
+  Map<String, dynamic> toJson() => _$ConfigureShardToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopySnapshotResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   CopySnapshotResult({
@@ -5826,7 +6590,13 @@ class CopySnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateCacheClusterResult {
+  @_s.JsonKey(name: 'CacheCluster')
   final CacheCluster cacheCluster;
 
   CreateCacheClusterResult({
@@ -5841,7 +6611,13 @@ class CreateCacheClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateCacheParameterGroupResult {
+  @_s.JsonKey(name: 'CacheParameterGroup')
   final CacheParameterGroup cacheParameterGroup;
 
   CreateCacheParameterGroupResult({
@@ -5856,7 +6632,13 @@ class CreateCacheParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateCacheSecurityGroupResult {
+  @_s.JsonKey(name: 'CacheSecurityGroup')
   final CacheSecurityGroup cacheSecurityGroup;
 
   CreateCacheSecurityGroupResult({
@@ -5871,7 +6653,13 @@ class CreateCacheSecurityGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateCacheSubnetGroupResult {
+  @_s.JsonKey(name: 'CacheSubnetGroup')
   final CacheSubnetGroup cacheSubnetGroup;
 
   CreateCacheSubnetGroupResult({
@@ -5886,7 +6674,34 @@ class CreateCacheSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class CreateGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  CreateGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory CreateGlobalReplicationGroupResult.fromXml(_s.XmlElement elem) {
+    return CreateGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateReplicationGroupResult {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   CreateReplicationGroupResult({
@@ -5901,7 +6716,13 @@ class CreateReplicationGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateSnapshotResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   CreateSnapshotResult({
@@ -5916,20 +6737,56 @@ class CreateSnapshotResult {
 }
 
 /// The endpoint from which data should be migrated.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class CustomerNodeEndpoint {
   /// The address of the node endpoint
+  @_s.JsonKey(name: 'Address')
   final String address;
 
   /// The port of the node endpoint
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   CustomerNodeEndpoint({
     this.address,
     this.port,
   });
+  Map<String, dynamic> toJson() => _$CustomerNodeEndpointToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class DecreaseNodeGroupsInGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  DecreaseNodeGroupsInGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory DecreaseNodeGroupsInGlobalReplicationGroupResult.fromXml(
+      _s.XmlElement elem) {
+    return DecreaseNodeGroupsInGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DecreaseReplicaCountResult {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   DecreaseReplicaCountResult({
@@ -5944,7 +6801,13 @@ class DecreaseReplicaCountResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteCacheClusterResult {
+  @_s.JsonKey(name: 'CacheCluster')
   final CacheCluster cacheCluster;
 
   DeleteCacheClusterResult({
@@ -5959,7 +6822,34 @@ class DeleteCacheClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class DeleteGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  DeleteGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory DeleteGlobalReplicationGroupResult.fromXml(_s.XmlElement elem) {
+    return DeleteGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteReplicationGroupResult {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   DeleteReplicationGroupResult({
@@ -5974,7 +6864,13 @@ class DeleteReplicationGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteSnapshotResult {
+  @_s.JsonKey(name: 'Snapshot')
   final Snapshot snapshot;
 
   DeleteSnapshotResult({
@@ -5988,7 +6884,13 @@ class DeleteSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEngineDefaultParametersResult {
+  @_s.JsonKey(name: 'EngineDefaults')
   final EngineDefaults engineDefaults;
 
   DescribeEngineDefaultParametersResult({
@@ -6003,16 +6905,57 @@ class DescribeEngineDefaultParametersResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class DescribeGlobalReplicationGroupsResult {
+  /// Indicates the slot configuration and global identifier for each slice group.
+  @_s.JsonKey(name: 'GlobalReplicationGroups')
+  final List<GlobalReplicationGroup> globalReplicationGroups;
+
+  /// An optional marker returned from a prior request. Use this marker for
+  /// pagination of results from this operation. If this parameter is specified,
+  /// the response includes only records beyond the marker, up to the value
+  /// specified by MaxRecords. &gt;
+  @_s.JsonKey(name: 'Marker')
+  final String marker;
+
+  DescribeGlobalReplicationGroupsResult({
+    this.globalReplicationGroups,
+    this.marker,
+  });
+  factory DescribeGlobalReplicationGroupsResult.fromXml(_s.XmlElement elem) {
+    return DescribeGlobalReplicationGroupsResult(
+      globalReplicationGroups: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroups')
+          ?.let((elem) => elem
+              .findElements('GlobalReplicationGroup')
+              .map((c) => GlobalReplicationGroup.fromXml(c))
+              .toList()),
+      marker: _s.extractXmlStringValue(elem, 'Marker'),
+    );
+  }
+}
+
 /// Represents the output of a <code>DescribeSnapshots</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeSnapshotsListMessage {
   /// An optional marker returned from a prior request. Use this marker for
   /// pagination of results from this operation. If this parameter is specified,
   /// the response includes only records beyond the marker, up to the value
   /// specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of snapshots. Each item in the list contains detailed information
   /// about one snapshot.
+  @_s.JsonKey(name: 'Snapshots')
   final List<Snapshot> snapshots;
 
   DescribeSnapshotsListMessage({
@@ -6030,15 +6973,44 @@ class DescribeSnapshotsListMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class DisassociateGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  DisassociateGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory DisassociateGlobalReplicationGroupResult.fromXml(_s.XmlElement elem) {
+    return DisassociateGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
 /// Provides ownership and status information for an Amazon EC2 security group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EC2SecurityGroup {
   /// The name of the Amazon EC2 security group.
+  @_s.JsonKey(name: 'EC2SecurityGroupName')
   final String eC2SecurityGroupName;
 
   /// The AWS account ID of the Amazon EC2 security group owner.
+  @_s.JsonKey(name: 'EC2SecurityGroupOwnerId')
   final String eC2SecurityGroupOwnerId;
 
   /// The status of the Amazon EC2 security group.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   EC2SecurityGroup({
@@ -6059,11 +7031,18 @@ class EC2SecurityGroup {
 
 /// Represents the information required for client programs to connect to a
 /// cache node.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Endpoint {
   /// The DNS hostname of the cache node.
+  @_s.JsonKey(name: 'Address')
   final String address;
 
   /// The port number that the cache engine is listening on.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   Endpoint({
@@ -6080,9 +7059,15 @@ class Endpoint {
 
 /// Represents the output of a <code>DescribeEngineDefaultParameters</code>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EngineDefaults {
   /// A list of parameters specific to a particular cache node type. Each element
   /// in the list contains detailed information about one parameter.
+  @_s.JsonKey(name: 'CacheNodeTypeSpecificParameters')
   final List<CacheNodeTypeSpecificParameter> cacheNodeTypeSpecificParameters;
 
   /// Specifies the name of the cache parameter group family to which the engine
@@ -6091,12 +7076,15 @@ class EngineDefaults {
   /// Valid values are: <code>memcached1.4</code> | <code>memcached1.5</code> |
   /// <code>redis2.6</code> | <code>redis2.8</code> | <code>redis3.2</code> |
   /// <code>redis4.0</code> | <code>redis5.0</code> |
+  @_s.JsonKey(name: 'CacheParameterGroupFamily')
   final String cacheParameterGroupFamily;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// Contains a list of engine default parameters.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   EngineDefaults({
@@ -6127,20 +7115,29 @@ class EngineDefaults {
 /// Represents a single occurrence of something interesting within the system.
 /// Some examples of events are creating a cluster, adding or removing a cache
 /// node, or rebooting a node.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Event {
   /// The date and time when the event occurred.
+  @_s.JsonKey(name: 'Date', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime date;
 
   /// The text of the event.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// The identifier for the source of the event. For example, if the event
   /// occurred at the cluster level, the identifier would be the name of the
   /// cluster.
+  @_s.JsonKey(name: 'SourceIdentifier')
   final String sourceIdentifier;
 
   /// Specifies the origin of this event - a cluster, a parameter group, a
   /// security group, etc.
+  @_s.JsonKey(name: 'SourceType')
   final SourceType sourceType;
 
   Event({
@@ -6160,12 +7157,19 @@ class Event {
 }
 
 /// Represents the output of a <code>DescribeEvents</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventsMessage {
   /// A list of events. Each element in the list contains detailed information
   /// about one event.
+  @_s.JsonKey(name: 'Events')
   final List<Event> events;
 
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   EventsMessage({
@@ -6181,7 +7185,287 @@ class EventsMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class FailoverGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  FailoverGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory FailoverGlobalReplicationGroupResult.fromXml(_s.XmlElement elem) {
+    return FailoverGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
+/// Indicates the slot configuration and global identifier for a slice group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class GlobalNodeGroup {
+  /// The name of the global node group
+  @_s.JsonKey(name: 'GlobalNodeGroupId')
+  final String globalNodeGroupId;
+
+  /// The keyspace for this node group
+  @_s.JsonKey(name: 'Slots')
+  final String slots;
+
+  GlobalNodeGroup({
+    this.globalNodeGroupId,
+    this.slots,
+  });
+  factory GlobalNodeGroup.fromXml(_s.XmlElement elem) {
+    return GlobalNodeGroup(
+      globalNodeGroupId: _s.extractXmlStringValue(elem, 'GlobalNodeGroupId'),
+      slots: _s.extractXmlStringValue(elem, 'Slots'),
+    );
+  }
+}
+
+/// Consists of a primary cluster that accepts writes and an associated
+/// secondary cluster that resides in a different AWS region. The secondary
+/// cluster accepts only reads. The primary cluster automatically replicates
+/// updates to the secondary cluster.
+///
+/// <ul>
+/// <li>
+/// The <b>GlobalReplicationGroupId</b> represents the name of the Global
+/// Datastore, which is what you use to associate a secondary cluster.
+/// </li>
+/// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class GlobalReplicationGroup {
+  /// A flag that enables encryption at rest when set to <code>true</code>.
+  ///
+  /// You cannot modify the value of <code>AtRestEncryptionEnabled</code> after
+  /// the replication group is created. To enable encryption at rest on a
+  /// replication group you must set <code>AtRestEncryptionEnabled</code> to
+  /// <code>true</code> when you create the replication group.
+  ///
+  /// <b>Required:</b> Only available when creating a replication group in an
+  /// Amazon VPC using redis version <code>3.2.6</code>, <code>4.x</code> or
+  /// later.
+  @_s.JsonKey(name: 'AtRestEncryptionEnabled')
+  final bool atRestEncryptionEnabled;
+
+  /// A flag that enables using an <code>AuthToken</code> (password) when issuing
+  /// Redis commands.
+  ///
+  /// Default: <code>false</code>
+  @_s.JsonKey(name: 'AuthTokenEnabled')
+  final bool authTokenEnabled;
+
+  /// The cache node type of the Global Datastore
+  @_s.JsonKey(name: 'CacheNodeType')
+  final String cacheNodeType;
+
+  /// A flag that indicates whether the Global Datastore is cluster enabled.
+  @_s.JsonKey(name: 'ClusterEnabled')
+  final bool clusterEnabled;
+
+  /// The Elasticache engine. For preview, it is Redis only.
+  @_s.JsonKey(name: 'Engine')
+  final String engine;
+
+  /// The Elasticache Redis engine version. For preview, it is Redis version 5.0.5
+  /// only.
+  @_s.JsonKey(name: 'EngineVersion')
+  final String engineVersion;
+
+  /// Indicates the slot configuration and global identifier for each slice group.
+  @_s.JsonKey(name: 'GlobalNodeGroups')
+  final List<GlobalNodeGroup> globalNodeGroups;
+
+  /// The optional description of the Global Datastore
+  @_s.JsonKey(name: 'GlobalReplicationGroupDescription')
+  final String globalReplicationGroupDescription;
+
+  /// The name of the Global Datastore
+  @_s.JsonKey(name: 'GlobalReplicationGroupId')
+  final String globalReplicationGroupId;
+
+  /// The replication groups that comprise the Global Datastore.
+  @_s.JsonKey(name: 'Members')
+  final List<GlobalReplicationGroupMember> members;
+
+  /// The status of the Global Datastore
+  @_s.JsonKey(name: 'Status')
+  final String status;
+
+  /// A flag that enables in-transit encryption when set to true. You cannot
+  /// modify the value of <code>TransitEncryptionEnabled</code> after the cluster
+  /// is created. To enable in-transit encryption on a cluster you must set
+  /// <code>TransitEncryptionEnabled</code> to true when you create a cluster.
+  @_s.JsonKey(name: 'TransitEncryptionEnabled')
+  final bool transitEncryptionEnabled;
+
+  GlobalReplicationGroup({
+    this.atRestEncryptionEnabled,
+    this.authTokenEnabled,
+    this.cacheNodeType,
+    this.clusterEnabled,
+    this.engine,
+    this.engineVersion,
+    this.globalNodeGroups,
+    this.globalReplicationGroupDescription,
+    this.globalReplicationGroupId,
+    this.members,
+    this.status,
+    this.transitEncryptionEnabled,
+  });
+  factory GlobalReplicationGroup.fromXml(_s.XmlElement elem) {
+    return GlobalReplicationGroup(
+      atRestEncryptionEnabled:
+          _s.extractXmlBoolValue(elem, 'AtRestEncryptionEnabled'),
+      authTokenEnabled: _s.extractXmlBoolValue(elem, 'AuthTokenEnabled'),
+      cacheNodeType: _s.extractXmlStringValue(elem, 'CacheNodeType'),
+      clusterEnabled: _s.extractXmlBoolValue(elem, 'ClusterEnabled'),
+      engine: _s.extractXmlStringValue(elem, 'Engine'),
+      engineVersion: _s.extractXmlStringValue(elem, 'EngineVersion'),
+      globalNodeGroups: _s.extractXmlChild(elem, 'GlobalNodeGroups')?.let(
+          (elem) => elem
+              .findElements('GlobalNodeGroup')
+              .map((c) => GlobalNodeGroup.fromXml(c))
+              .toList()),
+      globalReplicationGroupDescription:
+          _s.extractXmlStringValue(elem, 'GlobalReplicationGroupDescription'),
+      globalReplicationGroupId:
+          _s.extractXmlStringValue(elem, 'GlobalReplicationGroupId'),
+      members: _s.extractXmlChild(elem, 'Members')?.let((elem) => elem
+          .findElements('GlobalReplicationGroupMember')
+          .map((c) => GlobalReplicationGroupMember.fromXml(c))
+          .toList()),
+      status: _s.extractXmlStringValue(elem, 'Status'),
+      transitEncryptionEnabled:
+          _s.extractXmlBoolValue(elem, 'TransitEncryptionEnabled'),
+    );
+  }
+}
+
+/// The name of the Global Datastore and role of this replication group in the
+/// Global Datastore.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class GlobalReplicationGroupInfo {
+  /// The name of the Global Datastore
+  @_s.JsonKey(name: 'GlobalReplicationGroupId')
+  final String globalReplicationGroupId;
+
+  /// The role of the replication group in a Global Datastore. Can be primary or
+  /// secondary.
+  @_s.JsonKey(name: 'GlobalReplicationGroupMemberRole')
+  final String globalReplicationGroupMemberRole;
+
+  GlobalReplicationGroupInfo({
+    this.globalReplicationGroupId,
+    this.globalReplicationGroupMemberRole,
+  });
+  factory GlobalReplicationGroupInfo.fromXml(_s.XmlElement elem) {
+    return GlobalReplicationGroupInfo(
+      globalReplicationGroupId:
+          _s.extractXmlStringValue(elem, 'GlobalReplicationGroupId'),
+      globalReplicationGroupMemberRole:
+          _s.extractXmlStringValue(elem, 'GlobalReplicationGroupMemberRole'),
+    );
+  }
+}
+
+/// A member of a Global Datastore. It contains the Replication Group Id, the
+/// AWS region and the role of the replication group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class GlobalReplicationGroupMember {
+  /// Indicates whether automatic failover is enabled for the replication group.
+  @_s.JsonKey(name: 'AutomaticFailover')
+  final AutomaticFailoverStatus automaticFailover;
+
+  /// The replication group id of the Global Datastore member.
+  @_s.JsonKey(name: 'ReplicationGroupId')
+  final String replicationGroupId;
+
+  /// The AWS region of the Global Datastore member.
+  @_s.JsonKey(name: 'ReplicationGroupRegion')
+  final String replicationGroupRegion;
+
+  /// Indicates the role of the replication group, primary or secondary.
+  @_s.JsonKey(name: 'Role')
+  final String role;
+
+  /// The status of the membership of the replication group.
+  @_s.JsonKey(name: 'Status')
+  final String status;
+
+  GlobalReplicationGroupMember({
+    this.automaticFailover,
+    this.replicationGroupId,
+    this.replicationGroupRegion,
+    this.role,
+    this.status,
+  });
+  factory GlobalReplicationGroupMember.fromXml(_s.XmlElement elem) {
+    return GlobalReplicationGroupMember(
+      automaticFailover: _s
+          .extractXmlStringValue(elem, 'AutomaticFailover')
+          ?.toAutomaticFailoverStatus(),
+      replicationGroupId: _s.extractXmlStringValue(elem, 'ReplicationGroupId'),
+      replicationGroupRegion:
+          _s.extractXmlStringValue(elem, 'ReplicationGroupRegion'),
+      role: _s.extractXmlStringValue(elem, 'Role'),
+      status: _s.extractXmlStringValue(elem, 'Status'),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class IncreaseNodeGroupsInGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  IncreaseNodeGroupsInGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory IncreaseNodeGroupsInGlobalReplicationGroupResult.fromXml(
+      _s.XmlElement elem) {
+    return IncreaseNodeGroupsInGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IncreaseReplicaCountResult {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   IncreaseReplicaCountResult({
@@ -6196,7 +7480,13 @@ class IncreaseReplicaCountResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyCacheClusterResult {
+  @_s.JsonKey(name: 'CacheCluster')
   final CacheCluster cacheCluster;
 
   ModifyCacheClusterResult({
@@ -6211,7 +7501,13 @@ class ModifyCacheClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyCacheSubnetGroupResult {
+  @_s.JsonKey(name: 'CacheSubnetGroup')
   final CacheSubnetGroup cacheSubnetGroup;
 
   ModifyCacheSubnetGroupResult({
@@ -6226,7 +7522,34 @@ class ModifyCacheSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class ModifyGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  ModifyGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory ModifyGlobalReplicationGroupResult.fromXml(_s.XmlElement elem) {
+    return ModifyGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyReplicationGroupResult {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   ModifyReplicationGroupResult({
@@ -6241,7 +7564,13 @@ class ModifyReplicationGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyReplicationGroupShardConfigurationResult {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   ModifyReplicationGroupShardConfigurationResult({
@@ -6260,29 +7589,40 @@ class ModifyReplicationGroupShardConfigurationResult {
 /// Represents a collection of cache nodes in a replication group. One node in
 /// the node group is the read/write primary node. All the other nodes are
 /// read-only Replica nodes.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NodeGroup {
   /// The identifier for the node group (shard). A Redis (cluster mode disabled)
   /// replication group contains only 1 node group; therefore, the node group ID
   /// is 0001. A Redis (cluster mode enabled) replication group contains 1 to 90
   /// node groups numbered 0001 to 0090. Optionally, the user can provide the id
   /// for a node group.
+  @_s.JsonKey(name: 'NodeGroupId')
   final String nodeGroupId;
 
   /// A list containing information about individual nodes within the node group
   /// (shard).
+  @_s.JsonKey(name: 'NodeGroupMembers')
   final List<NodeGroupMember> nodeGroupMembers;
 
   /// The endpoint of the primary node in this node group (shard).
+  @_s.JsonKey(name: 'PrimaryEndpoint')
   final Endpoint primaryEndpoint;
 
   /// The endpoint of the replica nodes in this node group (shard).
+  @_s.JsonKey(name: 'ReaderEndpoint')
   final Endpoint readerEndpoint;
 
   /// The keyspace for this node group (shard).
+  @_s.JsonKey(name: 'Slots')
   final String slots;
 
   /// The current state of this replication group - <code>creating</code>,
   /// <code>available</code>, etc.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   NodeGroup({
@@ -6317,22 +7657,31 @@ class NodeGroup {
 /// configuration has the following: <code>Slots</code>,
 /// <code>PrimaryAvailabilityZone</code>, <code>ReplicaAvailabilityZones</code>,
 /// <code>ReplicaCount</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class NodeGroupConfiguration {
   /// Either the ElastiCache for Redis supplied 4-digit id or a user supplied id
   /// for the node group these configuration values apply to.
+  @_s.JsonKey(name: 'NodeGroupId')
   final String nodeGroupId;
 
   /// The Availability Zone where the primary node of this node group (shard) is
   /// launched.
+  @_s.JsonKey(name: 'PrimaryAvailabilityZone')
   final String primaryAvailabilityZone;
 
   /// A list of Availability Zones to be used for the read replicas. The number of
   /// Availability Zones in this list must match the value of
   /// <code>ReplicaCount</code> or <code>ReplicasPerNodeGroup</code> if not
   /// specified.
+  @_s.JsonKey(name: 'ReplicaAvailabilityZones')
   final List<String> replicaAvailabilityZones;
 
   /// The number of read replica nodes in this node group (shard).
+  @_s.JsonKey(name: 'ReplicaCount')
   final int replicaCount;
 
   /// A string that specifies the keyspace for a particular node group. Keyspaces
@@ -6340,6 +7689,7 @@ class NodeGroupConfiguration {
   /// <code>startkey-endkey</code>.
   ///
   /// Example: <code>"0-3999"</code>
+  @_s.JsonKey(name: 'Slots')
   final String slots;
 
   NodeGroupConfiguration({
@@ -6362,28 +7712,40 @@ class NodeGroupConfiguration {
       slots: _s.extractXmlStringValue(elem, 'Slots'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$NodeGroupConfigurationToJson(this);
 }
 
 /// Represents a single node within a node group (shard).
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NodeGroupMember {
   /// The ID of the cluster to which the node belongs.
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The ID of the node within its cluster. A node ID is a numeric identifier
   /// (0001, 0002, etc.).
+  @_s.JsonKey(name: 'CacheNodeId')
   final String cacheNodeId;
 
   /// The role that is currently assigned to the node - <code>primary</code> or
   /// <code>replica</code>. This member is only applicable for Redis (cluster mode
   /// disabled) replication groups.
+  @_s.JsonKey(name: 'CurrentRole')
   final String currentRole;
 
   /// The name of the Availability Zone in which the node is located.
+  @_s.JsonKey(name: 'PreferredAvailabilityZone')
   final String preferredAvailabilityZone;
 
   /// The information required for client programs to connect to a node for read
   /// operations. The read endpoint is only applicable on Redis (cluster mode
   /// disabled) clusters.
+  @_s.JsonKey(name: 'ReadEndpoint')
   final Endpoint readEndpoint;
 
   NodeGroupMember({
@@ -6408,33 +7770,56 @@ class NodeGroupMember {
 }
 
 /// The status of the service update on the node group member
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NodeGroupMemberUpdateStatus {
   /// The cache cluster ID
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The node ID of the cache cluster
+  @_s.JsonKey(name: 'CacheNodeId')
   final String cacheNodeId;
 
   /// The deletion date of the node
+  @_s.JsonKey(
+      name: 'NodeDeletionDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime nodeDeletionDate;
 
   /// The end date of the update for a node
+  @_s.JsonKey(
+      name: 'NodeUpdateEndDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime nodeUpdateEndDate;
 
   /// Reflects whether the update was initiated by the customer or automatically
   /// applied
+  @_s.JsonKey(name: 'NodeUpdateInitiatedBy')
   final NodeUpdateInitiatedBy nodeUpdateInitiatedBy;
 
   /// The date when the update is triggered
+  @_s.JsonKey(
+      name: 'NodeUpdateInitiatedDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime nodeUpdateInitiatedDate;
 
   /// The start date of the update for a node
+  @_s.JsonKey(
+      name: 'NodeUpdateStartDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime nodeUpdateStartDate;
 
   /// The update status of the node
+  @_s.JsonKey(name: 'NodeUpdateStatus')
   final NodeUpdateStatus nodeUpdateStatus;
 
   /// The date when the NodeUpdateStatus was last modified
+  @_s.JsonKey(
+      name: 'NodeUpdateStatusModifiedDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime nodeUpdateStatusModifiedDate;
 
   NodeGroupMemberUpdateStatus({
@@ -6471,11 +7856,18 @@ class NodeGroupMemberUpdateStatus {
 }
 
 /// The status of the service update on the node group
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NodeGroupUpdateStatus {
   /// The ID of the node group
+  @_s.JsonKey(name: 'NodeGroupId')
   final String nodeGroupId;
 
   /// The status of the service update on the node group member
+  @_s.JsonKey(name: 'NodeGroupMemberUpdateStatus')
   final List<NodeGroupMemberUpdateStatus> nodeGroupMemberUpdateStatus;
 
   NodeGroupUpdateStatus({
@@ -6496,27 +7888,41 @@ class NodeGroupUpdateStatus {
 }
 
 /// Represents an individual cache node in a snapshot of a cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NodeSnapshot {
   /// A unique identifier for the source cluster.
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The date and time when the cache node was created in the source cluster.
+  @_s.JsonKey(
+      name: 'CacheNodeCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime cacheNodeCreateTime;
 
   /// The cache node identifier for the node in the source cluster.
+  @_s.JsonKey(name: 'CacheNodeId')
   final String cacheNodeId;
 
   /// The size of the cache on the source cache node.
+  @_s.JsonKey(name: 'CacheSize')
   final String cacheSize;
 
   /// The configuration for the source node group (shard).
+  @_s.JsonKey(name: 'NodeGroupConfiguration')
   final NodeGroupConfiguration nodeGroupConfiguration;
 
   /// A unique identifier for the source node group (shard).
+  @_s.JsonKey(name: 'NodeGroupId')
   final String nodeGroupId;
 
   /// The date and time when the source node's metadata and cache data set was
   /// obtained for the snapshot.
+  @_s.JsonKey(
+      name: 'SnapshotCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime snapshotCreateTime;
 
   NodeSnapshot({
@@ -6546,7 +7952,9 @@ class NodeSnapshot {
 }
 
 enum NodeUpdateInitiatedBy {
+  @_s.JsonValue('system')
   system,
+  @_s.JsonValue('customer')
   customer,
 }
 
@@ -6563,11 +7971,17 @@ extension on String {
 }
 
 enum NodeUpdateStatus {
+  @_s.JsonValue('not-applied')
   notApplied,
+  @_s.JsonValue('waiting-to-start')
   waitingToStart,
+  @_s.JsonValue('in-progress')
   inProgress,
+  @_s.JsonValue('stopping')
   stopping,
+  @_s.JsonValue('stopped')
   stopped,
+  @_s.JsonValue('complete')
   complete,
 }
 
@@ -6594,11 +8008,18 @@ extension on String {
 /// Describes a notification topic and its status. Notification topics are used
 /// for publishing ElastiCache events to subscribers using Amazon Simple
 /// Notification Service (SNS).
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NotificationConfiguration {
   /// The Amazon Resource Name (ARN) that identifies the topic.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   /// The current state of the topic.
+  @_s.JsonKey(name: 'TopicStatus')
   final String topicStatus;
 
   NotificationConfiguration({
@@ -6615,8 +8036,14 @@ class NotificationConfiguration {
 
 /// Describes an individual setting that controls some aspect of ElastiCache
 /// behavior.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Parameter {
   /// The valid range of values for the parameter.
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
 
   /// Indicates whether a change to the parameter is applied immediately or
@@ -6625,29 +8052,37 @@ class Parameter {
   /// <a
   /// href="https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Clusters.Rebooting.html">Rebooting
   /// a Cluster</a>.
+  @_s.JsonKey(name: 'ChangeType')
   final ChangeType changeType;
 
   /// The valid data type for the parameter.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// A description of the parameter.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Indicates whether (<code>true</code>) or not (<code>false</code>) the
   /// parameter can be modified. Some parameters have security or operational
   /// implications that prevent them from being changed.
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
 
   /// The earliest cache engine version to which the parameter can apply.
+  @_s.JsonKey(name: 'MinimumEngineVersion')
   final String minimumEngineVersion;
 
   /// The name of the parameter.
+  @_s.JsonKey(name: 'ParameterName')
   final String parameterName;
 
   /// The value of the parameter.
+  @_s.JsonKey(name: 'ParameterValue')
   final String parameterValue;
 
   /// The source of the parameter.
+  @_s.JsonKey(name: 'Source')
   final String source;
 
   Parameter({
@@ -6678,21 +8113,31 @@ class Parameter {
 }
 
 /// Describes a name-value pair that is used to update the value of a parameter.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ParameterNameValue {
   /// The name of the parameter.
+  @_s.JsonKey(name: 'ParameterName')
   final String parameterName;
 
   /// The value of the parameter.
+  @_s.JsonKey(name: 'ParameterValue')
   final String parameterValue;
 
   ParameterNameValue({
     this.parameterName,
     this.parameterValue,
   });
+  Map<String, dynamic> toJson() => _$ParameterNameValueToJson(this);
 }
 
 enum PendingAutomaticFailoverStatus {
+  @_s.JsonValue('enabled')
   enabled,
+  @_s.JsonValue('disabled')
   disabled,
 }
 
@@ -6710,24 +8155,34 @@ extension on String {
 
 /// A group of settings that are applied to the cluster in the future, or that
 /// are currently being applied.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PendingModifiedValues {
   /// The auth token status
+  @_s.JsonKey(name: 'AuthTokenStatus')
   final AuthTokenUpdateStatus authTokenStatus;
 
   /// A list of cache node IDs that are being removed (or will be removed) from
   /// the cluster. A node ID is a 4-digit numeric identifier (0001, 0002, etc.).
+  @_s.JsonKey(name: 'CacheNodeIdsToRemove')
   final List<String> cacheNodeIdsToRemove;
 
   /// The cache node type that this cluster or replication group is scaled to.
+  @_s.JsonKey(name: 'CacheNodeType')
   final String cacheNodeType;
 
   /// The new cache engine version that the cluster runs.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// The new number of cache nodes for the cluster.
   ///
   /// For clusters running Redis, this value must be 1. For clusters running
   /// Memcached, this value must be between 1 and 20.
+  @_s.JsonKey(name: 'NumCacheNodes')
   final int numCacheNodes;
 
   PendingModifiedValues({
@@ -6754,17 +8209,26 @@ class PendingModifiedValues {
 
 /// Update action that has been processed for the corresponding apply/stop
 /// request
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ProcessedUpdateAction {
   /// The ID of the cache cluster
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The ID of the replication group
+  @_s.JsonKey(name: 'ReplicationGroupId')
   final String replicationGroupId;
 
   /// The unique ID of the service update
+  @_s.JsonKey(name: 'ServiceUpdateName')
   final String serviceUpdateName;
 
   /// The status of the update action on the Redis cluster
+  @_s.JsonKey(name: 'UpdateActionStatus')
   final UpdateActionStatus updateActionStatus;
 
   ProcessedUpdateAction({
@@ -6785,7 +8249,13 @@ class ProcessedUpdateAction {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PurchaseReservedCacheNodesOfferingResult {
+  @_s.JsonKey(name: 'ReservedCacheNode')
   final ReservedCacheNode reservedCacheNode;
 
   PurchaseReservedCacheNodesOfferingResult({
@@ -6800,7 +8270,35 @@ class PurchaseReservedCacheNodesOfferingResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class RebalanceSlotsInGlobalReplicationGroupResult {
+  @_s.JsonKey(name: 'GlobalReplicationGroup')
+  final GlobalReplicationGroup globalReplicationGroup;
+
+  RebalanceSlotsInGlobalReplicationGroupResult({
+    this.globalReplicationGroup,
+  });
+  factory RebalanceSlotsInGlobalReplicationGroupResult.fromXml(
+      _s.XmlElement elem) {
+    return RebalanceSlotsInGlobalReplicationGroupResult(
+      globalReplicationGroup: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroup')
+          ?.let((e) => GlobalReplicationGroup.fromXml(e)),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RebootCacheClusterResult {
+  @_s.JsonKey(name: 'CacheCluster')
   final CacheCluster cacheCluster;
 
   RebootCacheClusterResult({
@@ -6817,11 +8315,18 @@ class RebootCacheClusterResult {
 
 /// Contains the specific price and frequency of a recurring charges for a
 /// reserved cache node, or for a reserved cache node offering.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RecurringCharge {
   /// The monetary amount of the recurring charge.
+  @_s.JsonKey(name: 'RecurringChargeAmount')
   final double recurringChargeAmount;
 
   /// The frequency of the recurring charge.
+  @_s.JsonKey(name: 'RecurringChargeFrequency')
   final String recurringChargeFrequency;
 
   RecurringCharge({
@@ -6838,7 +8343,40 @@ class RecurringCharge {
   }
 }
 
+/// A list of the replication groups
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
+class RegionalConfiguration {
+  /// The name of the secondary cluster
+  @_s.JsonKey(name: 'ReplicationGroupId')
+  final String replicationGroupId;
+
+  /// The AWS region where the cluster is stored
+  @_s.JsonKey(name: 'ReplicationGroupRegion')
+  final String replicationGroupRegion;
+
+  /// A list of <code>PreferredAvailabilityZones</code> objects that specifies the
+  /// configuration of a node group in the resharded cluster.
+  @_s.JsonKey(name: 'ReshardingConfiguration')
+  final List<ReshardingConfiguration> reshardingConfiguration;
+
+  RegionalConfiguration({
+    @_s.required this.replicationGroupId,
+    @_s.required this.replicationGroupRegion,
+    @_s.required this.reshardingConfiguration,
+  });
+  Map<String, dynamic> toJson() => _$RegionalConfigurationToJson(this);
+}
+
 /// Contains all of the attributes of a specific Redis replication group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReplicationGroup {
   /// A flag that enables encryption at-rest when set to <code>true</code>.
   ///
@@ -6852,15 +8390,21 @@ class ReplicationGroup {
   /// later.
   ///
   /// Default: <code>false</code>
+  @_s.JsonKey(name: 'AtRestEncryptionEnabled')
   final bool atRestEncryptionEnabled;
 
   /// A flag that enables using an <code>AuthToken</code> (password) when issuing
   /// Redis commands.
   ///
   /// Default: <code>false</code>
+  @_s.JsonKey(name: 'AuthTokenEnabled')
   final bool authTokenEnabled;
 
   /// The date the auth token was last modified
+  @_s.JsonKey(
+      name: 'AuthTokenLastModifiedDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime authTokenLastModifiedDate;
 
   /// Indicates the status of Multi-AZ with automatic failover for this Redis
@@ -6880,10 +8424,12 @@ class ReplicationGroup {
   /// Redis (cluster mode enabled): T1 node types.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'AutomaticFailover')
   final AutomaticFailoverStatus automaticFailover;
 
   /// The name of the compute and memory capacity node type for each node in the
   /// replication group.
+  @_s.JsonKey(name: 'CacheNodeType')
   final String cacheNodeType;
 
   /// A flag indicating whether or not this replication group is cluster enabled;
@@ -6891,32 +8437,45 @@ class ReplicationGroup {
   /// node groups).
   ///
   /// Valid values: <code>true</code> | <code>false</code>
+  @_s.JsonKey(name: 'ClusterEnabled')
   final bool clusterEnabled;
 
   /// The configuration endpoint for this replication group. Use the configuration
   /// endpoint to connect to this replication group.
+  @_s.JsonKey(name: 'ConfigurationEndpoint')
   final Endpoint configurationEndpoint;
 
   /// The user supplied description of the replication group.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
+  /// The name of the Global Datastore and role of this replication group in the
+  /// Global Datastore.
+  @_s.JsonKey(name: 'GlobalReplicationGroupInfo')
+  final GlobalReplicationGroupInfo globalReplicationGroupInfo;
+
   /// The ID of the KMS key used to encrypt the disk in the cluster.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// The names of all the cache clusters that are part of this replication group.
+  @_s.JsonKey(name: 'MemberClusters')
   final List<String> memberClusters;
 
   /// A list of node groups in this replication group. For Redis (cluster mode
   /// disabled) replication groups, this is a single-element list. For Redis
   /// (cluster mode enabled) replication groups, the list contains an entry for
   /// each node group (shard).
+  @_s.JsonKey(name: 'NodeGroups')
   final List<NodeGroup> nodeGroups;
 
   /// A group of settings to be applied to the replication group, either
   /// immediately or during the next maintenance window.
+  @_s.JsonKey(name: 'PendingModifiedValues')
   final ReplicationGroupPendingModifiedValues pendingModifiedValues;
 
   /// The identifier for the replication group.
+  @_s.JsonKey(name: 'ReplicationGroupId')
   final String replicationGroupId;
 
   /// The number of days for which ElastiCache retains automatic cluster snapshots
@@ -6927,6 +8486,7 @@ class ReplicationGroup {
   /// If the value of <code>SnapshotRetentionLimit</code> is set to zero (0),
   /// backups are turned off.
   /// </important>
+  @_s.JsonKey(name: 'SnapshotRetentionLimit')
   final int snapshotRetentionLimit;
 
   /// The daily time range (in UTC) during which ElastiCache begins taking a daily
@@ -6940,15 +8500,18 @@ class ReplicationGroup {
   /// This parameter is only valid if the <code>Engine</code> parameter is
   /// <code>redis</code>.
   /// </note>
+  @_s.JsonKey(name: 'SnapshotWindow')
   final String snapshotWindow;
 
   /// The cluster ID that is used as the daily snapshot source for the replication
   /// group.
+  @_s.JsonKey(name: 'SnapshottingClusterId')
   final String snapshottingClusterId;
 
   /// The current state of this replication group - <code>creating</code>,
   /// <code>available</code>, <code>modifying</code>, <code>deleting</code>,
   /// <code>create-failed</code>, <code>snapshotting</code>.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// A flag that enables in-transit encryption when set to <code>true</code>.
@@ -6963,6 +8526,7 @@ class ReplicationGroup {
   /// later.
   ///
   /// Default: <code>false</code>
+  @_s.JsonKey(name: 'TransitEncryptionEnabled')
   final bool transitEncryptionEnabled;
 
   ReplicationGroup({
@@ -6974,6 +8538,7 @@ class ReplicationGroup {
     this.clusterEnabled,
     this.configurationEndpoint,
     this.description,
+    this.globalReplicationGroupInfo,
     this.kmsKeyId,
     this.memberClusters,
     this.nodeGroups,
@@ -7001,6 +8566,9 @@ class ReplicationGroup {
           .extractXmlChild(elem, 'ConfigurationEndpoint')
           ?.let((e) => Endpoint.fromXml(e)),
       description: _s.extractXmlStringValue(elem, 'Description'),
+      globalReplicationGroupInfo: _s
+          .extractXmlChild(elem, 'GlobalReplicationGroupInfo')
+          ?.let((e) => GlobalReplicationGroupInfo.fromXml(e)),
       kmsKeyId: _s.extractXmlStringValue(elem, 'KmsKeyId'),
       memberClusters: _s
           .extractXmlChild(elem, 'MemberClusters')
@@ -7026,12 +8594,19 @@ class ReplicationGroup {
 }
 
 /// Represents the output of a <code>DescribeReplicationGroups</code> operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReplicationGroupMessage {
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of replication groups. Each item in the list contains detailed
   /// information about one replication group.
+  @_s.JsonKey(name: 'ReplicationGroups')
   final List<ReplicationGroup> replicationGroups;
 
   ReplicationGroupMessage({
@@ -7052,8 +8627,14 @@ class ReplicationGroupMessage {
 
 /// The settings to be applied to the Redis replication group, either
 /// immediately or during the next maintenance window.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReplicationGroupPendingModifiedValues {
   /// The auth token status
+  @_s.JsonKey(name: 'AuthTokenStatus')
   final AuthTokenUpdateStatus authTokenStatus;
 
   /// Indicates the status of Multi-AZ with automatic failover for this Redis
@@ -7073,14 +8654,17 @@ class ReplicationGroupPendingModifiedValues {
   /// Redis (cluster mode enabled): T1 node types.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'AutomaticFailoverStatus')
   final PendingAutomaticFailoverStatus automaticFailoverStatus;
 
   /// The primary cluster ID that is applied immediately (if
   /// <code>--apply-immediately</code> was specified), or during the next
   /// maintenance window.
+  @_s.JsonKey(name: 'PrimaryClusterId')
   final String primaryClusterId;
 
   /// The status of an online resharding operation.
+  @_s.JsonKey(name: 'Resharding')
   final ReshardingStatus resharding;
 
   ReplicationGroupPendingModifiedValues({
@@ -7107,8 +8691,14 @@ class ReplicationGroupPendingModifiedValues {
 
 /// Represents the output of a <code>PurchaseReservedCacheNodesOffering</code>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedCacheNode {
   /// The number of cache nodes that have been reserved.
+  @_s.JsonKey(name: 'CacheNodeCount')
   final int cacheNodeCount;
 
   /// The cache node type for the reserved cache nodes.
@@ -7134,6 +8724,9 @@ class ReservedCacheNode {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -7209,42 +8802,54 @@ class ReservedCacheNode {
   /// later.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'CacheNodeType')
   final String cacheNodeType;
 
   /// The duration of the reservation in seconds.
+  @_s.JsonKey(name: 'Duration')
   final int duration;
 
   /// The fixed price charged for this reserved cache node.
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
 
   /// The offering type of this reserved cache node.
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
 
   /// The description of the reserved cache node.
+  @_s.JsonKey(name: 'ProductDescription')
   final String productDescription;
 
   /// The recurring price charged to run this reserved cache node.
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
 
   /// The Amazon Resource Name (ARN) of the reserved cache node.
   ///
   /// Example:
   /// <code>arn:aws:elasticache:us-east-1:123456789012:reserved-instance:ri-2017-03-27-08-33-25-582</code>
+  @_s.JsonKey(name: 'ReservationARN')
   final String reservationARN;
 
   /// The unique identifier for the reservation.
+  @_s.JsonKey(name: 'ReservedCacheNodeId')
   final String reservedCacheNodeId;
 
   /// The offering identifier.
+  @_s.JsonKey(name: 'ReservedCacheNodesOfferingId')
   final String reservedCacheNodesOfferingId;
 
   /// The time the reservation started.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   /// The state of the reserved cache node.
+  @_s.JsonKey(name: 'State')
   final String state;
 
   /// The hourly price charged for this reserved cache node.
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedCacheNode({
@@ -7289,12 +8894,19 @@ class ReservedCacheNode {
 
 /// Represents the output of a <code>DescribeReservedCacheNodes</code>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedCacheNodeMessage {
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of reserved cache nodes. Each element in the list contains detailed
   /// information about one node.
+  @_s.JsonKey(name: 'ReservedCacheNodes')
   final List<ReservedCacheNode> reservedCacheNodes;
 
   ReservedCacheNodeMessage({
@@ -7314,6 +8926,11 @@ class ReservedCacheNodeMessage {
 }
 
 /// Describes all of the attributes of a reserved cache node offering.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedCacheNodesOffering {
   /// The cache node type for the reserved cache node.
   ///
@@ -7338,6 +8955,9 @@ class ReservedCacheNodesOffering {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -7413,27 +9033,35 @@ class ReservedCacheNodesOffering {
   /// later.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'CacheNodeType')
   final String cacheNodeType;
 
   /// The duration of the offering. in seconds.
+  @_s.JsonKey(name: 'Duration')
   final int duration;
 
   /// The fixed price charged for this offering.
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
 
   /// The offering type.
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
 
   /// The cache engine used by the offering.
+  @_s.JsonKey(name: 'ProductDescription')
   final String productDescription;
 
   /// The recurring price charged to run this reserved cache node.
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
 
   /// A unique identifier for the reserved cache node offering.
+  @_s.JsonKey(name: 'ReservedCacheNodesOfferingId')
   final String reservedCacheNodesOfferingId;
 
   /// The hourly price charged for this offering.
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedCacheNodesOffering({
@@ -7467,12 +9095,19 @@ class ReservedCacheNodesOffering {
 
 /// Represents the output of a <code>DescribeReservedCacheNodesOfferings</code>
 /// operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedCacheNodesOfferingMessage {
   /// Provides an identifier to allow retrieval of paginated results.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of reserved cache node offerings. Each element in the list contains
   /// detailed information about one offering.
+  @_s.JsonKey(name: 'ReservedCacheNodesOfferings')
   final List<ReservedCacheNodesOffering> reservedCacheNodesOfferings;
 
   ReservedCacheNodesOfferingMessage({
@@ -7494,23 +9129,37 @@ class ReservedCacheNodesOfferingMessage {
 
 /// A list of <code>PreferredAvailabilityZones</code> objects that specifies the
 /// configuration of a node group in the resharded cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ReshardingConfiguration {
   /// Either the ElastiCache for Redis supplied 4-digit id or a user supplied id
   /// for the node group these configuration values apply to.
+  @_s.JsonKey(name: 'NodeGroupId')
   final String nodeGroupId;
 
   /// A list of preferred availability zones for the nodes in this cluster.
+  @_s.JsonKey(name: 'PreferredAvailabilityZones')
   final List<String> preferredAvailabilityZones;
 
   ReshardingConfiguration({
     this.nodeGroupId,
     this.preferredAvailabilityZones,
   });
+  Map<String, dynamic> toJson() => _$ReshardingConfigurationToJson(this);
 }
 
 /// The status of an online resharding operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReshardingStatus {
   /// Represents the progress of an online resharding operation.
+  @_s.JsonKey(name: 'SlotMigration')
   final SlotMigration slotMigration;
 
   ReshardingStatus({
@@ -7525,7 +9174,13 @@ class ReshardingStatus {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RevokeCacheSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'CacheSecurityGroup')
   final CacheSecurityGroup cacheSecurityGroup;
 
   RevokeCacheSecurityGroupIngressResult({
@@ -7541,13 +9196,20 @@ class RevokeCacheSecurityGroupIngressResult {
 }
 
 /// Represents a single cache security group and its status.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SecurityGroupMembership {
   /// The identifier of the cache security group.
+  @_s.JsonKey(name: 'SecurityGroupId')
   final String securityGroupId;
 
   /// The status of the cache security group membership. The status changes
   /// whenever a cache security group is modified, or when the cache security
   /// groups assigned to a cluster are modified.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   SecurityGroupMembership({
@@ -7563,47 +9225,71 @@ class SecurityGroupMembership {
 }
 
 /// An update that you can apply to your Redis clusters.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServiceUpdate {
   /// Indicates whether the service update will be automatically applied once the
   /// recommended apply-by date has expired.
+  @_s.JsonKey(name: 'AutoUpdateAfterRecommendedApplyByDate')
   final bool autoUpdateAfterRecommendedApplyByDate;
 
   /// The Elasticache engine to which the update applies. Either Redis or
   /// Memcached
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The Elasticache engine version to which the update applies. Either Redis or
   /// Memcached engine version
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// The estimated length of time the service update will take
+  @_s.JsonKey(name: 'EstimatedUpdateTime')
   final String estimatedUpdateTime;
 
   /// Provides details of the service update
+  @_s.JsonKey(name: 'ServiceUpdateDescription')
   final String serviceUpdateDescription;
 
   /// The date after which the service update is no longer available
+  @_s.JsonKey(
+      name: 'ServiceUpdateEndDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime serviceUpdateEndDate;
 
   /// The unique ID of the service update
+  @_s.JsonKey(name: 'ServiceUpdateName')
   final String serviceUpdateName;
 
   /// The recommendend date to apply the service update in order to ensure
   /// compliance. For information on compliance, see <a
   /// href="https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/elasticache-compliance.html#elasticache-compliance-self-service">Self-Service
   /// Security Updates for Compliance</a>.
+  @_s.JsonKey(
+      name: 'ServiceUpdateRecommendedApplyByDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime serviceUpdateRecommendedApplyByDate;
 
   /// The date when the service update is initially available
+  @_s.JsonKey(
+      name: 'ServiceUpdateReleaseDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime serviceUpdateReleaseDate;
 
   /// The severity of the service update
+  @_s.JsonKey(name: 'ServiceUpdateSeverity')
   final ServiceUpdateSeverity serviceUpdateSeverity;
 
   /// The status of the service update
+  @_s.JsonKey(name: 'ServiceUpdateStatus')
   final ServiceUpdateStatus serviceUpdateStatus;
 
   /// Reflects the nature of the service update
+  @_s.JsonKey(name: 'ServiceUpdateType')
   final ServiceUpdateType serviceUpdateType;
 
   ServiceUpdate({
@@ -7651,9 +9337,13 @@ class ServiceUpdate {
 }
 
 enum ServiceUpdateSeverity {
+  @_s.JsonValue('critical')
   critical,
+  @_s.JsonValue('important')
   important,
+  @_s.JsonValue('medium')
   medium,
+  @_s.JsonValue('low')
   low,
 }
 
@@ -7674,8 +9364,11 @@ extension on String {
 }
 
 enum ServiceUpdateStatus {
+  @_s.JsonValue('available')
   available,
+  @_s.JsonValue('cancelled')
   cancelled,
+  @_s.JsonValue('expired')
   expired,
 }
 
@@ -7694,6 +9387,7 @@ extension on String {
 }
 
 enum ServiceUpdateType {
+  @_s.JsonValue('security-update')
   securityUpdate,
 }
 
@@ -7707,14 +9401,21 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ServiceUpdatesMessage {
   /// An optional marker returned from a prior request. Use this marker for
   /// pagination of results from this operation. If this parameter is specified,
   /// the response includes only records beyond the marker, up to the value
   /// specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of service updates
+  @_s.JsonKey(name: 'ServiceUpdates')
   final List<ServiceUpdate> serviceUpdates;
 
   ServiceUpdatesMessage({
@@ -7734,8 +9435,11 @@ class ServiceUpdatesMessage {
 }
 
 enum SlaMet {
+  @_s.JsonValue('yes')
   yes,
+  @_s.JsonValue('no')
   no,
+  @_s.JsonValue('n/a')
   na,
 }
 
@@ -7754,8 +9458,14 @@ extension on String {
 }
 
 /// Represents the progress of an online resharding operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SlotMigration {
   /// The percentage of the slot migration that is complete.
+  @_s.JsonKey(name: 'ProgressPercentage')
   final double progressPercentage;
 
   SlotMigration({
@@ -7770,8 +9480,14 @@ class SlotMigration {
 
 /// Represents a copy of an entire Redis cluster as of the time when the
 /// snapshot was taken.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Snapshot {
   /// This parameter is currently disabled.
+  @_s.JsonKey(name: 'AutoMinorVersionUpgrade')
   final bool autoMinorVersionUpgrade;
 
   /// Indicates the status of Multi-AZ with automatic failover for the source
@@ -7791,12 +9507,18 @@ class Snapshot {
   /// Redis (cluster mode enabled): T1 node types.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'AutomaticFailover')
   final AutomaticFailoverStatus automaticFailover;
 
   /// The date and time when the source cluster was created.
+  @_s.JsonKey(
+      name: 'CacheClusterCreateTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime cacheClusterCreateTime;
 
   /// The user-supplied identifier of the source cluster.
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The name of the compute and memory capacity node type for the source
@@ -7823,6 +9545,9 @@ class Snapshot {
   /// <b>M4 node types:</b> <code>cache.m4.large</code>,
   /// <code>cache.m4.xlarge</code>, <code>cache.m4.2xlarge</code>,
   /// <code>cache.m4.4xlarge</code>, <code>cache.m4.10xlarge</code>
+  ///
+  /// <b>T3 node types:</b> <code>cache.t3.micro</code>,
+  /// <code>cache.t3.small</code>, <code>cache.t3.medium</code>
   ///
   /// <b>T2 node types:</b> <code>cache.t2.micro</code>,
   /// <code>cache.t2.small</code>, <code>cache.t2.medium</code>
@@ -7898,42 +9623,53 @@ class Snapshot {
   /// later.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'CacheNodeType')
   final String cacheNodeType;
 
   /// The cache parameter group that is associated with the source cluster.
+  @_s.JsonKey(name: 'CacheParameterGroupName')
   final String cacheParameterGroupName;
 
   /// The name of the cache subnet group associated with the source cluster.
+  @_s.JsonKey(name: 'CacheSubnetGroupName')
   final String cacheSubnetGroupName;
 
   /// The name of the cache engine (<code>memcached</code> or <code>redis</code>)
   /// used by the source cluster.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The version of the cache engine version that is used by the source cluster.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// The ID of the KMS key used to encrypt the snapshot.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// A list of the cache nodes in the source cluster.
+  @_s.JsonKey(name: 'NodeSnapshots')
   final List<NodeSnapshot> nodeSnapshots;
 
   /// The number of cache nodes in the source cluster.
   ///
   /// For clusters running Redis, this value must be 1. For clusters running
   /// Memcached, this value must be between 1 and 20.
+  @_s.JsonKey(name: 'NumCacheNodes')
   final int numCacheNodes;
 
   /// The number of node groups (shards) in this snapshot. When restoring from a
   /// snapshot, the number of node groups (shards) in the snapshot and in the
   /// restored replication group must be the same.
+  @_s.JsonKey(name: 'NumNodeGroups')
   final int numNodeGroups;
 
   /// The port number used by each cache nodes in the source cluster.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The name of the Availability Zone in which the source cluster is located.
+  @_s.JsonKey(name: 'PreferredAvailabilityZone')
   final String preferredAvailabilityZone;
 
   /// Specifies the weekly time range during which maintenance on the cluster is
@@ -7966,16 +9702,20 @@ class Snapshot {
   /// </li>
   /// </ul>
   /// Example: <code>sun:23:00-mon:01:30</code>
+  @_s.JsonKey(name: 'PreferredMaintenanceWindow')
   final String preferredMaintenanceWindow;
 
   /// A description of the source replication group.
+  @_s.JsonKey(name: 'ReplicationGroupDescription')
   final String replicationGroupDescription;
 
   /// The unique identifier of the source replication group.
+  @_s.JsonKey(name: 'ReplicationGroupId')
   final String replicationGroupId;
 
   /// The name of a snapshot. For an automatic snapshot, the name is
   /// system-generated. For a manual snapshot, this is the user-provided name.
+  @_s.JsonKey(name: 'SnapshotName')
   final String snapshotName;
 
   /// For an automatic snapshot, the number of days for which ElastiCache retains
@@ -7989,27 +9729,33 @@ class Snapshot {
   ///
   /// <b>Important</b> If the value of SnapshotRetentionLimit is set to zero (0),
   /// backups are turned off.
+  @_s.JsonKey(name: 'SnapshotRetentionLimit')
   final int snapshotRetentionLimit;
 
   /// Indicates whether the snapshot is from an automatic backup
   /// (<code>automated</code>) or was created manually (<code>manual</code>).
+  @_s.JsonKey(name: 'SnapshotSource')
   final String snapshotSource;
 
   /// The status of the snapshot. Valid values: <code>creating</code> |
   /// <code>available</code> | <code>restoring</code> | <code>copying</code> |
   /// <code>deleting</code>.
+  @_s.JsonKey(name: 'SnapshotStatus')
   final String snapshotStatus;
 
   /// The daily time range during which ElastiCache takes daily snapshots of the
   /// source cluster.
+  @_s.JsonKey(name: 'SnapshotWindow')
   final String snapshotWindow;
 
   /// The Amazon Resource Name (ARN) for the topic used by the source cluster for
   /// publishing notifications.
+  @_s.JsonKey(name: 'TopicArn')
   final String topicArn;
 
   /// The Amazon Virtual Private Cloud identifier (VPC ID) of the cache subnet
   /// group for the source cluster.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   Snapshot({
@@ -8085,10 +9831,15 @@ class Snapshot {
 }
 
 enum SourceType {
+  @_s.JsonValue('cache-cluster')
   cacheCluster,
+  @_s.JsonValue('cache-parameter-group')
   cacheParameterGroup,
+  @_s.JsonValue('cache-security-group')
   cacheSecurityGroup,
+  @_s.JsonValue('cache-subnet-group')
   cacheSubnetGroup,
+  @_s.JsonValue('replication-group')
   replicationGroup,
 }
 
@@ -8110,7 +9861,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StartMigrationResponse {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   StartMigrationResponse({
@@ -8128,11 +9885,18 @@ class StartMigrationResponse {
 /// Represents the subnet associated with a cluster. This parameter refers to
 /// subnets defined in Amazon Virtual Private Cloud (Amazon VPC) and used with
 /// ElastiCache.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Subnet {
   /// The Availability Zone associated with the subnet.
+  @_s.JsonKey(name: 'SubnetAvailabilityZone')
   final AvailabilityZone subnetAvailabilityZone;
 
   /// The unique identifier for the subnet.
+  @_s.JsonKey(name: 'SubnetIdentifier')
   final String subnetIdentifier;
 
   Subnet({
@@ -8152,11 +9916,18 @@ class Subnet {
 /// A cost allocation Tag that can be added to an ElastiCache cluster or
 /// replication group. Tags are composed of a Key/Value pair. A tag with a null
 /// Value is permitted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The key for the tag. May not be null.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The tag's value. May be null.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -8169,13 +9940,21 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// Represents the output from the <code>AddTagsToResource</code>,
 /// <code>ListTagsForResource</code>, and <code>RemoveTagsFromResource</code>
 /// operations.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagListMessage {
   /// A list of cost allocation tags as key-value pairs.
+  @_s.JsonKey(name: 'TagList')
   final List<Tag> tagList;
 
   TagListMessage({
@@ -8189,7 +9968,13 @@ class TagListMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TestFailoverResult {
+  @_s.JsonKey(name: 'ReplicationGroup')
   final ReplicationGroup replicationGroup;
 
   TestFailoverResult({
@@ -8206,35 +9991,53 @@ class TestFailoverResult {
 
 /// Filters update actions from the service updates that are in available status
 /// during the time range.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TimeRangeFilter {
   /// The end time of the time range filter
+  @_s.JsonKey(name: 'EndTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTime;
 
   /// The start time of the time range filter
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   TimeRangeFilter({
     this.endTime,
     this.startTime,
   });
+  Map<String, dynamic> toJson() => _$TimeRangeFilterToJson(this);
 }
 
 /// Update action that has failed to be processed for the corresponding
 /// apply/stop request
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UnprocessedUpdateAction {
   /// The ID of the cache cluster
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The error message that describes the reason the request was not processed
+  @_s.JsonKey(name: 'ErrorMessage')
   final String errorMessage;
 
   /// The error type for requests that are not processed
+  @_s.JsonKey(name: 'ErrorType')
   final String errorType;
 
   /// The replication group ID
+  @_s.JsonKey(name: 'ReplicationGroupId')
   final String replicationGroupId;
 
   /// The unique ID of the service update
+  @_s.JsonKey(name: 'ServiceUpdateName')
   final String serviceUpdateName;
 
   UnprocessedUpdateAction({
@@ -8256,63 +10059,97 @@ class UnprocessedUpdateAction {
 }
 
 /// The status of the service update for a specific replication group
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateAction {
   /// The ID of the cache cluster
+  @_s.JsonKey(name: 'CacheClusterId')
   final String cacheClusterId;
 
   /// The status of the service update on the cache node
+  @_s.JsonKey(name: 'CacheNodeUpdateStatus')
   final List<CacheNodeUpdateStatus> cacheNodeUpdateStatus;
 
   /// The Elasticache engine to which the update applies. Either Redis or
   /// Memcached
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The estimated length of time for the update to complete
+  @_s.JsonKey(name: 'EstimatedUpdateTime')
   final String estimatedUpdateTime;
 
   /// The status of the service update on the node group
+  @_s.JsonKey(name: 'NodeGroupUpdateStatus')
   final List<NodeGroupUpdateStatus> nodeGroupUpdateStatus;
 
   /// The progress of the service update on the replication group
+  @_s.JsonKey(name: 'NodesUpdated')
   final String nodesUpdated;
 
   /// The ID of the replication group
+  @_s.JsonKey(name: 'ReplicationGroupId')
   final String replicationGroupId;
 
   /// The unique ID of the service update
+  @_s.JsonKey(name: 'ServiceUpdateName')
   final String serviceUpdateName;
 
   /// The recommended date to apply the service update to ensure compliance. For
   /// information on compliance, see <a
   /// href="https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/elasticache-compliance.html#elasticache-compliance-self-service">Self-Service
   /// Security Updates for Compliance</a>.
+  @_s.JsonKey(
+      name: 'ServiceUpdateRecommendedApplyByDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime serviceUpdateRecommendedApplyByDate;
 
   /// The date the update is first available
+  @_s.JsonKey(
+      name: 'ServiceUpdateReleaseDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime serviceUpdateReleaseDate;
 
   /// The severity of the service update
+  @_s.JsonKey(name: 'ServiceUpdateSeverity')
   final ServiceUpdateSeverity serviceUpdateSeverity;
 
   /// The status of the service update
+  @_s.JsonKey(name: 'ServiceUpdateStatus')
   final ServiceUpdateStatus serviceUpdateStatus;
 
   /// Reflects the nature of the service update
+  @_s.JsonKey(name: 'ServiceUpdateType')
   final ServiceUpdateType serviceUpdateType;
 
   /// If yes, all nodes in the replication group have been updated by the
   /// recommended apply-by date. If no, at least one node in the replication group
   /// have not been updated by the recommended apply-by date. If N/A, the
   /// replication group was created after the recommended apply-by date.
+  @_s.JsonKey(name: 'SlaMet')
   final SlaMet slaMet;
 
   /// The date that the service update is available to a replication group
+  @_s.JsonKey(
+      name: 'UpdateActionAvailableDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime updateActionAvailableDate;
 
   /// The status of the update action
+  @_s.JsonKey(name: 'UpdateActionStatus')
   final UpdateActionStatus updateActionStatus;
 
   /// The date when the UpdateActionStatus was last modified
+  @_s.JsonKey(
+      name: 'UpdateActionStatusModifiedDate',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime updateActionStatusModifiedDate;
 
   UpdateAction({
@@ -8380,11 +10217,18 @@ class UpdateAction {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateActionResultsMessage {
   /// Update actions that have been processed successfully
+  @_s.JsonKey(name: 'ProcessedUpdateActions')
   final List<ProcessedUpdateAction> processedUpdateActions;
 
   /// Update actions that haven't been processed successfully
+  @_s.JsonKey(name: 'UnprocessedUpdateActions')
   final List<UnprocessedUpdateAction> unprocessedUpdateActions;
 
   UpdateActionResultsMessage({
@@ -8410,11 +10254,17 @@ class UpdateActionResultsMessage {
 }
 
 enum UpdateActionStatus {
+  @_s.JsonValue('not-applied')
   notApplied,
+  @_s.JsonValue('waiting-to-start')
   waitingToStart,
+  @_s.JsonValue('in-progress')
   inProgress,
+  @_s.JsonValue('stopping')
   stopping,
+  @_s.JsonValue('stopped')
   stopped,
+  @_s.JsonValue('complete')
   complete,
 }
 
@@ -8438,14 +10288,21 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateActionsMessage {
   /// An optional marker returned from a prior request. Use this marker for
   /// pagination of results from this operation. If this parameter is specified,
   /// the response includes only records beyond the marker, up to the value
   /// specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// Returns a list of update actions
+  @_s.JsonKey(name: 'UpdateActions')
   final List<UpdateAction> updateActions;
 
   UpdateActionsMessage({
@@ -8591,6 +10448,22 @@ class ClusterQuotaForCustomerExceededFault extends _s.GenericAwsException {
             message: message);
 }
 
+class GlobalReplicationGroupAlreadyExistsFault extends _s.GenericAwsException {
+  GlobalReplicationGroupAlreadyExistsFault({String type, String message})
+      : super(
+            type: type,
+            code: 'GlobalReplicationGroupAlreadyExistsFault',
+            message: message);
+}
+
+class GlobalReplicationGroupNotFoundFault extends _s.GenericAwsException {
+  GlobalReplicationGroupNotFoundFault({String type, String message})
+      : super(
+            type: type,
+            code: 'GlobalReplicationGroupNotFoundFault',
+            message: message);
+}
+
 class InsufficientCacheClusterCapacityFault extends _s.GenericAwsException {
   InsufficientCacheClusterCapacityFault({String type, String message})
       : super(
@@ -8625,6 +10498,14 @@ class InvalidCacheSecurityGroupStateFault extends _s.GenericAwsException {
       : super(
             type: type,
             code: 'InvalidCacheSecurityGroupStateFault',
+            message: message);
+}
+
+class InvalidGlobalReplicationGroupStateFault extends _s.GenericAwsException {
+  InvalidGlobalReplicationGroupStateFault({String type, String message})
+      : super(
+            type: type,
+            code: 'InvalidGlobalReplicationGroupStateFault',
             message: message);
 }
 
@@ -8868,6 +10749,10 @@ final _exceptionFns = <String, _s.AwsExceptionFn>{
       CacheSubnetQuotaExceededFault(type: type, message: message),
   'ClusterQuotaForCustomerExceededFault': (type, message) =>
       ClusterQuotaForCustomerExceededFault(type: type, message: message),
+  'GlobalReplicationGroupAlreadyExistsFault': (type, message) =>
+      GlobalReplicationGroupAlreadyExistsFault(type: type, message: message),
+  'GlobalReplicationGroupNotFoundFault': (type, message) =>
+      GlobalReplicationGroupNotFoundFault(type: type, message: message),
   'InsufficientCacheClusterCapacityFault': (type, message) =>
       InsufficientCacheClusterCapacityFault(type: type, message: message),
   'InvalidARNFault': (type, message) =>
@@ -8878,6 +10763,8 @@ final _exceptionFns = <String, _s.AwsExceptionFn>{
       InvalidCacheParameterGroupStateFault(type: type, message: message),
   'InvalidCacheSecurityGroupStateFault': (type, message) =>
       InvalidCacheSecurityGroupStateFault(type: type, message: message),
+  'InvalidGlobalReplicationGroupStateFault': (type, message) =>
+      InvalidGlobalReplicationGroupStateFault(type: type, message: message),
   'InvalidKMSKeyFault': (type, message) =>
       InvalidKMSKeyFault(type: type, message: message),
   'InvalidParameterCombinationException': (type, message) =>

@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'rds-2014-10-31.g.dart';
 
 /// Amazon Relational Database Service (Amazon RDS) is a web service that makes
 /// it easier to set up, operate, and scale a relational database in the cloud.
@@ -460,6 +470,33 @@ class RDS {
     return DBClusterBacktrack.fromXml($result);
   }
 
+  /// Cancels an export task in progress that is exporting a snapshot to Amazon
+  /// S3. Any data that has already been written to the S3 bucket isn't removed.
+  ///
+  /// May throw [ExportTaskNotFoundFault].
+  /// May throw [InvalidExportTaskStateFault].
+  ///
+  /// Parameter [exportTaskIdentifier] :
+  /// The identifier of the snapshot export task to cancel.
+  Future<ExportTask> cancelExportTask({
+    @_s.required String exportTaskIdentifier,
+  }) async {
+    ArgumentError.checkNotNull(exportTaskIdentifier, 'exportTaskIdentifier');
+    final $request = <String, dynamic>{
+      'Action': 'CancelExportTask',
+      'Version': '2014-10-31',
+    };
+    $request['ExportTaskIdentifier'] = exportTaskIdentifier;
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'CancelExportTaskResult',
+    );
+    return ExportTask.fromXml($result);
+  }
+
   /// Copies the specified DB cluster parameter group.
   /// <note>
   /// This action only applies to Aurora DB clusters.
@@ -590,7 +627,7 @@ class RDS {
   /// </li>
   /// <li>
   /// <code>DestinationRegion</code> - The name of the AWS Region that the DB
-  /// cluster snapshot will be created in.
+  /// cluster snapshot is to be created in.
   /// </li>
   /// <li>
   /// <code>SourceDBClusterSnapshotIdentifier</code> - The DB cluster snapshot
@@ -704,9 +741,9 @@ class RDS {
   /// copied.
   ///
   /// Parameter [kmsKeyId] :
-  /// The AWS AWS KMS key ID for an encrypted DB cluster snapshot. The KMS key
-  /// ID is the Amazon Resource Name (ARN), KMS key identifier, or the KMS key
-  /// alias for the KMS encryption key.
+  /// The AWS KMS key ID for an encrypted DB cluster snapshot. The KMS key ID is
+  /// the Amazon Resource Name (ARN), KMS key identifier, or the KMS key alias
+  /// for the KMS encryption key.
   ///
   /// If you copy an encrypted DB cluster snapshot from your AWS account, you
   /// can specify a value for <code>KmsKeyId</code> to encrypt the copy with a
@@ -737,7 +774,7 @@ class RDS {
   /// snapshot in the same AWS Region.
   ///
   /// The pre-signed URL must be a valid request for the
-  /// <code>CopyDBSClusterSnapshot</code> API action that can be executed in the
+  /// <code>CopyDBClusterSnapshot</code> API action that can be executed in the
   /// source AWS Region that contains the encrypted DB cluster snapshot to be
   /// copied. The pre-signed URL request must contain the following parameter
   /// values:
@@ -752,7 +789,7 @@ class RDS {
   /// </li>
   /// <li>
   /// <code>DestinationRegion</code> - The name of the AWS Region that the DB
-  /// cluster snapshot will be created in.
+  /// cluster snapshot is to be created in.
   /// </li>
   /// <li>
   /// <code>SourceDBClusterSnapshotIdentifier</code> - The DB cluster snapshot
@@ -909,7 +946,7 @@ class RDS {
   /// destination AWS Region for the DB snapshot copy.
   ///
   /// For more information about copying snapshots, see <a
-  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CopyDBSnapshot.html">Copying
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CopySnapshot.html#USER_CopyDBSnapshot">Copying
   /// a DB Snapshot</a> in the <i>Amazon RDS User Guide.</i>
   ///
   /// May throw [DBSnapshotAlreadyExistsFault].
@@ -1253,7 +1290,7 @@ class RDS {
   /// Creates a new Amazon Aurora DB cluster.
   ///
   /// You can use the <code>ReplicationSourceIdentifier</code> parameter to
-  /// create the DB cluster as a Read Replica of another DB cluster or Amazon
+  /// create the DB cluster as a read replica of another DB cluster or Amazon
   /// RDS MySQL DB instance. For cross-region replication where the DB cluster
   /// identified by <code>ReplicationSourceIdentifier</code> is encrypted, you
   /// must also specify the <code>PreSignedUrl</code> parameter.
@@ -1375,14 +1412,27 @@ class RDS {
   /// Example: <code>mySubnetgroup</code>
   ///
   /// Parameter [databaseName] :
-  /// The name for your database of up to 64 alpha-numeric characters. If you do
-  /// not provide a name, Amazon RDS will not create a database in the DB
-  /// cluster you are creating.
+  /// The name for your database of up to 64 alphanumeric characters. If you do
+  /// not provide a name, Amazon RDS doesn't create a database in the DB cluster
+  /// you are creating.
   ///
   /// Parameter [deletionProtection] :
   /// A value that indicates whether the DB cluster has deletion protection
   /// enabled. The database can't be deleted when deletion protection is
   /// enabled. By default, deletion protection is disabled.
+  ///
+  /// Parameter [domain] :
+  /// The Active Directory directory ID to create the DB cluster in.
+  ///
+  /// For Amazon Aurora DB clusters, Amazon RDS can use Kerberos Authentication
+  /// to authenticate users that connect to the DB cluster. For more
+  /// information, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/kerberos-authentication.html">Kerberos
+  /// Authentication</a> in the <i>Amazon Aurora User Guide</i>.
+  ///
+  /// Parameter [domainIAMRoleName] :
+  /// Specify the name of the IAM role to be used when making API calls to the
+  /// Directory Service.
   ///
   /// Parameter [enableCloudwatchLogsExports] :
   /// The list of log types that need to be enabled for exporting to CloudWatch
@@ -1418,6 +1468,38 @@ class RDS {
   /// The DB engine mode of the DB cluster, either <code>provisioned</code>,
   /// <code>serverless</code>, <code>parallelquery</code>, <code>global</code>,
   /// or <code>multimaster</code>.
+  /// <note>
+  /// <code>global</code> engine mode only applies for global database clusters
+  /// created with Aurora MySQL version 5.6.10a. For higher Aurora MySQL
+  /// versions, the clusters in a global database use <code>provisioned</code>
+  /// engine mode.
+  /// </note>
+  /// Limitations and requirements apply to some DB engine modes. For more
+  /// information, see the following sections in the <i>Amazon Aurora User
+  /// Guide</i>:
+  ///
+  /// <ul>
+  /// <li>
+  /// <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html#aurora-serverless.limitations">
+  /// Limitations of Aurora Serverless</a>
+  /// </li>
+  /// <li>
+  /// <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-mysql-parallel-query.html#aurora-mysql-parallel-query-limitations">
+  /// Limitations of Parallel Query</a>
+  /// </li>
+  /// <li>
+  /// <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-global-database.html#aurora-global-database.limitations">
+  /// Requirements for Aurora Global Databases</a>
+  /// </li>
+  /// <li>
+  /// <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-multi-master.html#aurora-multi-master-limitations">
+  /// Limitations of Multi-Master Clusters</a>
+  /// </li>
+  /// </ul>
   ///
   /// Parameter [engineVersion] :
   /// The version number of the database engine to use.
@@ -1479,10 +1561,10 @@ class RDS {
   /// AWS KMS creates the default encryption key for your AWS account. Your AWS
   /// account has a different default encryption key for each AWS Region.
   ///
-  /// If you create a Read Replica of an encrypted DB cluster in another AWS
+  /// If you create a read replica of an encrypted DB cluster in another AWS
   /// Region, you must set <code>KmsKeyId</code> to a KMS key ID that is valid
-  /// in the destination AWS Region. This key is used to encrypt the Read
-  /// Replica in that AWS Region.
+  /// in the destination AWS Region. This key is used to encrypt the read
+  /// replica in that AWS Region.
   ///
   /// Parameter [masterUserPassword] :
   /// The password for the master database user. This password can contain any
@@ -1545,7 +1627,7 @@ class RDS {
   /// </li>
   /// <li>
   /// <code>DestinationRegion</code> - The name of the AWS Region that Aurora
-  /// Read Replica will be created in.
+  /// read replica will be created in.
   /// </li>
   /// <li>
   /// <code>ReplicationSourceIdentifier</code> - The DB cluster identifier for
@@ -1621,7 +1703,7 @@ class RDS {
   ///
   /// Parameter [replicationSourceIdentifier] :
   /// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
-  /// this DB cluster is created as a Read Replica.
+  /// this DB cluster is created as a read replica.
   ///
   /// Parameter [scalingConfiguration] :
   /// For DB clusters in <code>serverless</code> DB engine mode, the scaling
@@ -1650,6 +1732,8 @@ class RDS {
     String dBSubnetGroupName,
     String databaseName,
     bool deletionProtection,
+    String domain,
+    String domainIAMRoleName,
     List<String> enableCloudwatchLogsExports,
     bool enableHttpEndpoint,
     bool enableIAMDatabaseAuthentication,
@@ -1690,6 +1774,8 @@ class RDS {
     dBSubnetGroupName?.also((arg) => $request['DBSubnetGroupName'] = arg);
     databaseName?.also((arg) => $request['DatabaseName'] = arg);
     deletionProtection?.also((arg) => $request['DeletionProtection'] = arg);
+    domain?.also((arg) => $request['Domain'] = arg);
+    domainIAMRoleName?.also((arg) => $request['DomainIAMRoleName'] = arg);
     enableCloudwatchLogsExports
         ?.also((arg) => $request['EnableCloudwatchLogsExports'] = arg);
     enableHttpEndpoint?.also((arg) => $request['EnableHttpEndpoint'] = arg);
@@ -2231,7 +2317,7 @@ class RDS {
   /// Must be a value from 0 to 35
   /// </li>
   /// <li>
-  /// Can't be set to 0 if the DB instance is a source to Read Replicas
+  /// Can't be set to 0 if the DB instance is a source to read replicas
   /// </li>
   /// </ul>
   ///
@@ -2404,13 +2490,12 @@ class RDS {
   /// Using Windows Authentication with an Amazon RDS DB Instance Running
   /// Microsoft SQL Server</a> in the <i>Amazon RDS User Guide</i>.
   ///
-  /// For Oracle DB instance, Amazon RDS can use Kerberos Authentication to
+  /// For Oracle DB instances, Amazon RDS can use Kerberos Authentication to
   /// authenticate users that connect to the DB instance. For more information,
   /// see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/oracle-kerberos.html">
   /// Using Kerberos Authentication with Amazon RDS for Oracle</a> in the
   /// <i>Amazon RDS User Guide</i>.
-  /// <p/>
   ///
   /// Parameter [domainIAMRoleName] :
   /// Specify the name of the IAM role to be used when making API calls to the
@@ -2721,8 +2806,8 @@ class RDS {
   /// option group.
   ///
   /// Permanent options, such as the TDE option for Oracle Advanced Security
-  /// TDE, can't be removed from an option group, and that option group can't be
-  /// removed from a DB instance once it is associated with a DB instance
+  /// TDE, can't be removed from an option group. Also, that option group can't
+  /// be removed from a DB instance once it is associated with a DB instance
   ///
   /// Parameter [performanceInsightsKMSKeyId] :
   /// The AWS KMS key identifier for encryption of Performance Insights data.
@@ -2746,7 +2831,7 @@ class RDS {
   ///
   /// Default: <code>3306</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// Type: Integer
   ///
@@ -2754,7 +2839,7 @@ class RDS {
   ///
   /// Default: <code>3306</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// Type: Integer
   ///
@@ -2762,7 +2847,7 @@ class RDS {
   ///
   /// Default: <code>5432</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// Type: Integer
   ///
@@ -2770,21 +2855,21 @@ class RDS {
   ///
   /// Default: <code>1521</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// <b>SQL Server</b>
   ///
   /// Default: <code>1433</code>
   ///
-  /// Valid Values: <code>1150-65535</code> except for <code>1434</code>,
-  /// <code>3389</code>, <code>47001</code>, <code>49152</code>, and
-  /// <code>49152</code> through <code>49156</code>.
+  /// Valid values: <code>1150-65535</code> except <code>1234</code>,
+  /// <code>1434</code>, <code>3260</code>, <code>3343</code>,
+  /// <code>3389</code>, <code>47001</code>, and <code>49152-49156</code>.
   ///
   /// <b>Amazon Aurora</b>
   ///
   /// Default: <code>3306</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// Type: Integer
   ///
@@ -3059,21 +3144,20 @@ class RDS {
     return CreateDBInstanceResult.fromXml($result);
   }
 
-  /// Creates a new DB instance that acts as a Read Replica for an existing
-  /// source DB instance. You can create a Read Replica for a DB instance
-  /// running MySQL, MariaDB, Oracle, or PostgreSQL. For more information, see
-  /// <a
+  /// Creates a new DB instance that acts as a read replica for an existing
+  /// source DB instance. You can create a read replica for a DB instance
+  /// running MySQL, MariaDB, Oracle, PostgreSQL, or SQL Server. For more
+  /// information, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html">Working
   /// with Read Replicas</a> in the <i>Amazon RDS User Guide</i>.
   ///
-  /// Amazon Aurora doesn't support this action. You must call the
+  /// Amazon Aurora doesn't support this action. Call the
   /// <code>CreateDBInstance</code> action to create a DB instance for an Aurora
   /// DB cluster.
   ///
-  /// All Read Replica DB instances are created with backups disabled. All other
+  /// All read replica DB instances are created with backups disabled. All other
   /// DB instance attributes (including DB security groups and DB parameter
-  /// groups) are inherited from the source DB instance, except as specified
-  /// following.
+  /// groups) are inherited from the source DB instance, except as specified.
   /// <important>
   /// Your source DB instance must have backup retention enabled.
   /// </important>
@@ -3099,60 +3183,65 @@ class RDS {
   /// May throw [DomainNotFoundFault].
   ///
   /// Parameter [dBInstanceIdentifier] :
-  /// The DB instance identifier of the Read Replica. This identifier is the
+  /// The DB instance identifier of the read replica. This identifier is the
   /// unique key that identifies a DB instance. This parameter is stored as a
   /// lowercase string.
   ///
   /// Parameter [sourceDBInstanceIdentifier] :
-  /// The identifier of the DB instance that will act as the source for the Read
-  /// Replica. Each DB instance can have up to five Read Replicas.
+  /// The identifier of the DB instance that will act as the source for the read
+  /// replica. Each DB instance can have up to five read replicas.
   ///
   /// Constraints:
   ///
   /// <ul>
   /// <li>
-  /// Must be the identifier of an existing MySQL, MariaDB, Oracle, or
-  /// PostgreSQL DB instance.
+  /// Must be the identifier of an existing MySQL, MariaDB, Oracle, PostgreSQL,
+  /// or SQL Server DB instance.
   /// </li>
   /// <li>
-  /// Can specify a DB instance that is a MySQL Read Replica only if the source
+  /// Can specify a DB instance that is a MySQL read replica only if the source
   /// is running MySQL 5.6 or later.
   /// </li>
   /// <li>
-  /// For the limitations of Oracle Read Replicas, see <a
+  /// For the limitations of Oracle read replicas, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/oracle-read-replicas.html">Read
   /// Replica Limitations with Oracle</a> in the <i>Amazon RDS User Guide</i>.
   /// </li>
   /// <li>
-  /// Can specify a DB instance that is a PostgreSQL DB instance only if the
-  /// source is running PostgreSQL 9.3.5 or later (9.4.7 and higher for
-  /// cross-region replication).
+  /// For the limitations of SQL Server read replicas, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/SQLServer.ReadReplicas.Limitations.html">Read
+  /// Replica Limitations with Microsoft SQL Server</a> in the <i>Amazon RDS
+  /// User Guide</i>.
   /// </li>
   /// <li>
-  /// The specified DB instance must have automatic backups enabled, its backup
-  /// retention period must be greater than 0.
+  /// Can specify a PostgreSQL DB instance only if the source is running
+  /// PostgreSQL 9.3.5 or later (9.4.7 and higher for cross-region replication).
   /// </li>
   /// <li>
-  /// If the source DB instance is in the same AWS Region as the Read Replica,
+  /// The specified DB instance must have automatic backups enabled, that is,
+  /// its backup retention period must be greater than 0.
+  /// </li>
+  /// <li>
+  /// If the source DB instance is in the same AWS Region as the read replica,
   /// specify a valid DB instance identifier.
   /// </li>
   /// <li>
-  /// If the source DB instance is in a different AWS Region than the Read
-  /// Replica, specify a valid DB instance ARN. For more information, go to <a
-  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.ARN.html#USER_Tagging.ARN.Constructing">
-  /// Constructing an ARN for Amazon RDS</a> in the <i>Amazon RDS User
-  /// Guide</i>.
+  /// If the source DB instance is in a different AWS Region from the read
+  /// replica, specify a valid DB instance ARN. For more information, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.ARN.html#USER_Tagging.ARN.Constructing">Constructing
+  /// an ARN for Amazon RDS</a> in the <i>Amazon RDS User Guide</i>. This
+  /// doesn't apply to SQL Server, which doesn't support cross-region replicas.
   /// </li>
   /// </ul>
   ///
   /// Parameter [autoMinorVersionUpgrade] :
   /// A value that indicates whether minor engine upgrades are applied
-  /// automatically to the Read Replica during the maintenance window.
+  /// automatically to the read replica during the maintenance window.
   ///
   /// Default: Inherits from the source DB instance
   ///
   /// Parameter [availabilityZone] :
-  /// The Availability Zone (AZ) where the Read Replica will be created.
+  /// The Availability Zone (AZ) where the read replica will be created.
   ///
   /// Default: A random, system-chosen Availability Zone in the endpoint's AWS
   /// Region.
@@ -3160,11 +3249,11 @@ class RDS {
   /// Example: <code>us-east-1d</code>
   ///
   /// Parameter [copyTagsToSnapshot] :
-  /// A value that indicates whether to copy all tags from the Read Replica to
-  /// snapshots of the Read Replica. By default, tags are not copied.
+  /// A value that indicates whether to copy all tags from the read replica to
+  /// snapshots of the read replica. By default, tags are not copied.
   ///
   /// Parameter [dBInstanceClass] :
-  /// The compute and memory capacity of the Read Replica, for example,
+  /// The compute and memory capacity of the read replica, for example,
   /// <code>db.m4.large</code>. Not all DB instance classes are available in all
   /// AWS Regions, or for all database engines. For the full list of DB instance
   /// classes, and availability for your engine, see <a
@@ -3178,9 +3267,9 @@ class RDS {
   ///
   /// If you do not specify a value for <code>DBParameterGroupName</code>, then
   /// Amazon RDS uses the <code>DBParameterGroup</code> of source DB instance
-  /// for a same region Read Replica, or the default
+  /// for a same region read replica, or the default
   /// <code>DBParameterGroup</code> for the specified DB engine for a cross
-  /// region Read Replica.
+  /// region read replica.
   /// <note>
   /// Currently, specifying a parameter group for this operation is only
   /// supported for Oracle DB instances.
@@ -3219,16 +3308,16 @@ class RDS {
   /// operation is running.
   /// </li>
   /// <li>
-  /// All Read Replicas in one AWS Region that are created from the same source
+  /// All read replicas in one AWS Region that are created from the same source
   /// DB instance must either:&gt;
   ///
   /// <ul>
   /// <li>
-  /// Specify DB subnet groups from the same VPC. All these Read Replicas are
+  /// Specify DB subnet groups from the same VPC. All these read replicas are
   /// created in the same VPC.
   /// </li>
   /// <li>
-  /// Not specify a DB subnet group. All these Read Replicas are created outside
+  /// Not specify a DB subnet group. All these read replicas are created outside
   /// of any VPC.
   /// </li>
   /// </ul> </li>
@@ -3252,6 +3341,13 @@ class RDS {
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/oracle-kerberos.html">
   /// Using Kerberos Authentication with Amazon RDS for Oracle</a> in the
   /// <i>Amazon RDS User Guide</i>.
+  ///
+  /// For Microsoft SQL Server DB instances, Amazon RDS can use Windows
+  /// Authentication to authenticate users that connect to the DB instance. For
+  /// more information, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_SQLServerWinAuth.html">
+  /// Using Windows Authentication with an Amazon RDS DB Instance Running
+  /// Microsoft SQL Server</a> in the <i>Amazon RDS User Guide</i>.
   ///
   /// Parameter [domainIAMRoleName] :
   /// Specify the name of the IAM role to be used when making API calls to the
@@ -3277,8 +3373,8 @@ class RDS {
   /// RDS User Guide.</i>
   ///
   /// Parameter [enablePerformanceInsights] :
-  /// A value that indicates whether to enable Performance Insights for the Read
-  /// Replica.
+  /// A value that indicates whether to enable Performance Insights for the read
+  /// replica.
   ///
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html">Using
@@ -3289,26 +3385,26 @@ class RDS {
   /// initially allocated for the DB instance.
   ///
   /// Parameter [kmsKeyId] :
-  /// The AWS KMS key ID for an encrypted Read Replica. The KMS key ID is the
+  /// The AWS KMS key ID for an encrypted read replica. The KMS key ID is the
   /// Amazon Resource Name (ARN), KMS key identifier, or the KMS key alias for
   /// the KMS encryption key.
   ///
-  /// If you create an encrypted Read Replica in the same AWS Region as the
+  /// If you create an encrypted read replica in the same AWS Region as the
   /// source DB instance, then you do not have to specify a value for this
-  /// parameter. The Read Replica is encrypted with the same KMS key as the
+  /// parameter. The read replica is encrypted with the same KMS key as the
   /// source DB instance.
   ///
-  /// If you create an encrypted Read Replica in a different AWS Region, then
+  /// If you create an encrypted read replica in a different AWS Region, then
   /// you must specify a KMS key for the destination AWS Region. KMS encryption
   /// keys are specific to the AWS Region that they are created in, and you
   /// can't use encryption keys from one AWS Region in another AWS Region.
   ///
-  /// You can't create an encrypted Read Replica from an unencrypted DB
+  /// You can't create an encrypted read replica from an unencrypted DB
   /// instance.
   ///
   /// Parameter [monitoringInterval] :
   /// The interval, in seconds, between points when Enhanced Monitoring metrics
-  /// are collected for the Read Replica. To disable collecting Enhanced
+  /// are collected for the read replica. To disable collecting Enhanced
   /// Monitoring metrics, specify 0. The default is 0.
   ///
   /// If <code>MonitoringRoleArn</code> is specified, then you must also set
@@ -3329,17 +3425,21 @@ class RDS {
   /// you must supply a <code>MonitoringRoleArn</code> value.
   ///
   /// Parameter [multiAZ] :
-  /// A value that indicates whether the Read Replica is in a Multi-AZ
+  /// A value that indicates whether the read replica is in a Multi-AZ
   /// deployment.
   ///
-  /// You can create a Read Replica as a Multi-AZ DB instance. RDS creates a
+  /// You can create a read replica as a Multi-AZ DB instance. RDS creates a
   /// standby of your replica in another Availability Zone for failover support
-  /// for the replica. Creating your Read Replica as a Multi-AZ DB instance is
+  /// for the replica. Creating your read replica as a Multi-AZ DB instance is
   /// independent of whether the source database is a Multi-AZ DB instance.
   ///
   /// Parameter [optionGroupName] :
   /// The option group the DB instance is associated with. If omitted, the
   /// option group associated with the source instance is used.
+  /// <note>
+  /// For SQL Server, you must use the option group associated with the source
+  /// instance.
+  /// </note>
   ///
   /// Parameter [performanceInsightsKMSKeyId] :
   /// The AWS KMS key identifier for encryption of Performance Insights data.
@@ -3368,9 +3468,9 @@ class RDS {
   /// <code>CreateDBInstanceReadReplica</code> API action in the source AWS
   /// Region that contains the source DB instance.
   ///
-  /// You must specify this parameter when you create an encrypted Read Replica
+  /// You must specify this parameter when you create an encrypted read replica
   /// from another AWS Region by using the Amazon RDS API. Don't specify
-  /// <code>PreSignedUrl</code> when you are creating an encrypted Read Replica
+  /// <code>PreSignedUrl</code> when you are creating an encrypted read replica
   /// in the same AWS Region.
   ///
   /// The presigned URL must be a valid request for the
@@ -3380,8 +3480,8 @@ class RDS {
   ///
   /// <ul>
   /// <li>
-  /// <code>DestinationRegion</code> - The AWS Region that the encrypted Read
-  /// Replica is created in. This AWS Region is the same one where the
+  /// <code>DestinationRegion</code> - The AWS Region that the encrypted read
+  /// replica is created in. This AWS Region is the same one where the
   /// <code>CreateDBInstanceReadReplica</code> action is called that contains
   /// this presigned URL.
   ///
@@ -3395,7 +3495,7 @@ class RDS {
   /// </li>
   /// <li>
   /// <code>KmsKeyId</code> - The AWS KMS key identifier for the key to use to
-  /// encrypt the Read Replica in the destination AWS Region. This is the same
+  /// encrypt the read replica in the destination AWS Region. This is the same
   /// identifier for both the <code>CreateDBInstanceReadReplica</code> action
   /// that is called in the destination AWS Region, and the action contained in
   /// the presigned URL.
@@ -3404,7 +3504,7 @@ class RDS {
   /// <code>SourceDBInstanceIdentifier</code> - The DB instance identifier for
   /// the encrypted DB instance to be replicated. This identifier must be in the
   /// Amazon Resource Name (ARN) format for the source AWS Region. For example,
-  /// if you are creating an encrypted Read Replica from a DB instance in the
+  /// if you are creating an encrypted read replica from a DB instance in the
   /// us-west-2 AWS Region, then your <code>SourceDBInstanceIdentifier</code>
   /// looks like the following example:
   /// <code>arn:aws:rds:us-west-2:123456789012:instance:mysql-instance1-20161115</code>.
@@ -3419,8 +3519,11 @@ class RDS {
   /// If you are using an AWS SDK tool or the AWS CLI, you can specify
   /// <code>SourceRegion</code> (or <code>--source-region</code> for the AWS
   /// CLI) instead of specifying <code>PreSignedUrl</code> manually. Specifying
-  /// <code>SourceRegion</code> autogenerates a pre-signed URL that is a valid
+  /// <code>SourceRegion</code> autogenerates a presigned URL that is a valid
   /// request for the operation that can be executed in the source AWS Region.
+  ///
+  /// <code>SourceRegion</code> isn't supported for SQL Server, because SQL
+  /// Server on Amazon RDS doesn't support cross-region read replicas.
   /// </note><note>
   /// If you supply a value for this operation's <code>SourceRegion</code>
   /// parameter, a pre-signed URL will be calculated on your behalf.
@@ -3442,7 +3545,7 @@ class RDS {
   /// The ID of the region that contains the source for the read replica.
   ///
   /// Parameter [storageType] :
-  /// Specifies the storage type to be associated with the Read Replica.
+  /// Specifies the storage type to be associated with the read replica.
   ///
   /// Valid values: <code>standard | gp2 | io1</code>
   ///
@@ -3457,7 +3560,7 @@ class RDS {
   /// uses its default processor features.
   ///
   /// Parameter [vpcSecurityGroupIds] :
-  /// A list of EC2 VPC security groups to associate with the Read Replica.
+  /// A list of EC2 VPC security groups to associate with the read replica.
   ///
   /// Default: The default EC2 VPC security group for the DB subnet group's VPC.
   Future<CreateDBInstanceReadReplicaResult> createDBInstanceReadReplica({
@@ -3922,7 +4025,7 @@ class RDS {
   }
 
   /// Creates an RDS event notification subscription. This action requires a
-  /// topic ARN (Amazon Resource Name) created by either the RDS console, the
+  /// topic Amazon Resource Name (ARN) created by either the RDS console, the
   /// SNS console, or the SNS API. To obtain an ARN with SNS, you must create a
   /// topic in Amazon SNS and subscribe to the topic. The ARN is displayed in
   /// the SNS console.
@@ -3938,10 +4041,9 @@ class RDS {
   /// db-instance and SourceIdentifier = myDBInstance1, you are notified of all
   /// the db-instance events for the specified source. If you specify a
   /// SourceType but do not specify a SourceIdentifier, you receive notice of
-  /// the events for that source type for all your RDS sources. If you do not
-  /// specify either the SourceType nor the SourceIdentifier, you are notified
-  /// of events generated from all RDS sources belonging to your customer
-  /// account.
+  /// the events for that source type for all your RDS sources. If you don't
+  /// specify either the SourceType or the SourceIdentifier, you are notified of
+  /// events generated from all RDS sources belonging to your customer account.
   /// <note>
   /// RDS event notification is only available for unencrypted SNS topics. If
   /// you specify an encrypted SNS topic, event notifications aren't sent for
@@ -3982,7 +4084,7 @@ class RDS {
   /// The list of identifiers of the event sources for which events are
   /// returned. If not specified, then all sources are included in the response.
   /// An identifier must begin with a letter and must contain only ASCII
-  /// letters, digits, and hyphens; it can't end with a hyphen or contain two
+  /// letters, digits, and hyphens. It can't end with a hyphen or contain two
   /// consecutive hyphens.
   ///
   /// Constraints:
@@ -4446,7 +4548,7 @@ class RDS {
   /// of this operation. The action can't be canceled or reverted once
   /// submitted.
   ///
-  /// Note that when a DB instance is in a failure state and has a status of
+  /// When a DB instance is in a failure state and has a status of
   /// <code>failed</code>, <code>incompatible-restore</code>, or
   /// <code>incompatible-network</code>, you can only delete it when you skip
   /// creation of the final snapshot with the <code>SkipFinalSnapshot</code>
@@ -4457,7 +4559,7 @@ class RDS {
   ///
   /// <ul>
   /// <li>
-  /// The DB cluster is a Read Replica of another Amazon Aurora DB cluster.
+  /// The DB cluster is a read replica of another Amazon Aurora DB cluster.
   /// </li>
   /// <li>
   /// The DB instance is the only instance in the DB cluster.
@@ -4465,7 +4567,7 @@ class RDS {
   /// </ul>
   /// To delete a DB instance in this case, first call the
   /// <code>PromoteReadReplicaDBCluster</code> API action to promote the DB
-  /// cluster so it's no longer a Read Replica. After the promotion completes,
+  /// cluster so it's no longer a read replica. After the promotion completes,
   /// then call the <code>DeleteDBInstance</code> API action to delete the final
   /// instance in the DB cluster.
   ///
@@ -4514,7 +4616,7 @@ class RDS {
   /// Can't end with a hyphen or contain two consecutive hyphens.
   /// </li>
   /// <li>
-  /// Can't be specified when deleting a Read Replica.
+  /// Can't be specified when deleting a read replica.
   /// </li>
   /// </ul>
   ///
@@ -4525,11 +4627,11 @@ class RDS {
   /// instance is deleted. By default, skip isn't specified, and the DB snapshot
   /// is created.
   ///
-  /// Note that when a DB instance is in a failure state and has a status of
-  /// 'failed', 'incompatible-restore', or 'incompatible-network', it can only
-  /// be deleted when skip is specified.
+  /// When a DB instance is in a failure state and has a status of 'failed',
+  /// 'incompatible-restore', or 'incompatible-network', it can only be deleted
+  /// when skip is specified.
   ///
-  /// Specify skip when deleting a Read Replica.
+  /// Specify skip when deleting a read replica.
   /// <note>
   /// The FinalDBSnapshotIdentifier parameter must be specified if skip isn't
   /// specified.
@@ -4897,6 +4999,7 @@ class RDS {
   /// May throw [DBProxyTargetNotFoundFault].
   /// May throw [DBProxyTargetGroupNotFoundFault].
   /// May throw [DBProxyNotFoundFault].
+  /// May throw [InvalidDBProxyStateFault].
   ///
   /// Parameter [dBProxyName] :
   /// The identifier of the <code>DBProxy</code> that is associated with the
@@ -5630,7 +5733,8 @@ class RDS {
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html">
   /// What Is Amazon Aurora?</a> in the <i>Amazon Aurora User Guide.</i>
   /// <note>
-  /// This action only applies to Aurora DB clusters.
+  /// This operation can also return information for Amazon Neptune DB instances
+  /// and Amazon DocumentDB instances.
   /// </note>
   ///
   /// May throw [DBClusterNotFoundFault].
@@ -5905,6 +6009,10 @@ class RDS {
 
   /// Returns information about provisioned RDS instances. This API supports
   /// pagination.
+  /// <note>
+  /// This operation can also return information for Amazon Neptune DB instances
+  /// and Amazon DocumentDB instances.
+  /// </note>
   ///
   /// May throw [DBInstanceNotFoundFault].
   ///
@@ -6255,7 +6363,9 @@ class RDS {
   /// Returns information about DB proxy target groups, represented by
   /// <code>DBProxyTargetGroup</code> data structures.
   ///
+  /// May throw [DBProxyNotFoundFault].
   /// May throw [DBProxyTargetGroupNotFoundFault].
+  /// May throw [InvalidDBProxyStateFault].
   ///
   /// Parameter [dBProxyName] :
   /// The identifier of the <code>DBProxy</code> associated with the target
@@ -6324,6 +6434,7 @@ class RDS {
   /// May throw [DBProxyNotFoundFault].
   /// May throw [DBProxyTargetNotFoundFault].
   /// May throw [DBProxyTargetGroupNotFoundFault].
+  /// May throw [InvalidDBProxyStateFault].
   ///
   /// Parameter [dBProxyName] :
   /// The identifier of the <code>DBProxyTarget</code> to describe.
@@ -7010,6 +7121,88 @@ class RDS {
     return EventsMessage.fromXml($result);
   }
 
+  /// Returns information about a snapshot export to Amazon S3. This API
+  /// operation supports pagination.
+  ///
+  /// May throw [ExportTaskNotFoundFault].
+  ///
+  /// Parameter [exportTaskIdentifier] :
+  /// The identifier of the snapshot export task to be described.
+  ///
+  /// Parameter [filters] :
+  /// Filters specify one or more snapshot exports to describe. The filters are
+  /// specified as name-value pairs that define what to include in the output.
+  ///
+  /// Supported filters include the following:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>export-task-identifier</code> - An identifier for the snapshot
+  /// export task.
+  /// </li>
+  /// <li>
+  /// <code>s3-bucket</code> - The Amazon S3 bucket the snapshot is exported to.
+  /// </li>
+  /// <li>
+  /// <code>source-arn</code> - The Amazon Resource Name (ARN) of the snapshot
+  /// exported to Amazon S3
+  /// </li>
+  /// <li>
+  /// <code>status</code> - The status of the export task.
+  /// </li>
+  /// </ul>
+  ///
+  /// Parameter [marker] :
+  /// An optional pagination token provided by a previous
+  /// <code>DescribeExportTasks</code> request. If you specify this parameter,
+  /// the response includes only records beyond the marker, up to the value
+  /// specified by the <code>MaxRecords</code> parameter.
+  ///
+  /// Parameter [maxRecords] :
+  /// The maximum number of records to include in the response. If more records
+  /// exist than the specified value, a pagination token called a marker is
+  /// included in the response. You can use the marker in a later
+  /// <code>DescribeExportTasks</code> request to retrieve the remaining
+  /// results.
+  ///
+  /// Default: 100
+  ///
+  /// Constraints: Minimum 20, maximum 100.
+  ///
+  /// Parameter [sourceArn] :
+  /// The Amazon Resource Name (ARN) of the snapshot exported to Amazon S3.
+  Future<ExportTasksMessage> describeExportTasks({
+    String exportTaskIdentifier,
+    List<Filter> filters,
+    String marker,
+    int maxRecords,
+    String sourceArn,
+  }) async {
+    _s.validateNumRange(
+      'maxRecords',
+      maxRecords,
+      20,
+      100,
+    );
+    final $request = <String, dynamic>{
+      'Action': 'DescribeExportTasks',
+      'Version': '2014-10-31',
+    };
+    exportTaskIdentifier?.also((arg) => $request['ExportTaskIdentifier'] = arg);
+    filters?.also((arg) => $request['Filters'] = arg);
+    marker?.also((arg) => $request['Marker'] = arg);
+    maxRecords?.also((arg) => $request['MaxRecords'] = arg);
+    sourceArn?.also((arg) => $request['SourceArn'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'DescribeExportTasksResult',
+    );
+    return ExportTasksMessage.fromXml($result);
+  }
+
   /// Returns information about Aurora global database clusters. This API
   /// supports pagination.
   ///
@@ -7598,7 +7791,7 @@ class RDS {
   }
 
   /// Returns a list of the source AWS Regions where the current AWS Region can
-  /// create a Read Replica or copy a DB snapshot from. This API action supports
+  /// create a read replica or copy a DB snapshot from. This API action supports
   /// pagination.
   ///
   /// Parameter [filters] :
@@ -7961,6 +8154,77 @@ class RDS {
     return TagListMessage.fromXml($result);
   }
 
+  /// Override the system-default Secure Sockets Layer/Transport Layer Security
+  /// (SSL/TLS) certificate for Amazon RDS for new DB instances temporarily, or
+  /// remove the override.
+  ///
+  /// By using this operation, you can specify an RDS-approved SSL/TLS
+  /// certificate for new DB instances that is different from the default
+  /// certificate provided by RDS. You can also use this operation to remove the
+  /// override, so that new DB instances use the default certificate provided by
+  /// RDS.
+  ///
+  /// You might need to override the default certificate in the following
+  /// situations:
+  ///
+  /// <ul>
+  /// <li>
+  /// You already migrated your applications to support the latest certificate
+  /// authority (CA) certificate, but the new CA certificate is not yet the RDS
+  /// default CA certificate for the specified AWS Region.
+  /// </li>
+  /// <li>
+  /// RDS has already moved to a new default CA certificate for the specified
+  /// AWS Region, but you are still in the process of supporting the new CA
+  /// certificate. In this case, you temporarily need additional time to finish
+  /// your application changes.
+  /// </li>
+  /// </ul>
+  /// For more information about rotating your SSL/TLS certificate for RDS DB
+  /// engines, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL-certificate-rotation.html">
+  /// Rotating Your SSL/TLS Certificate</a> in the <i>Amazon RDS User Guide</i>.
+  ///
+  /// For more information about rotating your SSL/TLS certificate for Aurora DB
+  /// engines, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.SSL-certificate-rotation.html">
+  /// Rotating Your SSL/TLS Certificate</a> in the <i>Amazon Aurora User
+  /// Guide</i>.
+  ///
+  /// May throw [CertificateNotFoundFault].
+  ///
+  /// Parameter [certificateIdentifier] :
+  /// The new default certificate identifier to override the current one with.
+  ///
+  /// To determine the valid values, use the <code>describe-certificates</code>
+  /// AWS CLI command or the <code>DescribeCertificates</code> API operation.
+  ///
+  /// Parameter [removeCustomerOverride] :
+  /// A value that indicates whether to remove the override for the default
+  /// certificate. If the override is removed, the default certificate is the
+  /// system default.
+  Future<ModifyCertificatesResult> modifyCertificates({
+    String certificateIdentifier,
+    bool removeCustomerOverride,
+  }) async {
+    final $request = <String, dynamic>{
+      'Action': 'ModifyCertificates',
+      'Version': '2014-10-31',
+    };
+    certificateIdentifier
+        ?.also((arg) => $request['CertificateIdentifier'] = arg);
+    removeCustomerOverride
+        ?.also((arg) => $request['RemoveCustomerOverride'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'ModifyCertificatesResult',
+    );
+    return ModifyCertificatesResult.fromXml($result);
+  }
+
   /// Set the capacity of an Aurora Serverless DB cluster to a specific value.
   ///
   /// Aurora Serverless scales seamlessly based on the workload on the DB
@@ -8196,6 +8460,15 @@ class RDS {
   /// enabled. The database can't be deleted when deletion protection is
   /// enabled. By default, deletion protection is disabled.
   ///
+  /// Parameter [domain] :
+  /// The Active Directory directory ID to move the DB cluster to. Specify
+  /// <code>none</code> to remove the cluster from its current domain. The
+  /// domain must be created prior to this operation.
+  ///
+  /// Parameter [domainIAMRoleName] :
+  /// Specify the name of the IAM role to be used when making API calls to the
+  /// Directory Service.
+  ///
   /// Parameter [enableHttpEndpoint] :
   /// A value that indicates whether to enable the HTTP endpoint for an Aurora
   /// Serverless DB cluster. By default, the HTTP endpoint is disabled.
@@ -8350,6 +8623,8 @@ class RDS {
     String dBClusterParameterGroupName,
     String dBInstanceParameterGroupName,
     bool deletionProtection,
+    String domain,
+    String domainIAMRoleName,
     bool enableHttpEndpoint,
     bool enableIAMDatabaseAuthentication,
     String engineVersion,
@@ -8382,6 +8657,8 @@ class RDS {
     dBInstanceParameterGroupName
         ?.also((arg) => $request['DBInstanceParameterGroupName'] = arg);
     deletionProtection?.also((arg) => $request['DeletionProtection'] = arg);
+    domain?.also((arg) => $request['Domain'] = arg);
+    domainIAMRoleName?.also((arg) => $request['DomainIAMRoleName'] = arg);
     enableHttpEndpoint?.also((arg) => $request['EnableHttpEndpoint'] = arg);
     enableIAMDatabaseAuthentication
         ?.also((arg) => $request['EnableIAMDatabaseAuthentication'] = arg);
@@ -8719,20 +8996,52 @@ class RDS {
   /// Must be a value from 0 to 35
   /// </li>
   /// <li>
-  /// Can be specified for a MySQL Read Replica only if the source is running
+  /// Can be specified for a MySQL read replica only if the source is running
   /// MySQL 5.6 or later
   /// </li>
   /// <li>
-  /// Can be specified for a PostgreSQL Read Replica only if the source is
+  /// Can be specified for a PostgreSQL read replica only if the source is
   /// running PostgreSQL 9.3.5
   /// </li>
   /// <li>
-  /// Can't be set to 0 if the DB instance is a source to Read Replicas
+  /// Can't be set to 0 if the DB instance is a source to read replicas
   /// </li>
   /// </ul>
   ///
   /// Parameter [cACertificateIdentifier] :
   /// Indicates the certificate that needs to be associated with the instance.
+  ///
+  /// Parameter [certificateRotationRestart] :
+  /// A value that indicates whether the DB instance is restarted when you
+  /// rotate your SSL/TLS certificate.
+  ///
+  /// By default, the DB instance is restarted when you rotate your SSL/TLS
+  /// certificate. The certificate is not updated until the DB instance is
+  /// restarted.
+  /// <important>
+  /// Set this parameter only if you are <i>not</i> using SSL/TLS to connect to
+  /// the DB instance.
+  /// </important>
+  /// If you are using SSL/TLS to connect to the DB instance, follow the
+  /// appropriate instructions for your DB engine to rotate your SSL/TLS
+  /// certificate:
+  ///
+  /// <ul>
+  /// <li>
+  /// For more information about rotating your SSL/TLS certificate for RDS DB
+  /// engines, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.SSL-certificate-rotation.html">
+  /// Rotating Your SSL/TLS Certificate.</a> in the <i>Amazon RDS User
+  /// Guide.</i>
+  /// </li>
+  /// <li>
+  /// For more information about rotating your SSL/TLS certificate for Aurora DB
+  /// engines, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/UsingWithRDS.SSL-certificate-rotation.html">
+  /// Rotating Your SSL/TLS Certificate</a> in the <i>Amazon Aurora User
+  /// Guide.</i>
+  /// </li>
+  /// </ul>
   ///
   /// Parameter [cloudwatchLogsExportConfiguration] :
   /// The configuration setting for the log types to be enabled for export to
@@ -8794,19 +9103,19 @@ class RDS {
   ///
   /// Default: <code>3306</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// <b>MariaDB</b>
   ///
   /// Default: <code>3306</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// <b>PostgreSQL</b>
   ///
   /// Default: <code>5432</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// Type: Integer
   ///
@@ -8814,21 +9123,21 @@ class RDS {
   ///
   /// Default: <code>1521</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// <b>SQL Server</b>
   ///
   /// Default: <code>1433</code>
   ///
-  /// Valid Values: <code>1150-65535</code> except for <code>1434</code>,
-  /// <code>3389</code>, <code>47001</code>, <code>49152</code>, and
-  /// <code>49152</code> through <code>49156</code>.
+  /// Valid values: <code>1150-65535</code> except <code>1234</code>,
+  /// <code>1434</code>, <code>3260</code>, <code>3343</code>,
+  /// <code>3389</code>, <code>47001</code>, and <code>49152-49156</code>.
   ///
   /// <b>Amazon Aurora</b>
   ///
   /// Default: <code>3306</code>
   ///
-  /// Valid Values: <code>1150-65535</code>
+  /// Valid values: <code>1150-65535</code>
   ///
   /// Parameter [dBSecurityGroups] :
   /// A list of DB security groups to authorize on this DB instance. Changing
@@ -8950,8 +9259,8 @@ class RDS {
   /// experience performance degradation. While the migration takes place,
   /// nightly backups for the instance are suspended. No other Amazon RDS
   /// operations can take place for the instance, including modifying the
-  /// instance, rebooting the instance, deleting the instance, creating a Read
-  /// Replica for the instance, and creating a DB snapshot of the instance.
+  /// instance, rebooting the instance, deleting the instance, creating a read
+  /// replica for the instance, and creating a DB snapshot of the instance.
   ///
   /// Constraints: For MariaDB, MySQL, Oracle, and PostgreSQL, the value
   /// supplied must be at least 10% greater than the current value. Values that
@@ -9190,8 +9499,8 @@ class RDS {
   /// experience performance degradation. While the migration takes place,
   /// nightly backups for the instance are suspended. No other Amazon RDS
   /// operations can take place for the instance, including modifying the
-  /// instance, rebooting the instance, deleting the instance, creating a Read
-  /// Replica for the instance, and creating a DB snapshot of the instance.
+  /// instance, rebooting the instance, deleting the instance, creating a read
+  /// replica for the instance, and creating a DB snapshot of the instance.
   ///
   /// Valid values: <code>standard | gp2 | io1</code>
   ///
@@ -9234,6 +9543,7 @@ class RDS {
     bool autoMinorVersionUpgrade,
     int backupRetentionPeriod,
     String cACertificateIdentifier,
+    bool certificateRotationRestart,
     CloudwatchLogsExportConfiguration cloudwatchLogsExportConfiguration,
     bool copyTagsToSnapshot,
     String dBInstanceClass,
@@ -9285,6 +9595,8 @@ class RDS {
         ?.also((arg) => $request['BackupRetentionPeriod'] = arg);
     cACertificateIdentifier
         ?.also((arg) => $request['CACertificateIdentifier'] = arg);
+    certificateRotationRestart
+        ?.also((arg) => $request['CertificateRotationRestart'] = arg);
     cloudwatchLogsExportConfiguration
         ?.also((arg) => $request['CloudwatchLogsExportConfiguration'] = arg);
     copyTagsToSnapshot?.also((arg) => $request['CopyTagsToSnapshot'] = arg);
@@ -9380,8 +9692,8 @@ class RDS {
   /// Parameter [parameters] :
   /// An array of parameter names, values, and the apply method for the
   /// parameter update. At least one parameter name, value, and apply method
-  /// must be supplied; subsequent arguments are optional. A maximum of 20
-  /// parameters can be modified in a single request.
+  /// must be supplied; later arguments are optional. A maximum of 20 parameters
+  /// can be modified in a single request.
   ///
   /// Valid Values (for the application method): <code>immediate |
   /// pending-reboot</code>
@@ -9500,6 +9812,7 @@ class RDS {
   ///
   /// May throw [DBProxyNotFoundFault].
   /// May throw [DBProxyTargetGroupNotFoundFault].
+  /// May throw [InvalidDBProxyStateFault].
   ///
   /// Parameter [dBProxyName] :
   /// The name of the new proxy to which to assign the target group.
@@ -9541,8 +9854,8 @@ class RDS {
     return ModifyDBProxyTargetGroupResponse.fromXml($result);
   }
 
-  /// Updates a manual DB snapshot, which can be encrypted or not encrypted,
-  /// with a new engine version.
+  /// Updates a manual DB snapshot with a new engine version. The snapshot can
+  /// be encrypted or unencrypted, but not shared or public.
   ///
   /// Amazon RDS supports upgrading DB snapshots for MySQL, Oracle, and
   /// PostgreSQL.
@@ -9743,10 +10056,9 @@ class RDS {
     return ModifyDBSubnetGroupResult.fromXml($result);
   }
 
-  /// Modifies an existing RDS event notification subscription. Note that you
-  /// can't modify the source identifiers using this call; to change source
-  /// identifiers for a subscription, use the
-  /// <code>AddSourceIdentifierToSubscription</code> and
+  /// Modifies an existing RDS event notification subscription. You can't modify
+  /// the source identifiers using this call. To change source identifiers for a
+  /// subscription, use the <code>AddSourceIdentifierToSubscription</code> and
   /// <code>RemoveSourceIdentifierFromSubscription</code> calls.
   ///
   /// You can see a list of the event categories for a given SourceType in the
@@ -9935,18 +10247,18 @@ class RDS {
     return ModifyOptionGroupResult.fromXml($result);
   }
 
-  /// Promotes a Read Replica DB instance to a standalone DB instance.
+  /// Promotes a read replica DB instance to a standalone DB instance.
   /// <note>
   /// <ul>
   /// <li>
   /// Backup duration is a function of the amount of changes to the database
-  /// since the previous backup. If you plan to promote a Read Replica to a
+  /// since the previous backup. If you plan to promote a read replica to a
   /// standalone instance, we recommend that you enable backups and complete at
-  /// least one backup prior to promotion. In addition, a Read Replica cannot be
+  /// least one backup prior to promotion. In addition, a read replica cannot be
   /// promoted to a standalone instance when it is in the
-  /// <code>backing-up</code> status. If you have enabled backups on your Read
-  /// Replica, configure the automated backup window so that daily backups do
-  /// not interfere with Read Replica promotion.
+  /// <code>backing-up</code> status. If you have enabled backups on your read
+  /// replica, configure the automated backup window so that daily backups do
+  /// not interfere with read replica promotion.
   /// </li>
   /// <li>
   /// This command doesn't apply to Aurora MySQL and Aurora PostgreSQL.
@@ -9963,7 +10275,7 @@ class RDS {
   ///
   /// <ul>
   /// <li>
-  /// Must match the identifier of an existing Read Replica DB instance.
+  /// Must match the identifier of an existing read replica DB instance.
   /// </li>
   /// </ul>
   /// Example: <code>mydbinstance</code>
@@ -9982,7 +10294,7 @@ class RDS {
   /// Must be a value from 0 to 35.
   /// </li>
   /// <li>
-  /// Can't be set to 0 if the DB instance is a source to Read Replicas.
+  /// Can't be set to 0 if the DB instance is a source to read replicas.
   /// </li>
   /// </ul>
   ///
@@ -10038,7 +10350,7 @@ class RDS {
     return PromoteReadReplicaResult.fromXml($result);
   }
 
-  /// Promotes a Read Replica DB cluster to a standalone DB cluster.
+  /// Promotes a read replica DB cluster to a standalone DB cluster.
   /// <note>
   /// This action only applies to Aurora DB clusters.
   /// </note>
@@ -10047,14 +10359,14 @@ class RDS {
   /// May throw [InvalidDBClusterStateFault].
   ///
   /// Parameter [dBClusterIdentifier] :
-  /// The identifier of the DB cluster Read Replica to promote. This parameter
+  /// The identifier of the DB cluster read replica to promote. This parameter
   /// isn't case-sensitive.
   ///
   /// Constraints:
   ///
   /// <ul>
   /// <li>
-  /// Must match the identifier of an existing DBCluster Read Replica.
+  /// Must match the identifier of an existing DB cluster read replica.
   /// </li>
   /// </ul>
   /// Example: <code>my-cluster-replica1</code>
@@ -10193,6 +10505,7 @@ class RDS {
   /// May throw [DBProxyTargetAlreadyRegisteredFault].
   /// May throw [InvalidDBInstanceStateFault].
   /// May throw [InvalidDBClusterStateFault].
+  /// May throw [InvalidDBProxyStateFault].
   ///
   /// Parameter [dBProxyName] :
   /// The identifier of the <code>DBProxy</code> that is associated with the
@@ -10743,6 +11056,20 @@ class RDS {
   /// enabled. The database can't be deleted when deletion protection is
   /// enabled. By default, deletion protection is disabled.
   ///
+  /// Parameter [domain] :
+  /// Specify the Active Directory directory ID to restore the DB cluster in.
+  /// The domain must be created prior to this operation.
+  ///
+  /// For Amazon Aurora DB clusters, Amazon RDS can use Kerberos Authentication
+  /// to authenticate users that connect to the DB cluster. For more
+  /// information, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/kerberos-authentication.html">Kerberos
+  /// Authentication</a> in the <i>Amazon Aurora User Guide</i>.
+  ///
+  /// Parameter [domainIAMRoleName] :
+  /// Specify the name of the IAM role to be used when making API calls to the
+  /// Directory Service.
+  ///
   /// Parameter [enableCloudwatchLogsExports] :
   /// The list of logs that the restored DB cluster is to export to CloudWatch
   /// Logs. The values in the list depend on the DB engine being used. For more
@@ -10894,6 +11221,8 @@ class RDS {
     String dBSubnetGroupName,
     String databaseName,
     bool deletionProtection,
+    String domain,
+    String domainIAMRoleName,
     List<String> enableCloudwatchLogsExports,
     bool enableIAMDatabaseAuthentication,
     String engineVersion,
@@ -10938,6 +11267,8 @@ class RDS {
     dBSubnetGroupName?.also((arg) => $request['DBSubnetGroupName'] = arg);
     databaseName?.also((arg) => $request['DatabaseName'] = arg);
     deletionProtection?.also((arg) => $request['DeletionProtection'] = arg);
+    domain?.also((arg) => $request['Domain'] = arg);
+    domainIAMRoleName?.also((arg) => $request['DomainIAMRoleName'] = arg);
     enableCloudwatchLogsExports
         ?.also((arg) => $request['EnableCloudwatchLogsExports'] = arg);
     enableIAMDatabaseAuthentication
@@ -10964,23 +11295,24 @@ class RDS {
     return RestoreDBClusterFromS3Result.fromXml($result);
   }
 
-  /// Creates a new DB cluster from a DB snapshot or DB cluster snapshot.
+  /// Creates a new DB cluster from a DB snapshot or DB cluster snapshot. This
+  /// action only applies to Aurora DB clusters.
   ///
-  /// If a DB snapshot is specified, the target DB cluster is created from the
-  /// source DB snapshot with a default configuration and default security
-  /// group.
-  ///
-  /// If a DB cluster snapshot is specified, the target DB cluster is created
-  /// from the source DB cluster restore point with the same configuration as
-  /// the original source DB cluster. If you don't specify a security group, the
-  /// new DB cluster is associated with the default security group.
-  ///
+  /// The target DB cluster is created from the source snapshot with a default
+  /// configuration. If you don't specify a security group, the new DB cluster
+  /// is associated with the default security group.
+  /// <note>
+  /// This action only restores the DB cluster, not the DB instances for that DB
+  /// cluster. You must invoke the <code>CreateDBInstance</code> action to
+  /// create DB instances for the restored DB cluster, specifying the identifier
+  /// of the restored DB cluster in <code>DBClusterIdentifier</code>. You can
+  /// create DB instances only after the
+  /// <code>RestoreDBClusterFromSnapshot</code> action has completed and the DB
+  /// cluster is available.
+  /// </note>
   /// For more information on Amazon Aurora, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html">
   /// What Is Amazon Aurora?</a> in the <i>Amazon Aurora User Guide.</i>
-  /// <note>
-  /// This action only applies to Aurora DB clusters.
-  /// </note>
   ///
   /// May throw [DBClusterAlreadyExistsFault].
   /// May throw [DBClusterQuotaExceededFault].
@@ -11106,6 +11438,14 @@ class RDS {
   /// enabled. The database can't be deleted when deletion protection is
   /// enabled. By default, deletion protection is disabled.
   ///
+  /// Parameter [domain] :
+  /// Specify the Active Directory directory ID to restore the DB cluster in.
+  /// The domain must be created prior to this operation.
+  ///
+  /// Parameter [domainIAMRoleName] :
+  /// Specify the name of the IAM role to be used when making API calls to the
+  /// Directory Service.
+  ///
   /// Parameter [enableCloudwatchLogsExports] :
   /// The list of logs that the restored DB cluster is to export to Amazon
   /// CloudWatch Logs. The values in the list depend on the DB engine being
@@ -11218,6 +11558,8 @@ class RDS {
     String dBSubnetGroupName,
     String databaseName,
     bool deletionProtection,
+    String domain,
+    String domainIAMRoleName,
     List<String> enableCloudwatchLogsExports,
     bool enableIAMDatabaseAuthentication,
     String engineMode,
@@ -11247,6 +11589,8 @@ class RDS {
     dBSubnetGroupName?.also((arg) => $request['DBSubnetGroupName'] = arg);
     databaseName?.also((arg) => $request['DatabaseName'] = arg);
     deletionProtection?.also((arg) => $request['DeletionProtection'] = arg);
+    domain?.also((arg) => $request['Domain'] = arg);
+    domainIAMRoleName?.also((arg) => $request['DomainIAMRoleName'] = arg);
     enableCloudwatchLogsExports
         ?.also((arg) => $request['EnableCloudwatchLogsExports'] = arg);
     enableIAMDatabaseAuthentication
@@ -11394,6 +11738,20 @@ class RDS {
   /// enabled. The database can't be deleted when deletion protection is
   /// enabled. By default, deletion protection is disabled.
   ///
+  /// Parameter [domain] :
+  /// Specify the Active Directory directory ID to restore the DB cluster in.
+  /// The domain must be created prior to this operation.
+  ///
+  /// For Amazon Aurora DB clusters, Amazon RDS can use Kerberos Authentication
+  /// to authenticate users that connect to the DB cluster. For more
+  /// information, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/kerberos-authentication.html">Kerberos
+  /// Authentication</a> in the <i>Amazon Aurora User Guide</i>.
+  ///
+  /// Parameter [domainIAMRoleName] :
+  /// Specify the name of the IAM role to be used when making API calls to the
+  /// Directory Service.
+  ///
   /// Parameter [enableCloudwatchLogsExports] :
   /// The list of logs that the restored DB cluster is to export to CloudWatch
   /// Logs. The values in the list depend on the DB engine being used. For more
@@ -11517,6 +11875,8 @@ class RDS {
     String dBClusterParameterGroupName,
     String dBSubnetGroupName,
     bool deletionProtection,
+    String domain,
+    String domainIAMRoleName,
     List<String> enableCloudwatchLogsExports,
     bool enableIAMDatabaseAuthentication,
     String kmsKeyId,
@@ -11543,6 +11903,8 @@ class RDS {
         ?.also((arg) => $request['DBClusterParameterGroupName'] = arg);
     dBSubnetGroupName?.also((arg) => $request['DBSubnetGroupName'] = arg);
     deletionProtection?.also((arg) => $request['DeletionProtection'] = arg);
+    domain?.also((arg) => $request['Domain'] = arg);
+    domainIAMRoleName?.also((arg) => $request['DomainIAMRoleName'] = arg);
     enableCloudwatchLogsExports
         ?.also((arg) => $request['EnableCloudwatchLogsExports'] = arg);
     enableIAMDatabaseAuthentication
@@ -13099,6 +13461,103 @@ class RDS {
     return StartDBInstanceResult.fromXml($result);
   }
 
+  /// Starts an export of a snapshot to Amazon S3. The provided IAM role must
+  /// have access to the S3 bucket.
+  ///
+  /// May throw [DBSnapshotNotFoundFault].
+  /// May throw [DBClusterSnapshotNotFoundFault].
+  /// May throw [ExportTaskAlreadyExistsFault].
+  /// May throw [InvalidS3BucketFault].
+  /// May throw [IamRoleNotFoundFault].
+  /// May throw [IamRoleMissingPermissionsFault].
+  /// May throw [InvalidExportOnlyFault].
+  /// May throw [KMSKeyNotAccessibleFault].
+  /// May throw [InvalidExportSourceStateFault].
+  ///
+  /// Parameter [exportTaskIdentifier] :
+  /// A unique identifier for the snapshot export task. This ID isn't an
+  /// identifier for the Amazon S3 bucket where the snapshot is to be exported
+  /// to.
+  ///
+  /// Parameter [iamRoleArn] :
+  /// The name of the IAM role to use for writing to the Amazon S3 bucket when
+  /// exporting a snapshot.
+  ///
+  /// Parameter [kmsKeyId] :
+  /// The ID of the AWS KMS key to use to encrypt the snapshot exported to
+  /// Amazon S3. The KMS key ID is the Amazon Resource Name (ARN), the KMS key
+  /// identifier, or the KMS key alias for the KMS encryption key. The IAM role
+  /// used for the snapshot export must have encryption and decryption
+  /// permissions to use this KMS key.
+  ///
+  /// Parameter [s3BucketName] :
+  /// The name of the Amazon S3 bucket to export the snapshot to.
+  ///
+  /// Parameter [sourceArn] :
+  /// The Amazon Resource Name (ARN) of the snapshot to export to Amazon S3.
+  ///
+  /// Parameter [exportOnly] :
+  /// The data to be exported from the snapshot. If this parameter is not
+  /// provided, all the snapshot data is exported. Valid values are the
+  /// following:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>database</code> - Export all the data of the snapshot.
+  /// </li>
+  /// <li>
+  /// <code>database.table [table-name]</code> - Export a table of the snapshot.
+  /// </li>
+  /// <li>
+  /// <code>database.schema [schema-name]</code> - Export a database schema of
+  /// the snapshot. This value isn't valid for RDS for MySQL, RDS for MariaDB,
+  /// or Aurora MySQL.
+  /// </li>
+  /// <li>
+  /// <code>database.schema.table [table-name]</code> - Export a table of the
+  /// database schema. This value isn't valid for RDS for MySQL, RDS for
+  /// MariaDB, or Aurora MySQL.
+  /// </li>
+  /// </ul>
+  ///
+  /// Parameter [s3Prefix] :
+  /// The Amazon S3 bucket prefix to use as the file name and path of the
+  /// exported snapshot.
+  Future<ExportTask> startExportTask({
+    @_s.required String exportTaskIdentifier,
+    @_s.required String iamRoleArn,
+    @_s.required String kmsKeyId,
+    @_s.required String s3BucketName,
+    @_s.required String sourceArn,
+    List<String> exportOnly,
+    String s3Prefix,
+  }) async {
+    ArgumentError.checkNotNull(exportTaskIdentifier, 'exportTaskIdentifier');
+    ArgumentError.checkNotNull(iamRoleArn, 'iamRoleArn');
+    ArgumentError.checkNotNull(kmsKeyId, 'kmsKeyId');
+    ArgumentError.checkNotNull(s3BucketName, 's3BucketName');
+    ArgumentError.checkNotNull(sourceArn, 'sourceArn');
+    final $request = <String, dynamic>{
+      'Action': 'StartExportTask',
+      'Version': '2014-10-31',
+    };
+    $request['ExportTaskIdentifier'] = exportTaskIdentifier;
+    $request['IamRoleArn'] = iamRoleArn;
+    $request['KmsKeyId'] = kmsKeyId;
+    $request['S3BucketName'] = s3BucketName;
+    $request['SourceArn'] = sourceArn;
+    exportOnly?.also((arg) => $request['ExportOnly'] = arg);
+    s3Prefix?.also((arg) => $request['S3Prefix'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'StartExportTaskResult',
+    );
+    return ExportTask.fromXml($result);
+  }
+
   /// Stops a database activity stream that was started using the AWS console,
   /// the <code>start-activity-stream</code> AWS CLI command, or the
   /// <code>StartActivityStream</code> action.
@@ -13230,10 +13689,16 @@ class RDS {
 }
 
 /// Data returned by the <b>DescribeAccountAttributes</b> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccountAttributesMessage {
   /// A list of <code>AccountQuota</code> objects. Within this list, each quota
   /// has a name, a count of usage toward the quota maximum, and a maximum value
   /// for the quota.
+  @_s.JsonKey(name: 'AccountQuotas')
   final List<AccountQuota> accountQuotas;
 
   AccountAttributesMessage({
@@ -13295,6 +13760,9 @@ class AccountAttributesMessage {
 /// <li>
 /// <code>DBInstances</code> - The number of DB instances per account. The used
 /// value is the count of the DB instances in the account.
+///
+/// Amazon RDS DB instances, Amazon Aurora DB instances, Amazon Neptune
+/// instances, and Amazon DocumentDB instances apply to this quota.
 /// </li>
 /// <li>
 /// <code>DBParameterGroups</code> - The number of DB parameter groups per
@@ -13326,10 +13794,10 @@ class AccountAttributesMessage {
 /// DB option groups in the account.
 /// </li>
 /// <li>
-/// <code>ReadReplicasPerMaster</code> - The number of Read Replicas per DB
-/// instance. The used value is the highest number of Read Replicas for a DB
+/// <code>ReadReplicasPerMaster</code> - The number of read replicas per DB
+/// instance. The used value is the highest number of read replicas for a DB
 /// instance in the account. Other DB instances in the account might have a
-/// lower number of Read Replicas.
+/// lower number of read replicas.
 /// </li>
 /// <li>
 /// <code>ReservedDBInstances</code> - The number of reserved DB instances per
@@ -13344,18 +13812,26 @@ class AccountAttributesMessage {
 /// </li>
 /// </ul>
 /// For more information, see <a
-/// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html">Limits</a>
-/// in the <i>Amazon RDS User Guide</i> and <a
-/// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_Limits.html">Limits</a>
-/// in the <i>Amazon Aurora User Guide</i>.
+/// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html">Quotas
+/// for Amazon RDS</a> in the <i>Amazon RDS User Guide</i> and <a
+/// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_Limits.html">Quotas
+/// for Amazon Aurora</a> in the <i>Amazon Aurora User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AccountQuota {
   /// The name of the Amazon RDS quota for this AWS account.
+  @_s.JsonKey(name: 'AccountQuotaName')
   final String accountQuotaName;
 
   /// The maximum allowed value for the quota.
+  @_s.JsonKey(name: 'Max')
   final int max;
 
   /// The amount currently used toward the quota maximum.
+  @_s.JsonKey(name: 'Used')
   final int used;
 
   AccountQuota({
@@ -13373,7 +13849,9 @@ class AccountQuota {
 }
 
 enum ActivityStreamMode {
+  @_s.JsonValue('sync')
   sync,
+  @_s.JsonValue('async')
   async,
 }
 
@@ -13390,9 +13868,13 @@ extension on String {
 }
 
 enum ActivityStreamStatus {
+  @_s.JsonValue('stopped')
   stopped,
+  @_s.JsonValue('starting')
   starting,
+  @_s.JsonValue('started')
   started,
+  @_s.JsonValue('stopping')
   stopping,
 }
 
@@ -13412,7 +13894,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AddSourceIdentifierToSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   AddSourceIdentifierToSubscriptionResult({
@@ -13428,7 +13916,9 @@ class AddSourceIdentifierToSubscriptionResult {
 }
 
 enum ApplyMethod {
+  @_s.JsonValue('immediate')
   immediate,
+  @_s.JsonValue('pending-reboot')
   pendingReboot,
 }
 
@@ -13444,7 +13934,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplyPendingMaintenanceActionResult {
+  @_s.JsonKey(name: 'ResourcePendingMaintenanceActions')
   final ResourcePendingMaintenanceActions resourcePendingMaintenanceActions;
 
   ApplyPendingMaintenanceActionResult({
@@ -13460,6 +13956,7 @@ class ApplyPendingMaintenanceActionResult {
 }
 
 enum AuthScheme {
+  @_s.JsonValue('SECRETS')
   secrets,
 }
 
@@ -13473,7 +13970,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AuthorizeDBSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'DBSecurityGroup')
   final DBSecurityGroup dBSecurityGroup;
 
   AuthorizeDBSecurityGroupIngressResult({
@@ -13492,8 +13995,14 @@ class AuthorizeDBSecurityGroupIngressResult {
 ///
 /// This data type is used as an element in the
 /// <code>OrderableDBInstanceOption</code> data type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AvailabilityZone {
   /// The name of the Availability Zone.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   AvailabilityZone({
@@ -13513,15 +14022,23 @@ class AvailabilityZone {
 /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html#USER_ConfigureProcessor">Configuring
 /// the Processor of the DB Instance Class</a> in the <i>Amazon RDS User Guide.
 /// </i>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AvailableProcessorFeature {
   /// The allowed values for the processor feature of the DB instance class.
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
 
   /// The default value for the processor feature of the DB instance class.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// The name of the processor feature. Valid names are <code>coreCount</code>
   /// and <code>threadsPerCore</code>.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   AvailableProcessorFeature({
@@ -13539,29 +14056,54 @@ class AvailableProcessorFeature {
 }
 
 /// A CA certificate for an AWS account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Certificate {
   /// The Amazon Resource Name (ARN) for the certificate.
+  @_s.JsonKey(name: 'CertificateArn')
   final String certificateArn;
 
   /// The unique key that identifies a certificate.
+  @_s.JsonKey(name: 'CertificateIdentifier')
   final String certificateIdentifier;
 
   /// The type of the certificate.
+  @_s.JsonKey(name: 'CertificateType')
   final String certificateType;
 
+  /// Whether there is an override for the default certificate identifier.
+  @_s.JsonKey(name: 'CustomerOverride')
+  final bool customerOverride;
+
+  /// If there is an override for the default certificate identifier, when the
+  /// override expires.
+  @_s.JsonKey(
+      name: 'CustomerOverrideValidTill',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
+  final DateTime customerOverrideValidTill;
+
   /// The thumbprint of the certificate.
+  @_s.JsonKey(name: 'Thumbprint')
   final String thumbprint;
 
   /// The starting date from which the certificate is valid.
+  @_s.JsonKey(name: 'ValidFrom', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime validFrom;
 
   /// The final date that the certificate continues to be valid.
+  @_s.JsonKey(name: 'ValidTill', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime validTill;
 
   Certificate({
     this.certificateArn,
     this.certificateIdentifier,
     this.certificateType,
+    this.customerOverride,
+    this.customerOverrideValidTill,
     this.thumbprint,
     this.validFrom,
     this.validTill,
@@ -13572,6 +14114,9 @@ class Certificate {
       certificateIdentifier:
           _s.extractXmlStringValue(elem, 'CertificateIdentifier'),
       certificateType: _s.extractXmlStringValue(elem, 'CertificateType'),
+      customerOverride: _s.extractXmlBoolValue(elem, 'CustomerOverride'),
+      customerOverrideValidTill:
+          _s.extractXmlDateTimeValue(elem, 'CustomerOverrideValidTill'),
       thumbprint: _s.extractXmlStringValue(elem, 'Thumbprint'),
       validFrom: _s.extractXmlDateTimeValue(elem, 'ValidFrom'),
       validTill: _s.extractXmlDateTimeValue(elem, 'ValidTill'),
@@ -13580,14 +14125,21 @@ class Certificate {
 }
 
 /// Data returned by the <b>DescribeCertificates</b> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CertificateMessage {
   /// The list of <code>Certificate</code> objects for the AWS account.
+  @_s.JsonKey(name: 'Certificates')
   final List<Certificate> certificates;
 
   /// An optional pagination token provided by a previous
   /// <code>DescribeCertificates</code> request. If this parameter is specified,
   /// the response includes only records beyond the marker, up to the value
   /// specified by <code>MaxRecords</code> .
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   CertificateMessage({
@@ -13607,11 +14159,18 @@ class CertificateMessage {
 
 /// This data type is used as a response element in the action
 /// <code>DescribeDBEngineVersions</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CharacterSet {
   /// The description of the character set.
+  @_s.JsonKey(name: 'CharacterSetDescription')
   final String characterSetDescription;
 
   /// The name of the character set.
+  @_s.JsonKey(name: 'CharacterSetName')
   final String characterSetName;
 
   CharacterSet({
@@ -13637,17 +14196,26 @@ class CharacterSet {
 /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html#USER_LogAccess.Procedural.UploadtoCloudWatch">Publishing
 /// Database Logs to Amazon CloudWatch Logs </a> in the <i>Amazon RDS User
 /// Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class CloudwatchLogsExportConfiguration {
   /// The list of log types to disable.
+  @_s.JsonKey(name: 'DisableLogTypes')
   final List<String> disableLogTypes;
 
   /// The list of log types to enable.
+  @_s.JsonKey(name: 'EnableLogTypes')
   final List<String> enableLogTypes;
 
   CloudwatchLogsExportConfiguration({
     this.disableLogTypes,
     this.enableLogTypes,
   });
+  Map<String, dynamic> toJson() =>
+      _$CloudwatchLogsExportConfigurationToJson(this);
 }
 
 /// <note>
@@ -13656,6 +14224,11 @@ class CloudwatchLogsExportConfiguration {
 /// </note>
 /// Specifies the settings that control the size and behavior of the connection
 /// pool associated with a <code>DBProxyTargetGroup</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ConnectionPoolConfiguration {
   /// The number of seconds for a proxy to wait for a connection to become
   /// available in the connection pool. Only applies when the proxy has opened its
@@ -13665,6 +14238,7 @@ class ConnectionPoolConfiguration {
   /// Default: 120
   ///
   /// Constraints: between 1 and 3600, or 0 representing unlimited
+  @_s.JsonKey(name: 'ConnectionBorrowTimeout')
   final int connectionBorrowTimeout;
 
   /// One or more SQL statements for the proxy to run when opening each new
@@ -13675,6 +14249,7 @@ class ConnectionPoolConfiguration {
   /// such as <code>SET x=1, y=2</code>.
   ///
   /// Default: no initialization query
+  @_s.JsonKey(name: 'InitQuery')
   final String initQuery;
 
   /// The maximum size of the connection pool for each target in a target group.
@@ -13685,6 +14260,7 @@ class ConnectionPoolConfiguration {
   /// Default: 100
   ///
   /// Constraints: between 1 and 100
+  @_s.JsonKey(name: 'MaxConnectionsPercent')
   final int maxConnectionsPercent;
 
   /// Controls how actively the proxy closes idle database connections in the
@@ -13698,6 +14274,7 @@ class ConnectionPoolConfiguration {
   /// Default: 50
   ///
   /// Constraints: between 0 and <code>MaxConnectionsPercent</code>
+  @_s.JsonKey(name: 'MaxIdleConnectionsPercent')
   final int maxIdleConnectionsPercent;
 
   /// Each item in the list represents a class of SQL operations that normally
@@ -13706,6 +14283,7 @@ class ConnectionPoolConfiguration {
   /// that class of SQL operations from the pinning behavior.
   ///
   /// Default: no session pinning filters
+  @_s.JsonKey(name: 'SessionPinningFilters')
   final List<String> sessionPinningFilters;
 
   ConnectionPoolConfiguration({
@@ -13715,6 +14293,7 @@ class ConnectionPoolConfiguration {
     this.maxIdleConnectionsPercent,
     this.sessionPinningFilters,
   });
+  Map<String, dynamic> toJson() => _$ConnectionPoolConfigurationToJson(this);
 }
 
 /// <note>
@@ -13723,11 +14302,17 @@ class ConnectionPoolConfiguration {
 /// </note>
 /// Displays the settings that control the size and behavior of the connection
 /// pool associated with a <code>DBProxyTarget</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConnectionPoolConfigurationInfo {
   /// The number of seconds for a proxy to wait for a connection to become
   /// available in the connection pool. Only applies when the proxy has opened its
   /// maximum number of connections and all connections are busy with client
   /// sessions.
+  @_s.JsonKey(name: 'ConnectionBorrowTimeout')
   final int connectionBorrowTimeout;
 
   /// One or more SQL statements for the proxy to run when opening each new
@@ -13736,12 +14321,14 @@ class ConnectionPoolConfigurationInfo {
   /// character set. This setting is empty by default. For multiple statements,
   /// use semicolons as the separator. You can also include multiple variables in
   /// a single <code>SET</code> statement, such as <code>SET x=1, y=2</code>.
+  @_s.JsonKey(name: 'InitQuery')
   final String initQuery;
 
   /// The maximum size of the connection pool for each target in a target group.
   /// For Aurora MySQL, it is expressed as a percentage of the
   /// <code>max_connections</code> setting for the RDS DB instance or Aurora DB
   /// cluster used by the target group.
+  @_s.JsonKey(name: 'MaxConnectionsPercent')
   final int maxConnectionsPercent;
 
   /// Controls how actively the proxy closes idle database connections in the
@@ -13751,6 +14338,7 @@ class ConnectionPoolConfigurationInfo {
   /// pool. For Aurora MySQL, it is expressed as a percentage of the
   /// <code>max_connections</code> setting for the RDS DB instance or Aurora DB
   /// cluster used by the target group.
+  @_s.JsonKey(name: 'MaxIdleConnectionsPercent')
   final int maxIdleConnectionsPercent;
 
   /// Each item in the list represents a class of SQL operations that normally
@@ -13758,6 +14346,7 @@ class ConnectionPoolConfigurationInfo {
   /// same underlying database connection. Including an item in the list exempts
   /// that class of SQL operations from the pinning behavior. Currently, the only
   /// allowed value is <code>EXCLUDE_VARIABLE_SETS</code>.
+  @_s.JsonKey(name: 'SessionPinningFilters')
   final List<String> sessionPinningFilters;
 
   ConnectionPoolConfigurationInfo({
@@ -13784,7 +14373,13 @@ class ConnectionPoolConfigurationInfo {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyDBClusterParameterGroupResult {
+  @_s.JsonKey(name: 'DBClusterParameterGroup')
   final DBClusterParameterGroup dBClusterParameterGroup;
 
   CopyDBClusterParameterGroupResult({
@@ -13799,7 +14394,13 @@ class CopyDBClusterParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyDBClusterSnapshotResult {
+  @_s.JsonKey(name: 'DBClusterSnapshot')
   final DBClusterSnapshot dBClusterSnapshot;
 
   CopyDBClusterSnapshotResult({
@@ -13814,7 +14415,13 @@ class CopyDBClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyDBParameterGroupResult {
+  @_s.JsonKey(name: 'DBParameterGroup')
   final DBParameterGroup dBParameterGroup;
 
   CopyDBParameterGroupResult({
@@ -13829,7 +14436,13 @@ class CopyDBParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyDBSnapshotResult {
+  @_s.JsonKey(name: 'DBSnapshot')
   final DBSnapshot dBSnapshot;
 
   CopyDBSnapshotResult({
@@ -13844,7 +14457,13 @@ class CopyDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyOptionGroupResult {
+  @_s.JsonKey(name: 'OptionGroup')
   final OptionGroup optionGroup;
 
   CopyOptionGroupResult({
@@ -13859,7 +14478,13 @@ class CopyOptionGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateCustomAvailabilityZoneResult {
+  @_s.JsonKey(name: 'CustomAvailabilityZone')
   final CustomAvailabilityZone customAvailabilityZone;
 
   CreateCustomAvailabilityZoneResult({
@@ -13874,7 +14499,13 @@ class CreateCustomAvailabilityZoneResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBClusterParameterGroupResult {
+  @_s.JsonKey(name: 'DBClusterParameterGroup')
   final DBClusterParameterGroup dBClusterParameterGroup;
 
   CreateDBClusterParameterGroupResult({
@@ -13889,7 +14520,13 @@ class CreateDBClusterParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBClusterResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   CreateDBClusterResult({
@@ -13904,7 +14541,13 @@ class CreateDBClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBClusterSnapshotResult {
+  @_s.JsonKey(name: 'DBClusterSnapshot')
   final DBClusterSnapshot dBClusterSnapshot;
 
   CreateDBClusterSnapshotResult({
@@ -13919,7 +14562,13 @@ class CreateDBClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBInstanceReadReplicaResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   CreateDBInstanceReadReplicaResult({
@@ -13934,7 +14583,13 @@ class CreateDBInstanceReadReplicaResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   CreateDBInstanceResult({
@@ -13949,7 +14604,13 @@ class CreateDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBParameterGroupResult {
+  @_s.JsonKey(name: 'DBParameterGroup')
   final DBParameterGroup dBParameterGroup;
 
   CreateDBParameterGroupResult({
@@ -13964,8 +14625,14 @@ class CreateDBParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBProxyResponse {
   /// The <code>DBProxy</code> structure corresponding to the new proxy.
+  @_s.JsonKey(name: 'DBProxy')
   final DBProxy dBProxy;
 
   CreateDBProxyResponse({
@@ -13979,7 +14646,13 @@ class CreateDBProxyResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBSecurityGroupResult {
+  @_s.JsonKey(name: 'DBSecurityGroup')
   final DBSecurityGroup dBSecurityGroup;
 
   CreateDBSecurityGroupResult({
@@ -13994,7 +14667,13 @@ class CreateDBSecurityGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBSnapshotResult {
+  @_s.JsonKey(name: 'DBSnapshot')
   final DBSnapshot dBSnapshot;
 
   CreateDBSnapshotResult({
@@ -14009,7 +14688,13 @@ class CreateDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBSubnetGroupResult {
+  @_s.JsonKey(name: 'DBSubnetGroup')
   final DBSubnetGroup dBSubnetGroup;
 
   CreateDBSubnetGroupResult({
@@ -14024,7 +14709,13 @@ class CreateDBSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   CreateEventSubscriptionResult({
@@ -14039,7 +14730,13 @@ class CreateEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateGlobalClusterResult {
+  @_s.JsonKey(name: 'GlobalCluster')
   final GlobalCluster globalCluster;
 
   CreateGlobalClusterResult({
@@ -14054,7 +14751,13 @@ class CreateGlobalClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateOptionGroupResult {
+  @_s.JsonKey(name: 'OptionGroup')
   final OptionGroup optionGroup;
 
   CreateOptionGroupResult({
@@ -14075,20 +14778,29 @@ class CreateOptionGroupResult {
 /// For more information about RDS on VMware, see the <a
 /// href="https://docs.aws.amazon.com/AmazonRDS/latest/RDSonVMwareUserGuide/rds-on-vmware.html">
 /// <i>RDS on VMware User Guide.</i> </a>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CustomAvailabilityZone {
   /// The identifier of the custom AZ.
   ///
   /// Amazon RDS generates a unique identifier when a custom AZ is created.
+  @_s.JsonKey(name: 'CustomAvailabilityZoneId')
   final String customAvailabilityZoneId;
 
   /// The name of the custom AZ.
+  @_s.JsonKey(name: 'CustomAvailabilityZoneName')
   final String customAvailabilityZoneName;
 
   /// The status of the custom AZ.
+  @_s.JsonKey(name: 'CustomAvailabilityZoneStatus')
   final String customAvailabilityZoneStatus;
 
   /// Information about the virtual private network (VPN) between the VMware
   /// vSphere cluster and the AWS website.
+  @_s.JsonKey(name: 'VpnDetails')
   final VpnDetails vpnDetails;
 
   CustomAvailabilityZone({
@@ -14112,14 +14824,21 @@ class CustomAvailabilityZone {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CustomAvailabilityZoneMessage {
   /// The list of <a>CustomAvailabilityZone</a> objects for the AWS account.
+  @_s.JsonKey(name: 'CustomAvailabilityZones')
   final List<CustomAvailabilityZone> customAvailabilityZones;
 
   /// An optional pagination token provided by a previous
   /// <code>DescribeCustomAvailabilityZones</code> request. If this parameter is
   /// specified, the response includes only records beyond the marker, up to the
   /// value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   CustomAvailabilityZoneMessage({
@@ -14144,48 +14863,63 @@ class CustomAvailabilityZoneMessage {
 /// This data type is used as a response element in the
 /// <code>DescribeDBClusters</code>, <code>StopDBCluster</code>, and
 /// <code>StartDBCluster</code> actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBCluster {
   /// The name of the Amazon Kinesis data stream used for the database activity
   /// stream.
+  @_s.JsonKey(name: 'ActivityStreamKinesisStreamName')
   final String activityStreamKinesisStreamName;
 
   /// The AWS KMS key identifier used for encrypting messages in the database
   /// activity stream.
+  @_s.JsonKey(name: 'ActivityStreamKmsKeyId')
   final String activityStreamKmsKeyId;
 
   /// The mode of the database activity stream. Database events such as a change
   /// or access generate an activity stream event. The database session can handle
   /// these events either synchronously or asynchronously.
+  @_s.JsonKey(name: 'ActivityStreamMode')
   final ActivityStreamMode activityStreamMode;
 
   /// The status of the database activity stream.
+  @_s.JsonKey(name: 'ActivityStreamStatus')
   final ActivityStreamStatus activityStreamStatus;
 
   /// For all database engines except Amazon Aurora, <code>AllocatedStorage</code>
   /// specifies the allocated storage size in gibibytes (GiB). For Aurora,
   /// <code>AllocatedStorage</code> always returns 1, because Aurora DB cluster
   /// storage size isn't fixed, but instead automatically adjusts as needed.
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
 
   /// Provides a list of the AWS Identity and Access Management (IAM) roles that
   /// are associated with the DB cluster. IAM roles that are associated with a DB
   /// cluster grant permission for the DB cluster to access other AWS services on
   /// your behalf.
+  @_s.JsonKey(name: 'AssociatedRoles')
   final List<DBClusterRole> associatedRoles;
 
   /// Provides the list of Availability Zones (AZs) where instances in the DB
   /// cluster can be created.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<String> availabilityZones;
 
   /// The number of change records stored for Backtrack.
+  @_s.JsonKey(name: 'BacktrackConsumedChangeRecords')
   final int backtrackConsumedChangeRecords;
 
   /// The target backtrack window, in seconds. If this value is set to 0,
   /// backtracking is disabled for the DB cluster. Otherwise, backtracking is
   /// enabled.
+  @_s.JsonKey(name: 'BacktrackWindow')
   final int backtrackWindow;
 
   /// Specifies the number of days for which automatic DB snapshots are retained.
+  @_s.JsonKey(name: 'BackupRetentionPeriod')
   final int backupRetentionPeriod;
 
   /// The current capacity of an Aurora Serverless DB cluster. The capacity is 0
@@ -14194,69 +14928,97 @@ class DBCluster {
   /// For more information about Aurora Serverless, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html">Using
   /// Amazon Aurora Serverless</a> in the <i>Amazon Aurora User Guide</i>.
+  @_s.JsonKey(name: 'Capacity')
   final int capacity;
 
   /// If present, specifies the name of the character set that this cluster is
   /// associated with.
+  @_s.JsonKey(name: 'CharacterSetName')
   final String characterSetName;
 
   /// Identifies the clone group to which the DB cluster is associated.
+  @_s.JsonKey(name: 'CloneGroupId')
   final String cloneGroupId;
 
   /// Specifies the time when the DB cluster was created, in Universal Coordinated
   /// Time (UTC).
+  @_s.JsonKey(
+      name: 'ClusterCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime clusterCreateTime;
 
   /// Specifies whether tags are copied from the DB cluster to snapshots of the DB
   /// cluster.
+  @_s.JsonKey(name: 'CopyTagsToSnapshot')
   final bool copyTagsToSnapshot;
 
   /// Specifies whether the DB cluster is a clone of a DB cluster owned by a
   /// different AWS account.
+  @_s.JsonKey(name: 'CrossAccountClone')
   final bool crossAccountClone;
 
   /// Identifies all custom endpoints associated with the cluster.
+  @_s.JsonKey(name: 'CustomEndpoints')
   final List<String> customEndpoints;
 
   /// The Amazon Resource Name (ARN) for the DB cluster.
+  @_s.JsonKey(name: 'DBClusterArn')
   final String dBClusterArn;
 
   /// Contains a user-supplied DB cluster identifier. This identifier is the
   /// unique key that identifies a DB cluster.
+  @_s.JsonKey(name: 'DBClusterIdentifier')
   final String dBClusterIdentifier;
 
   /// Provides the list of instances that make up the DB cluster.
+  @_s.JsonKey(name: 'DBClusterMembers')
   final List<DBClusterMember> dBClusterMembers;
 
   /// Provides the list of option group memberships for this DB cluster.
+  @_s.JsonKey(name: 'DBClusterOptionGroupMemberships')
   final List<DBClusterOptionGroupStatus> dBClusterOptionGroupMemberships;
 
   /// Specifies the name of the DB cluster parameter group for the DB cluster.
+  @_s.JsonKey(name: 'DBClusterParameterGroup')
   final String dBClusterParameterGroup;
 
   /// Specifies information on the subnet group associated with the DB cluster,
   /// including the name, description, and subnets in the subnet group.
+  @_s.JsonKey(name: 'DBSubnetGroup')
   final String dBSubnetGroup;
 
   /// Contains the name of the initial database of this DB cluster that was
   /// provided at create time, if one was specified when the DB cluster was
   /// created. This same name is returned for the life of the DB cluster.
+  @_s.JsonKey(name: 'DatabaseName')
   final String databaseName;
 
   /// The AWS Region-unique, immutable identifier for the DB cluster. This
   /// identifier is found in AWS CloudTrail log entries whenever the AWS KMS key
   /// for the DB cluster is accessed.
+  @_s.JsonKey(name: 'DbClusterResourceId')
   final String dbClusterResourceId;
 
   /// Indicates if the DB cluster has deletion protection enabled. The database
   /// can't be deleted when deletion protection is enabled.
+  @_s.JsonKey(name: 'DeletionProtection')
   final bool deletionProtection;
 
+  /// The Active Directory Domain membership records associated with the DB
+  /// cluster.
+  @_s.JsonKey(name: 'DomainMemberships')
+  final List<DomainMembership> domainMemberships;
+
   /// The earliest time to which a DB cluster can be backtracked.
+  @_s.JsonKey(
+      name: 'EarliestBacktrackTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime earliestBacktrackTime;
 
   /// The earliest time to which a database can be restored with point-in-time
   /// restore.
+  @_s.JsonKey(
+      name: 'EarliestRestorableTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime earliestRestorableTime;
 
   /// A list of log types that this DB cluster is configured to export to
@@ -14266,24 +15028,38 @@ class DBCluster {
   /// engine, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_LogAccess.html">Amazon
   /// RDS Database Log Files</a> in the <i>Amazon Aurora User Guide.</i>
+  @_s.JsonKey(name: 'EnabledCloudwatchLogsExports')
   final List<String> enabledCloudwatchLogsExports;
 
   /// Specifies the connection endpoint for the primary instance of the DB
   /// cluster.
+  @_s.JsonKey(name: 'Endpoint')
   final String endpoint;
 
   /// Provides the name of the database engine to be used for this DB cluster.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The DB engine mode of the DB cluster, either <code>provisioned</code>,
   /// <code>serverless</code>, <code>parallelquery</code>, <code>global</code>, or
   /// <code>multimaster</code>.
+  /// <note>
+  /// <code>global</code> engine mode only applies for global database clusters
+  /// created with Aurora MySQL version 5.6.10a. For higher Aurora MySQL versions,
+  /// the clusters in a global database use <code>provisioned</code> engine mode.
+  /// To check if a DB cluster is part of a global database, use
+  /// <code>DescribeGlobalClusters</code> instead of checking the
+  /// <code>EngineMode</code> return value from <code>DescribeDBClusters</code>.
+  /// </note>
+  @_s.JsonKey(name: 'EngineMode')
   final String engineMode;
 
   /// Indicates the database engine version.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
+  @_s.JsonKey(name: 'HostedZoneId')
   final String hostedZoneId;
 
   /// A value that indicates whether the HTTP endpoint for an Aurora Serverless DB
@@ -14297,44 +15073,56 @@ class DBCluster {
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html">Using
   /// the Data API for Aurora Serverless</a> in the <i>Amazon Aurora User
   /// Guide</i>.
+  @_s.JsonKey(name: 'HttpEndpointEnabled')
   final bool httpEndpointEnabled;
 
   /// A value that indicates whether the mapping of AWS Identity and Access
   /// Management (IAM) accounts to database accounts is enabled.
+  @_s.JsonKey(name: 'IAMDatabaseAuthenticationEnabled')
   final bool iAMDatabaseAuthenticationEnabled;
 
   /// If <code>StorageEncrypted</code> is enabled, the AWS KMS key identifier for
   /// the encrypted DB cluster.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// Specifies the latest time to which a database can be restored with
   /// point-in-time restore.
+  @_s.JsonKey(
+      name: 'LatestRestorableTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime latestRestorableTime;
 
   /// Contains the master username for the DB cluster.
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
 
   /// Specifies whether the DB cluster has instances in multiple Availability
   /// Zones.
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
 
   /// Specifies the progress of the operation as a percentage.
+  @_s.JsonKey(name: 'PercentProgress')
   final String percentProgress;
 
   /// Specifies the port that the database engine is listening on.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// Specifies the daily time range during which automated backups are created if
   /// automated backups are enabled, as determined by the
   /// <code>BackupRetentionPeriod</code>.
+  @_s.JsonKey(name: 'PreferredBackupWindow')
   final String preferredBackupWindow;
 
   /// Specifies the weekly time range during which system maintenance can occur,
   /// in Universal Coordinated Time (UTC).
+  @_s.JsonKey(name: 'PreferredMaintenanceWindow')
   final String preferredMaintenanceWindow;
 
-  /// Contains one or more identifiers of the Read Replicas associated with this
+  /// Contains one or more identifiers of the read replicas associated with this
   /// DB cluster.
+  @_s.JsonKey(name: 'ReadReplicaIdentifiers')
   final List<String> readReplicaIdentifiers;
 
   /// The reader endpoint for the DB cluster. The reader endpoint for a DB cluster
@@ -14348,20 +15136,26 @@ class DBCluster {
   /// promoted to be the primary instance, your connection is dropped. To continue
   /// sending your read workload to other Aurora Replicas in the cluster, you can
   /// then reconnect to the reader endpoint.
+  @_s.JsonKey(name: 'ReaderEndpoint')
   final String readerEndpoint;
 
   /// Contains the identifier of the source DB cluster if this DB cluster is a
-  /// Read Replica.
+  /// read replica.
+  @_s.JsonKey(name: 'ReplicationSourceIdentifier')
   final String replicationSourceIdentifier;
+  @_s.JsonKey(name: 'ScalingConfigurationInfo')
   final ScalingConfigurationInfo scalingConfigurationInfo;
 
   /// Specifies the current state of this DB cluster.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// Specifies whether the DB cluster is encrypted.
+  @_s.JsonKey(name: 'StorageEncrypted')
   final bool storageEncrypted;
 
   /// Provides a list of VPC security groups that the DB cluster belongs to.
+  @_s.JsonKey(name: 'VpcSecurityGroups')
   final List<VpcSecurityGroupMembership> vpcSecurityGroups;
 
   DBCluster({
@@ -14391,6 +15185,7 @@ class DBCluster {
     this.databaseName,
     this.dbClusterResourceId,
     this.deletionProtection,
+    this.domainMemberships,
     this.earliestBacktrackTime,
     this.earliestRestorableTime,
     this.enabledCloudwatchLogsExports,
@@ -14471,6 +15266,11 @@ class DBCluster {
       dbClusterResourceId:
           _s.extractXmlStringValue(elem, 'DbClusterResourceId'),
       deletionProtection: _s.extractXmlBoolValue(elem, 'DeletionProtection'),
+      domainMemberships: _s.extractXmlChild(elem, 'DomainMemberships')?.let(
+          (elem) => elem
+              .findElements('DomainMembership')
+              .map((c) => DomainMembership.fromXml(c))
+              .toList()),
       earliestBacktrackTime:
           _s.extractXmlDateTimeValue(elem, 'EarliestBacktrackTime'),
       earliestRestorableTime:
@@ -14521,21 +15321,35 @@ class DBCluster {
 
 /// This data type is used as a response element in the
 /// <code>DescribeDBClusterBacktracks</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterBacktrack {
   /// Contains the backtrack identifier.
+  @_s.JsonKey(name: 'BacktrackIdentifier')
   final String backtrackIdentifier;
 
   /// The timestamp of the time at which the backtrack was requested.
+  @_s.JsonKey(
+      name: 'BacktrackRequestCreationTime',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime backtrackRequestCreationTime;
 
   /// The timestamp of the time to which the DB cluster was backtracked.
+  @_s.JsonKey(name: 'BacktrackTo', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime backtrackTo;
 
   /// The timestamp of the time from which the DB cluster was backtracked.
+  @_s.JsonKey(
+      name: 'BacktrackedFrom', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime backtrackedFrom;
 
   /// Contains a user-supplied DB cluster identifier. This identifier is the
   /// unique key that identifies a DB cluster.
+  @_s.JsonKey(name: 'DBClusterIdentifier')
   final String dBClusterIdentifier;
 
   /// The status of the backtrack. This property returns one of the following
@@ -14559,6 +15373,7 @@ class DBClusterBacktrack {
   /// rollback from the DB cluster.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DBClusterBacktrack({
@@ -14586,12 +15401,19 @@ class DBClusterBacktrack {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBClusterBacktracks</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterBacktrackMessage {
   /// Contains a list of backtracks for the user.
+  @_s.JsonKey(name: 'DBClusterBacktracks')
   final List<DBClusterBacktrack> dBClusterBacktracks;
 
-  /// A pagination token that can be used in a subsequent
+  /// A pagination token that can be used in a later
   /// <code>DescribeDBClusterBacktracks</code> request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBClusterBacktrackMessage({
@@ -14610,24 +15432,34 @@ class DBClusterBacktrackMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterCapacityInfo {
   /// The current capacity of the DB cluster.
+  @_s.JsonKey(name: 'CurrentCapacity')
   final int currentCapacity;
 
   /// A user-supplied DB cluster identifier. This identifier is the unique key
   /// that identifies a DB cluster.
+  @_s.JsonKey(name: 'DBClusterIdentifier')
   final String dBClusterIdentifier;
 
   /// A value that specifies the capacity that the DB cluster scales to next.
+  @_s.JsonKey(name: 'PendingCapacity')
   final int pendingCapacity;
 
   /// The number of seconds before a call to
   /// <code>ModifyCurrentDBClusterCapacity</code> times out.
+  @_s.JsonKey(name: 'SecondsBeforeTimeout')
   final int secondsBeforeTimeout;
 
   /// The timeout action of a call to <code>ModifyCurrentDBClusterCapacity</code>,
   /// either <code>ForceApplyCapacityChange</code> or
   /// <code>RollbackCapacityChange</code>.
+  @_s.JsonKey(name: 'TimeoutAction')
   final String timeoutAction;
 
   DBClusterCapacityInfo({
@@ -14669,43 +15501,58 @@ class DBClusterCapacityInfo {
 /// </ul>
 /// For the data structure that represents Amazon RDS DB instance endpoints, see
 /// <code>Endpoint</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterEndpoint {
   /// The type associated with a custom endpoint. One of: <code>READER</code>,
   /// <code>WRITER</code>, <code>ANY</code>.
+  @_s.JsonKey(name: 'CustomEndpointType')
   final String customEndpointType;
 
   /// The Amazon Resource Name (ARN) for the endpoint.
+  @_s.JsonKey(name: 'DBClusterEndpointArn')
   final String dBClusterEndpointArn;
 
   /// The identifier associated with the endpoint. This parameter is stored as a
   /// lowercase string.
+  @_s.JsonKey(name: 'DBClusterEndpointIdentifier')
   final String dBClusterEndpointIdentifier;
 
   /// A unique system-generated identifier for an endpoint. It remains the same
   /// for the whole life of the endpoint.
+  @_s.JsonKey(name: 'DBClusterEndpointResourceIdentifier')
   final String dBClusterEndpointResourceIdentifier;
 
   /// The DB cluster identifier of the DB cluster associated with the endpoint.
   /// This parameter is stored as a lowercase string.
+  @_s.JsonKey(name: 'DBClusterIdentifier')
   final String dBClusterIdentifier;
 
   /// The DNS address of the endpoint.
+  @_s.JsonKey(name: 'Endpoint')
   final String endpoint;
 
   /// The type of the endpoint. One of: <code>READER</code>, <code>WRITER</code>,
   /// <code>CUSTOM</code>.
+  @_s.JsonKey(name: 'EndpointType')
   final String endpointType;
 
   /// List of DB instance identifiers that aren't part of the custom endpoint
   /// group. All other eligible instances are reachable through the custom
   /// endpoint. Only relevant if the list of static members is empty.
+  @_s.JsonKey(name: 'ExcludedMembers')
   final List<String> excludedMembers;
 
   /// List of DB instance identifiers that are part of the custom endpoint group.
+  @_s.JsonKey(name: 'StaticMembers')
   final List<String> staticMembers;
 
   /// The current status of the endpoint. One of: <code>creating</code>,
   /// <code>available</code>, <code>deleting</code>, <code>modifying</code>.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DBClusterEndpoint({
@@ -14743,15 +15590,22 @@ class DBClusterEndpoint {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterEndpointMessage {
   /// Contains the details of the endpoints associated with the cluster and
   /// matching any filter conditions.
+  @_s.JsonKey(name: 'DBClusterEndpoints')
   final List<DBClusterEndpoint> dBClusterEndpoints;
 
   /// An optional pagination token provided by a previous
   /// <code>DescribeDBClusterEndpoints</code> request. If this parameter is
   /// specified, the response includes only records beyond the marker, up to the
   /// value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBClusterEndpointMessage({
@@ -14771,16 +15625,24 @@ class DBClusterEndpointMessage {
 }
 
 /// Contains information about an instance that is part of a DB cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterMember {
   /// Specifies the status of the DB cluster parameter group for this member of
   /// the DB cluster.
+  @_s.JsonKey(name: 'DBClusterParameterGroupStatus')
   final String dBClusterParameterGroupStatus;
 
   /// Specifies the instance identifier for this member of the DB cluster.
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
 
   /// Value that is <code>true</code> if the cluster member is the primary
   /// instance for the DB cluster and <code>false</code> otherwise.
+  @_s.JsonKey(name: 'IsClusterWriter')
   final bool isClusterWriter;
 
   /// A value that specifies the order in which an Aurora Replica is promoted to
@@ -14789,6 +15651,7 @@ class DBClusterMember {
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Backups.html#Aurora.Managing.FaultTolerance">
   /// Fault Tolerance for an Aurora DB Cluster</a> in the <i>Amazon Aurora User
   /// Guide</i>.
+  @_s.JsonKey(name: 'PromotionTier')
   final int promotionTier;
 
   DBClusterMember({
@@ -14811,12 +15674,18 @@ class DBClusterMember {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBClusters</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterMessage {
   /// Contains a list of DB clusters for the user.
+  @_s.JsonKey(name: 'DBClusters')
   final List<DBCluster> dBClusters;
 
-  /// A pagination token that can be used in a subsequent DescribeDBClusters
-  /// request.
+  /// A pagination token that can be used in a later DescribeDBClusters request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBClusterMessage({
@@ -14835,11 +15704,18 @@ class DBClusterMessage {
 }
 
 /// Contains status information for a DB cluster option group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterOptionGroupStatus {
   /// Specifies the name of the DB cluster option group.
+  @_s.JsonKey(name: 'DBClusterOptionGroupName')
   final String dBClusterOptionGroupName;
 
   /// Specifies the status of the DB cluster option group.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DBClusterOptionGroupStatus({
@@ -14859,19 +15735,28 @@ class DBClusterOptionGroupStatus {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBClusterParameterGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterParameterGroup {
   /// The Amazon Resource Name (ARN) for the DB cluster parameter group.
+  @_s.JsonKey(name: 'DBClusterParameterGroupArn')
   final String dBClusterParameterGroupArn;
 
   /// Provides the name of the DB cluster parameter group.
+  @_s.JsonKey(name: 'DBClusterParameterGroupName')
   final String dBClusterParameterGroupName;
 
   /// Provides the name of the DB parameter group family that this DB cluster
   /// parameter group is compatible with.
+  @_s.JsonKey(name: 'DBParameterGroupFamily')
   final String dBParameterGroupFamily;
 
   /// Provides the customer-specified description for this DB cluster parameter
   /// group.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   DBClusterParameterGroup({
@@ -14895,14 +15780,21 @@ class DBClusterParameterGroup {
 
 /// Provides details about a DB cluster parameter group including the parameters
 /// in the DB cluster parameter group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterParameterGroupDetails {
   /// An optional pagination token provided by a previous
   /// DescribeDBClusterParameters request. If this parameter is specified, the
   /// response includes only records beyond the marker, up to the value specified
   /// by <code>MaxRecords</code> .
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// Provides a list of parameters for the DB cluster parameter group.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   DBClusterParameterGroupDetails({
@@ -14921,6 +15813,11 @@ class DBClusterParameterGroupDetails {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterParameterGroupNameMessage {
   /// The name of the DB cluster parameter group.
   ///
@@ -14939,6 +15836,7 @@ class DBClusterParameterGroupNameMessage {
   /// </ul> <note>
   /// This value is stored as a lowercase string.
   /// </note>
+  @_s.JsonKey(name: 'DBClusterParameterGroupName')
   final String dBClusterParameterGroupName;
 
   DBClusterParameterGroupNameMessage({
@@ -14953,14 +15851,21 @@ class DBClusterParameterGroupNameMessage {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterParameterGroupsMessage {
   /// A list of DB cluster parameter groups.
+  @_s.JsonKey(name: 'DBClusterParameterGroups')
   final List<DBClusterParameterGroup> dBClusterParameterGroups;
 
   /// An optional pagination token provided by a previous
   /// <code>DescribeDBClusterParameterGroups</code> request. If this parameter is
   /// specified, the response includes only records beyond the marker, up to the
   /// value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBClusterParameterGroupsMessage({
@@ -14982,14 +15887,21 @@ class DBClusterParameterGroupsMessage {
 
 /// Describes an AWS Identity and Access Management (IAM) role that is
 /// associated with a DB cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterRole {
   /// The name of the feature associated with the AWS Identity and Access
   /// Management (IAM) role. For the list of supported feature names, see
   /// <a>DBEngineVersion</a>.
+  @_s.JsonKey(name: 'FeatureName')
   final String featureName;
 
   /// The Amazon Resource Name (ARN) of the IAM role that is associated with the
   /// DB cluster.
+  @_s.JsonKey(name: 'RoleArn')
   final String roleArn;
 
   /// Describes the state of association between the IAM role and the DB cluster.
@@ -15010,6 +15922,7 @@ class DBClusterRole {
   /// AWS services on your behalf.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DBClusterRole({
@@ -15030,74 +15943,101 @@ class DBClusterRole {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBClusterSnapshots</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterSnapshot {
   /// Specifies the allocated storage size in gibibytes (GiB).
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
 
   /// Provides the list of Availability Zones (AZs) where instances in the DB
   /// cluster snapshot can be restored.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<String> availabilityZones;
 
   /// Specifies the time when the DB cluster was created, in Universal Coordinated
   /// Time (UTC).
+  @_s.JsonKey(
+      name: 'ClusterCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime clusterCreateTime;
 
   /// Specifies the DB cluster identifier of the DB cluster that this DB cluster
   /// snapshot was created from.
+  @_s.JsonKey(name: 'DBClusterIdentifier')
   final String dBClusterIdentifier;
 
   /// The Amazon Resource Name (ARN) for the DB cluster snapshot.
+  @_s.JsonKey(name: 'DBClusterSnapshotArn')
   final String dBClusterSnapshotArn;
 
   /// Specifies the identifier for the DB cluster snapshot.
+  @_s.JsonKey(name: 'DBClusterSnapshotIdentifier')
   final String dBClusterSnapshotIdentifier;
 
   /// Specifies the name of the database engine.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// Provides the version of the database engine for this DB cluster snapshot.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// True if mapping of AWS Identity and Access Management (IAM) accounts to
   /// database accounts is enabled, and otherwise false.
+  @_s.JsonKey(name: 'IAMDatabaseAuthenticationEnabled')
   final bool iAMDatabaseAuthenticationEnabled;
 
   /// If <code>StorageEncrypted</code> is true, the AWS KMS key identifier for the
   /// encrypted DB cluster snapshot.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// Provides the license model information for this DB cluster snapshot.
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
 
   /// Provides the master username for the DB cluster snapshot.
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
 
   /// Specifies the percentage of the estimated data that has been transferred.
+  @_s.JsonKey(name: 'PercentProgress')
   final int percentProgress;
 
   /// Specifies the port that the DB cluster was listening on at the time of the
   /// snapshot.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// Provides the time when the snapshot was taken, in Universal Coordinated Time
   /// (UTC).
+  @_s.JsonKey(
+      name: 'SnapshotCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime snapshotCreateTime;
 
   /// Provides the type of the DB cluster snapshot.
+  @_s.JsonKey(name: 'SnapshotType')
   final String snapshotType;
 
   /// If the DB cluster snapshot was copied from a source DB cluster snapshot, the
   /// Amazon Resource Name (ARN) for the source DB cluster snapshot, otherwise, a
   /// null value.
+  @_s.JsonKey(name: 'SourceDBClusterSnapshotArn')
   final String sourceDBClusterSnapshotArn;
 
   /// Specifies the status of this DB cluster snapshot.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// Specifies whether the DB cluster snapshot is encrypted.
+  @_s.JsonKey(name: 'StorageEncrypted')
   final bool storageEncrypted;
 
   /// Provides the VPC ID associated with the DB cluster snapshot.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBClusterSnapshot({
@@ -15160,6 +16100,11 @@ class DBClusterSnapshot {
 /// Manual DB cluster snapshot attributes are used to authorize other AWS
 /// accounts to restore a manual DB cluster snapshot. For more information, see
 /// the <code>ModifyDBClusterSnapshotAttribute</code> API action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterSnapshotAttribute {
   /// The name of the manual DB cluster snapshot attribute.
   ///
@@ -15167,6 +16112,7 @@ class DBClusterSnapshotAttribute {
   /// that have permission to copy or restore the manual DB cluster snapshot. For
   /// more information, see the <code>ModifyDBClusterSnapshotAttribute</code> API
   /// action.
+  @_s.JsonKey(name: 'AttributeName')
   final String attributeName;
 
   /// The value(s) for the manual DB cluster snapshot attribute.
@@ -15176,6 +16122,7 @@ class DBClusterSnapshotAttribute {
   /// to copy or restore the manual DB cluster snapshot. If a value of
   /// <code>all</code> is in the list, then the manual DB cluster snapshot is
   /// public and available for any AWS account to copy or restore.
+  @_s.JsonKey(name: 'AttributeValues')
   final List<String> attributeValues;
 
   DBClusterSnapshotAttribute({
@@ -15198,12 +16145,19 @@ class DBClusterSnapshotAttribute {
 /// accounts to copy or restore a manual DB cluster snapshot. For more
 /// information, see the <code>ModifyDBClusterSnapshotAttribute</code> API
 /// action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterSnapshotAttributesResult {
   /// The list of attributes and values for the manual DB cluster snapshot.
+  @_s.JsonKey(name: 'DBClusterSnapshotAttributes')
   final List<DBClusterSnapshotAttribute> dBClusterSnapshotAttributes;
 
   /// The identifier of the manual DB cluster snapshot that the attributes apply
   /// to.
+  @_s.JsonKey(name: 'DBClusterSnapshotIdentifier')
   final String dBClusterSnapshotIdentifier;
 
   DBClusterSnapshotAttributesResult({
@@ -15226,14 +16180,21 @@ class DBClusterSnapshotAttributesResult {
 
 /// Provides a list of DB cluster snapshots for the user as the result of a call
 /// to the <code>DescribeDBClusterSnapshots</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBClusterSnapshotMessage {
   /// Provides a list of DB cluster snapshots for the user.
+  @_s.JsonKey(name: 'DBClusterSnapshots')
   final List<DBClusterSnapshot> dBClusterSnapshots;
 
   /// An optional pagination token provided by a previous
   /// <code>DescribeDBClusterSnapshots</code> request. If this parameter is
   /// specified, the response includes only records beyond the marker, up to the
   /// value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBClusterSnapshotMessage({
@@ -15254,41 +16215,61 @@ class DBClusterSnapshotMessage {
 
 /// This data type is used as a response element in the action
 /// <code>DescribeDBEngineVersions</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBEngineVersion {
   /// The description of the database engine.
+  @_s.JsonKey(name: 'DBEngineDescription')
   final String dBEngineDescription;
 
   /// The description of the database engine version.
+  @_s.JsonKey(name: 'DBEngineVersionDescription')
   final String dBEngineVersionDescription;
 
   /// The name of the DB parameter group family for the database engine.
+  @_s.JsonKey(name: 'DBParameterGroupFamily')
   final String dBParameterGroupFamily;
 
   /// The default character set for new instances of this engine version, if the
   /// <code>CharacterSetName</code> parameter of the CreateDBInstance API isn't
   /// specified.
+  @_s.JsonKey(name: 'DefaultCharacterSet')
   final CharacterSet defaultCharacterSet;
 
   /// The name of the database engine.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The version number of the database engine.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// The types of logs that the database engine has available for export to
   /// CloudWatch Logs.
+  @_s.JsonKey(name: 'ExportableLogTypes')
   final List<String> exportableLogTypes;
 
   /// The status of the DB engine version, either <code>available</code> or
   /// <code>deprecated</code>.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// A list of the character sets supported by this engine for the
   /// <code>CharacterSetName</code> parameter of the <code>CreateDBInstance</code>
   /// action.
+  @_s.JsonKey(name: 'SupportedCharacterSets')
   final List<CharacterSet> supportedCharacterSets;
 
   /// A list of the supported DB engine modes.
+  /// <note>
+  /// <code>global</code> engine mode only applies for global database clusters
+  /// created with Aurora MySQL version 5.6.10a. For higher Aurora MySQL versions,
+  /// the clusters in a global database use <code>provisioned</code> engine mode.
+  /// </note>
+  @_s.JsonKey(name: 'SupportedEngineModes')
   final List<String> supportedEngineModes;
 
   /// A list of features supported by the DB engine. Supported feature names
@@ -15299,21 +16280,26 @@ class DBEngineVersion {
   /// s3Import
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'SupportedFeatureNames')
   final List<String> supportedFeatureNames;
 
   /// A list of the time zones supported by this engine for the
   /// <code>Timezone</code> parameter of the <code>CreateDBInstance</code> action.
+  @_s.JsonKey(name: 'SupportedTimezones')
   final List<Timezone> supportedTimezones;
 
   /// A value that indicates whether the engine version supports exporting the log
   /// types specified by ExportableLogTypes to CloudWatch Logs.
+  @_s.JsonKey(name: 'SupportsLogExportsToCloudwatchLogs')
   final bool supportsLogExportsToCloudwatchLogs;
 
-  /// Indicates whether the database engine version supports Read Replicas.
+  /// Indicates whether the database engine version supports read replicas.
+  @_s.JsonKey(name: 'SupportsReadReplica')
   final bool supportsReadReplica;
 
   /// A list of engine versions that this database engine version can be upgraded
   /// to.
+  @_s.JsonKey(name: 'ValidUpgradeTarget')
   final List<UpgradeTarget> validUpgradeTarget;
 
   DBEngineVersion({
@@ -15382,13 +16368,20 @@ class DBEngineVersion {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBEngineVersions</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBEngineVersionMessage {
   /// A list of <code>DBEngineVersion</code> elements.
+  @_s.JsonKey(name: 'DBEngineVersions')
   final List<DBEngineVersion> dBEngineVersions;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBEngineVersionMessage({
@@ -15411,28 +16404,40 @@ class DBEngineVersionMessage {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBInstances</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstance {
   /// Specifies the allocated storage size specified in gibibytes.
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
 
   /// The AWS Identity and Access Management (IAM) roles associated with the DB
   /// instance.
+  @_s.JsonKey(name: 'AssociatedRoles')
   final List<DBInstanceRole> associatedRoles;
 
   /// Indicates that minor version patches are applied automatically.
+  @_s.JsonKey(name: 'AutoMinorVersionUpgrade')
   final bool autoMinorVersionUpgrade;
 
   /// Specifies the name of the Availability Zone the DB instance is located in.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// Specifies the number of days for which automatic DB snapshots are retained.
+  @_s.JsonKey(name: 'BackupRetentionPeriod')
   final int backupRetentionPeriod;
 
   /// The identifier of the CA certificate for this DB instance.
+  @_s.JsonKey(name: 'CACertificateIdentifier')
   final String cACertificateIdentifier;
 
   /// If present, specifies the name of the character set that this instance is
   /// associated with.
+  @_s.JsonKey(name: 'CharacterSetName')
   final String characterSetName;
 
   /// Specifies whether tags are copied from the DB instance to snapshots of the
@@ -15443,24 +16448,34 @@ class DBInstance {
   /// Not applicable. Copying tags to snapshots is managed by the DB cluster.
   /// Setting this value for an Aurora DB instance has no effect on the DB cluster
   /// setting. For more information, see <code>DBCluster</code>.
+  @_s.JsonKey(name: 'CopyTagsToSnapshot')
   final bool copyTagsToSnapshot;
 
   /// If the DB instance is a member of a DB cluster, contains the name of the DB
   /// cluster that the DB instance is a member of.
+  @_s.JsonKey(name: 'DBClusterIdentifier')
   final String dBClusterIdentifier;
 
   /// The Amazon Resource Name (ARN) for the DB instance.
+  @_s.JsonKey(name: 'DBInstanceArn')
   final String dBInstanceArn;
 
   /// Contains the name of the compute and memory capacity class of the DB
   /// instance.
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
 
   /// Contains a user-supplied database identifier. This identifier is the unique
   /// key that identifies a DB instance.
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
 
   /// Specifies the current state of this database.
+  ///
+  /// For information about DB instance statuses, see <a
+  /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.DBInstance.Status.html">DB
+  /// Instance Status</a> in the <i>Amazon RDS User Guide.</i>
+  @_s.JsonKey(name: 'DBInstanceStatus')
   final String dBInstanceStatus;
 
   /// The meaning of this parameter differs according to the database engine you
@@ -15478,27 +16493,33 @@ class DBInstance {
   ///
   /// Contains the Oracle System ID (SID) of the created DB instance. Not shown
   /// when the returned parameters do not apply to an Oracle DB instance.
+  @_s.JsonKey(name: 'DBName')
   final String dBName;
 
   /// Provides the list of DB parameter groups applied to this DB instance.
+  @_s.JsonKey(name: 'DBParameterGroups')
   final List<DBParameterGroupStatus> dBParameterGroups;
 
   /// A list of DB security group elements containing
   /// <code>DBSecurityGroup.Name</code> and <code>DBSecurityGroup.Status</code>
   /// subelements.
+  @_s.JsonKey(name: 'DBSecurityGroups')
   final List<DBSecurityGroupMembership> dBSecurityGroups;
 
   /// Specifies information on the subnet group associated with the DB instance,
   /// including the name, description, and subnets in the subnet group.
+  @_s.JsonKey(name: 'DBSubnetGroup')
   final DBSubnetGroup dBSubnetGroup;
 
   /// Specifies the port that the DB instance listens on. If the DB instance is
   /// part of a DB cluster, this can be a different port than the DB cluster port.
+  @_s.JsonKey(name: 'DbInstancePort')
   final int dbInstancePort;
 
   /// The AWS Region-unique, immutable identifier for the DB instance. This
   /// identifier is found in AWS CloudTrail log entries whenever the AWS KMS key
   /// for the DB instance is accessed.
+  @_s.JsonKey(name: 'DbiResourceId')
   final String dbiResourceId;
 
   /// Indicates if the DB instance has deletion protection enabled. The database
@@ -15506,10 +16527,12 @@ class DBInstance {
   /// see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_DeleteInstance.html">
   /// Deleting a DB Instance</a>.
+  @_s.JsonKey(name: 'DeletionProtection')
   final bool deletionProtection;
 
   /// The Active Directory Domain membership records associated with the DB
   /// instance.
+  @_s.JsonKey(name: 'DomainMemberships')
   final List<DomainMembership> domainMemberships;
 
   /// A list of log types that this DB instance is configured to export to
@@ -15519,19 +16542,24 @@ class DBInstance {
   /// engine, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.html">Amazon
   /// RDS Database Log Files</a> in the <i>Amazon RDS User Guide.</i>
+  @_s.JsonKey(name: 'EnabledCloudwatchLogsExports')
   final List<String> enabledCloudwatchLogsExports;
 
   /// Specifies the connection endpoint.
+  @_s.JsonKey(name: 'Endpoint')
   final Endpoint endpoint;
 
   /// Provides the name of the database engine to be used for this DB instance.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// Indicates the database engine version.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// The Amazon Resource Name (ARN) of the Amazon CloudWatch Logs log stream that
   /// receives the Enhanced Monitoring metrics data for the DB instance.
+  @_s.JsonKey(name: 'EnhancedMonitoringResourceArn')
   final String enhancedMonitoringResourceArn;
 
   /// True if mapping of AWS Identity and Access Management (IAM) accounts to
@@ -15552,78 +16580,100 @@ class DBInstance {
   /// DBCluster Type.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'IAMDatabaseAuthenticationEnabled')
   final bool iAMDatabaseAuthenticationEnabled;
 
   /// Provides the date and time the DB instance was created.
+  @_s.JsonKey(
+      name: 'InstanceCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime instanceCreateTime;
 
   /// Specifies the Provisioned IOPS (I/O operations per second) value.
+  @_s.JsonKey(name: 'Iops')
   final int iops;
 
   /// If <code>StorageEncrypted</code> is true, the AWS KMS key identifier for the
   /// encrypted DB instance.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// Specifies the latest time to which a database can be restored with
   /// point-in-time restore.
+  @_s.JsonKey(
+      name: 'LatestRestorableTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime latestRestorableTime;
 
   /// License model information for this DB instance.
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
 
   /// Specifies the listener connection endpoint for SQL Server Always On.
+  @_s.JsonKey(name: 'ListenerEndpoint')
   final Endpoint listenerEndpoint;
 
   /// Contains the master username for the DB instance.
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
 
   /// The upper limit to which Amazon RDS can automatically scale the storage of
   /// the DB instance.
+  @_s.JsonKey(name: 'MaxAllocatedStorage')
   final int maxAllocatedStorage;
 
   /// The interval, in seconds, between points when Enhanced Monitoring metrics
   /// are collected for the DB instance.
+  @_s.JsonKey(name: 'MonitoringInterval')
   final int monitoringInterval;
 
   /// The ARN for the IAM role that permits RDS to send Enhanced Monitoring
   /// metrics to Amazon CloudWatch Logs.
+  @_s.JsonKey(name: 'MonitoringRoleArn')
   final String monitoringRoleArn;
 
   /// Specifies if the DB instance is a Multi-AZ deployment.
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
 
   /// Provides the list of option group memberships for this DB instance.
+  @_s.JsonKey(name: 'OptionGroupMemberships')
   final List<OptionGroupMembership> optionGroupMemberships;
 
   /// Specifies that changes to the DB instance are pending. This element is only
   /// included when changes are pending. Specific changes are identified by
   /// subelements.
+  @_s.JsonKey(name: 'PendingModifiedValues')
   final PendingModifiedValues pendingModifiedValues;
 
   /// True if Performance Insights is enabled for the DB instance, and otherwise
   /// false.
+  @_s.JsonKey(name: 'PerformanceInsightsEnabled')
   final bool performanceInsightsEnabled;
 
   /// The AWS KMS key identifier for encryption of Performance Insights data. The
   /// KMS key ID is the Amazon Resource Name (ARN), KMS key identifier, or the KMS
   /// key alias for the KMS encryption key.
+  @_s.JsonKey(name: 'PerformanceInsightsKMSKeyId')
   final String performanceInsightsKMSKeyId;
 
   /// The amount of time, in days, to retain Performance Insights data. Valid
   /// values are 7 or 731 (2 years).
+  @_s.JsonKey(name: 'PerformanceInsightsRetentionPeriod')
   final int performanceInsightsRetentionPeriod;
 
   /// Specifies the daily time range during which automated backups are created if
   /// automated backups are enabled, as determined by the
   /// <code>BackupRetentionPeriod</code>.
+  @_s.JsonKey(name: 'PreferredBackupWindow')
   final String preferredBackupWindow;
 
   /// Specifies the weekly time range during which system maintenance can occur,
   /// in Universal Coordinated Time (UTC).
+  @_s.JsonKey(name: 'PreferredMaintenanceWindow')
   final String preferredMaintenanceWindow;
 
   /// The number of CPU cores and the number of threads per core for the DB
   /// instance class of the DB instance.
+  @_s.JsonKey(name: 'ProcessorFeatures')
   final List<ProcessorFeature> processorFeatures;
 
   /// A value that specifies the order in which an Aurora Replica is promoted to
@@ -15632,57 +16682,69 @@ class DBInstance {
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Aurora.Managing.Backups.html#Aurora.Managing.FaultTolerance">
   /// Fault Tolerance for an Aurora DB Cluster</a> in the <i>Amazon Aurora User
   /// Guide</i>.
+  @_s.JsonKey(name: 'PromotionTier')
   final int promotionTier;
 
   /// Specifies the accessibility options for the DB instance. A value of true
   /// specifies an Internet-facing instance with a publicly resolvable DNS name,
   /// which resolves to a public IP address. A value of false specifies an
   /// internal instance with a DNS name that resolves to a private IP address.
+  @_s.JsonKey(name: 'PubliclyAccessible')
   final bool publiclyAccessible;
 
   /// Contains one or more identifiers of Aurora DB clusters to which the RDS DB
-  /// instance is replicated as a Read Replica. For example, when you create an
-  /// Aurora Read Replica of an RDS MySQL DB instance, the Aurora MySQL DB cluster
-  /// for the Aurora Read Replica is shown. This output does not contain
-  /// information about cross region Aurora Read Replicas.
+  /// instance is replicated as a read replica. For example, when you create an
+  /// Aurora read replica of an RDS MySQL DB instance, the Aurora MySQL DB cluster
+  /// for the Aurora read replica is shown. This output does not contain
+  /// information about cross region Aurora read replicas.
   /// <note>
-  /// Currently, each RDS DB instance can have only one Aurora Read Replica.
+  /// Currently, each RDS DB instance can have only one Aurora read replica.
   /// </note>
+  @_s.JsonKey(name: 'ReadReplicaDBClusterIdentifiers')
   final List<String> readReplicaDBClusterIdentifiers;
 
-  /// Contains one or more identifiers of the Read Replicas associated with this
+  /// Contains one or more identifiers of the read replicas associated with this
   /// DB instance.
+  @_s.JsonKey(name: 'ReadReplicaDBInstanceIdentifiers')
   final List<String> readReplicaDBInstanceIdentifiers;
 
   /// Contains the identifier of the source DB instance if this DB instance is a
-  /// Read Replica.
+  /// read replica.
+  @_s.JsonKey(name: 'ReadReplicaSourceDBInstanceIdentifier')
   final String readReplicaSourceDBInstanceIdentifier;
 
   /// If present, specifies the name of the secondary Availability Zone for a DB
   /// instance with multi-AZ support.
+  @_s.JsonKey(name: 'SecondaryAvailabilityZone')
   final String secondaryAvailabilityZone;
 
-  /// The status of a Read Replica. If the instance isn't a Read Replica, this is
+  /// The status of a read replica. If the instance isn't a read replica, this is
   /// blank.
+  @_s.JsonKey(name: 'StatusInfos')
   final List<DBInstanceStatusInfo> statusInfos;
 
   /// Specifies whether the DB instance is encrypted.
+  @_s.JsonKey(name: 'StorageEncrypted')
   final bool storageEncrypted;
 
   /// Specifies the storage type associated with DB instance.
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
 
   /// The ARN from the key store with which the instance is associated for TDE
   /// encryption.
+  @_s.JsonKey(name: 'TdeCredentialArn')
   final String tdeCredentialArn;
 
   /// The time zone of the DB instance. In most cases, the <code>Timezone</code>
   /// element is empty. <code>Timezone</code> content appears only for Microsoft
   /// SQL Server DB instances that were created with a time zone specified.
+  @_s.JsonKey(name: 'Timezone')
   final String timezone;
 
   /// Provides a list of VPC security group elements that the DB instance belongs
   /// to.
+  @_s.JsonKey(name: 'VpcSecurityGroups')
   final List<VpcSecurityGroupMembership> vpcSecurityGroups;
 
   DBInstance({
@@ -15876,59 +16938,80 @@ class DBInstance {
 /// An automated backup of a DB instance. It it consists of system backups,
 /// transaction logs, and the database instance properties that existed at the
 /// time you deleted the source instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstanceAutomatedBackup {
   /// Specifies the allocated storage size in gibibytes (GiB).
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
 
   /// The Availability Zone that the automated backup was created in. For
   /// information on AWS Regions and Availability Zones, see <a
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html">Regions
   /// and Availability Zones</a>.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// The Amazon Resource Name (ARN) for the automated backup.
+  @_s.JsonKey(name: 'DBInstanceArn')
   final String dBInstanceArn;
 
   /// The customer id of the instance that is/was associated with the automated
   /// backup.
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
 
   /// The identifier for the source DB instance, which can't be changed and which
   /// is unique to an AWS Region.
+  @_s.JsonKey(name: 'DbiResourceId')
   final String dbiResourceId;
 
   /// Specifies whether the automated backup is encrypted.
+  @_s.JsonKey(name: 'Encrypted')
   final bool encrypted;
 
   /// The name of the database engine for this automated backup.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The version of the database engine for the automated backup.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// True if mapping of AWS Identity and Access Management (IAM) accounts to
   /// database accounts is enabled, and otherwise false.
+  @_s.JsonKey(name: 'IAMDatabaseAuthenticationEnabled')
   final bool iAMDatabaseAuthenticationEnabled;
 
   /// Provides the date and time that the DB instance was created.
+  @_s.JsonKey(
+      name: 'InstanceCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime instanceCreateTime;
 
   /// The IOPS (I/O operations per second) value for the automated backup.
+  @_s.JsonKey(name: 'Iops')
   final int iops;
 
   /// The AWS KMS key ID for an automated backup. The KMS key ID is the Amazon
   /// Resource Name (ARN), KMS key identifier, or the KMS key alias for the KMS
   /// encryption key.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// License model information for the automated backup.
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
 
   /// The license model of an automated backup.
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
 
   /// The option group the automated backup is associated with. If omitted, the
   /// default option group for the engine specified is used.
+  @_s.JsonKey(name: 'OptionGroupName')
   final String optionGroupName;
 
   /// The port number that the automated backup used for connections.
@@ -15936,12 +17019,15 @@ class DBInstanceAutomatedBackup {
   /// Default: Inherits from the source DB instance
   ///
   /// Valid Values: <code>1150-65535</code>
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The AWS Region associated with the automated backup.
+  @_s.JsonKey(name: 'Region')
   final String region;
 
   /// Earliest and latest time an instance can be restored to.
+  @_s.JsonKey(name: 'RestoreWindow')
   final RestoreWindow restoreWindow;
 
   /// Provides a list of status information for an automated backup:
@@ -15958,22 +17044,27 @@ class DBInstanceAutomatedBackup {
   /// automated snapshot to be available.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// Specifies the storage type associated with the automated backup.
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
 
   /// The ARN from the key store with which the automated backup is associated for
   /// TDE encryption.
+  @_s.JsonKey(name: 'TdeCredentialArn')
   final String tdeCredentialArn;
 
   /// The time zone of the automated backup. In most cases, the
   /// <code>Timezone</code> element is empty. <code>Timezone</code> content
   /// appears only for Microsoft SQL Server DB instances that were created with a
   /// time zone specified.
+  @_s.JsonKey(name: 'Timezone')
   final String timezone;
 
   /// Provides the VPC ID associated with the DB instance
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBInstanceAutomatedBackup({
@@ -16037,13 +17128,20 @@ class DBInstanceAutomatedBackup {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBInstanceAutomatedBackups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstanceAutomatedBackupMessage {
   /// A list of <code>DBInstanceAutomatedBackup</code> instances.
+  @_s.JsonKey(name: 'DBInstanceAutomatedBackups')
   final List<DBInstanceAutomatedBackup> dBInstanceAutomatedBackups;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code> .
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBInstanceAutomatedBackupMessage({
@@ -16065,13 +17163,20 @@ class DBInstanceAutomatedBackupMessage {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBInstances</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstanceMessage {
   /// A list of <code>DBInstance</code> instances.
+  @_s.JsonKey(name: 'DBInstances')
   final List<DBInstance> dBInstances;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code> .
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBInstanceMessage({
@@ -16091,14 +17196,21 @@ class DBInstanceMessage {
 
 /// Describes an AWS Identity and Access Management (IAM) role that is
 /// associated with a DB instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstanceRole {
   /// The name of the feature associated with the AWS Identity and Access
   /// Management (IAM) role. For the list of supported feature names, see
   /// <code>DBEngineVersion</code>.
+  @_s.JsonKey(name: 'FeatureName')
   final String featureName;
 
   /// The Amazon Resource Name (ARN) of the IAM role that is associated with the
   /// DB instance.
+  @_s.JsonKey(name: 'RoleArn')
   final String roleArn;
 
   /// Describes the state of association between the IAM role and the DB instance.
@@ -16119,6 +17231,7 @@ class DBInstanceRole {
   /// other AWS services on your behalf.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DBInstanceRole({
@@ -16136,21 +17249,30 @@ class DBInstanceRole {
 }
 
 /// Provides a list of status information for a DB instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstanceStatusInfo {
   /// Details of the error if there is an error for the instance. If the instance
   /// isn't in an error state, this value is blank.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// Boolean value that is true if the instance is operating normally, or false
   /// if the instance is in an error state.
+  @_s.JsonKey(name: 'Normal')
   final bool normal;
 
-  /// Status of the DB instance. For a StatusType of Read Replica, the values can
+  /// Status of the DB instance. For a StatusType of read replica, the values can
   /// be replicating, replication stop point set, replication stop point reached,
   /// error, stopped, or terminated.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// This value is currently "read replication."
+  @_s.JsonKey(name: 'StatusType')
   final String statusType;
 
   DBInstanceStatusInfo({
@@ -16173,18 +17295,27 @@ class DBInstanceStatusInfo {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBParameterGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroup {
   /// The Amazon Resource Name (ARN) for the DB parameter group.
+  @_s.JsonKey(name: 'DBParameterGroupArn')
   final String dBParameterGroupArn;
 
   /// Provides the name of the DB parameter group family that this DB parameter
   /// group is compatible with.
+  @_s.JsonKey(name: 'DBParameterGroupFamily')
   final String dBParameterGroupFamily;
 
   /// Provides the name of the DB parameter group.
+  @_s.JsonKey(name: 'DBParameterGroupName')
   final String dBParameterGroupName;
 
   /// Provides the customer-specified description for this DB parameter group.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   DBParameterGroup({
@@ -16208,13 +17339,20 @@ class DBParameterGroup {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBParameters</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupDetails {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of <code>Parameter</code> values.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   DBParameterGroupDetails({
@@ -16235,8 +17373,14 @@ class DBParameterGroupDetails {
 /// Contains the result of a successful invocation of the
 /// <code>ModifyDBParameterGroup</code> or <code>ResetDBParameterGroup</code>
 /// action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupNameMessage {
   /// Provides the name of the DB parameter group.
+  @_s.JsonKey(name: 'DBParameterGroupName')
   final String dBParameterGroupName;
 
   DBParameterGroupNameMessage({
@@ -16274,11 +17418,18 @@ class DBParameterGroupNameMessage {
 /// <code>RestoreDBInstanceFromDBSnapshot</code>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupStatus {
   /// The name of the DB parameter group.
+  @_s.JsonKey(name: 'DBParameterGroupName')
   final String dBParameterGroupName;
 
   /// The status of parameter updates.
+  @_s.JsonKey(name: 'ParameterApplyStatus')
   final String parameterApplyStatus;
 
   DBParameterGroupStatus({
@@ -16297,13 +17448,20 @@ class DBParameterGroupStatus {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBParameterGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupsMessage {
   /// A list of <code>DBParameterGroup</code> instances.
+  @_s.JsonKey(name: 'DBParameterGroups')
   final List<DBParameterGroup> dBParameterGroups;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBParameterGroupsMessage({
@@ -16330,19 +17488,28 @@ class DBParameterGroupsMessage {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBProxies</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBProxy {
   /// One or more data structures specifying the authorization mechanism to
   /// connect to the associated RDS DB instance or Aurora DB cluster.
+  @_s.JsonKey(name: 'Auth')
   final List<UserAuthConfigInfo> auth;
 
   /// The date and time when the proxy was first created.
+  @_s.JsonKey(name: 'CreatedDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdDate;
 
   /// The Amazon Resource Name (ARN) for the proxy.
+  @_s.JsonKey(name: 'DBProxyArn')
   final String dBProxyArn;
 
   /// The identifier for the proxy. This name must be unique for all proxies owned
   /// by your AWS account in the specified AWS Region.
+  @_s.JsonKey(name: 'DBProxyName')
   final String dBProxyName;
 
   /// Whether the proxy includes detailed information about SQL statements in its
@@ -16352,14 +17519,17 @@ class DBProxy {
   /// proxy. Thus, only enable this setting when needed for debugging, and only
   /// when you have security measures in place to safeguard any sensitive
   /// information that appears in the logs.
+  @_s.JsonKey(name: 'DebugLogging')
   final bool debugLogging;
 
   /// The endpoint that you can use to connect to the proxy. You include the
   /// endpoint value in the connection string for a database client application.
+  @_s.JsonKey(name: 'Endpoint')
   final String endpoint;
 
   /// Currently, this value is always <code>MYSQL</code>. The engine family
   /// applies to both RDS MySQL and Aurora MySQL.
+  @_s.JsonKey(name: 'EngineFamily')
   final String engineFamily;
 
   /// The number of seconds a connection to the proxy can have no activity before
@@ -16370,28 +17540,35 @@ class DBProxy {
   /// Default: 1800 (30 minutes)
   ///
   /// Constraints: 1 to 28,800
+  @_s.JsonKey(name: 'IdleClientTimeout')
   final int idleClientTimeout;
 
   /// Indicates whether Transport Layer Security (TLS) encryption is required for
   /// connections to the proxy.
+  @_s.JsonKey(name: 'RequireTLS')
   final bool requireTLS;
 
   /// The Amazon Resource Name (ARN) for the IAM role that the proxy uses to
   /// access Amazon Secrets Manager.
+  @_s.JsonKey(name: 'RoleArn')
   final String roleArn;
 
   /// The current status of this proxy. A status of <code>available</code> means
   /// the proxy is ready to handle requests. Other values indicate that you must
   /// wait for the proxy to be ready, or take some action to resolve an issue.
+  @_s.JsonKey(name: 'Status')
   final DBProxyStatus status;
 
   /// The date and time when the proxy was last updated.
+  @_s.JsonKey(name: 'UpdatedDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime updatedDate;
 
   /// Provides a list of VPC security groups that the proxy belongs to.
+  @_s.JsonKey(name: 'VpcSecurityGroupIds')
   final List<String> vpcSecurityGroupIds;
 
   /// The EC2 subnet IDs for the proxy.
+  @_s.JsonKey(name: 'VpcSubnetIds')
   final List<String> vpcSubnetIds;
 
   DBProxy({
@@ -16437,11 +17614,17 @@ class DBProxy {
 }
 
 enum DBProxyStatus {
+  @_s.JsonValue('available')
   available,
+  @_s.JsonValue('modifying')
   modifying,
+  @_s.JsonValue('incompatible-network')
   incompatibleNetwork,
+  @_s.JsonValue('insufficient-resource-limits')
   insufficientResourceLimits,
+  @_s.JsonValue('creating')
   creating,
+  @_s.JsonValue('deleting')
   deleting,
 }
 
@@ -16475,27 +17658,38 @@ extension on String {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBProxyTargets</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBProxyTarget {
   /// The writer endpoint for the RDS DB instance or Aurora DB cluster.
+  @_s.JsonKey(name: 'Endpoint')
   final String endpoint;
 
   /// The port that the RDS Proxy uses to connect to the target RDS DB instance or
   /// Aurora DB cluster.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The identifier representing the target. It can be the instance identifier
   /// for an RDS DB instance, or the cluster identifier for an Aurora DB cluster.
+  @_s.JsonKey(name: 'RdsResourceId')
   final String rdsResourceId;
 
   /// The Amazon Resource Name (ARN) for the RDS DB instance or Aurora DB cluster.
+  @_s.JsonKey(name: 'TargetArn')
   final String targetArn;
 
   /// The DB cluster identifier when the target represents an Aurora DB cluster.
-  /// This field is blank when the target represents an
+  /// This field is blank when the target represents an RDS DB instance.
+  @_s.JsonKey(name: 'TrackedClusterId')
   final String trackedClusterId;
 
   /// Specifies the kind of database, such as an RDS DB instance or an Aurora DB
   /// cluster, that the target represents.
+  @_s.JsonKey(name: 'Type')
   final TargetType type;
 
   DBProxyTarget({
@@ -16528,36 +17722,49 @@ class DBProxyTarget {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBProxyTargetGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBProxyTargetGroup {
   /// The settings that determine the size and behavior of the connection pool for
   /// the target group.
+  @_s.JsonKey(name: 'ConnectionPoolConfig')
   final ConnectionPoolConfigurationInfo connectionPoolConfig;
 
   /// The date and time when the target group was first created.
+  @_s.JsonKey(name: 'CreatedDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdDate;
 
   /// The identifier for the RDS proxy associated with this target group.
+  @_s.JsonKey(name: 'DBProxyName')
   final String dBProxyName;
 
   /// Whether this target group is the first one used for connection requests by
   /// the associated proxy. Because each proxy is currently associated with a
   /// single target group, currently this setting is always <code>true</code>.
+  @_s.JsonKey(name: 'IsDefault')
   final bool isDefault;
 
   /// The current status of this target group. A status of <code>available</code>
   /// means the target group is correctly associated with a database. Other values
   /// indicate that you must wait for the target group to be ready, or take some
   /// action to resolve an issue.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The Amazon Resource Name (ARN) representing the target group.
+  @_s.JsonKey(name: 'TargetGroupArn')
   final String targetGroupArn;
 
   /// The identifier for the target group. This name must be unique for all target
   /// groups owned by your AWS account in the specified AWS Region.
+  @_s.JsonKey(name: 'TargetGroupName')
   final String targetGroupName;
 
   /// The date and time when the target group was last updated.
+  @_s.JsonKey(name: 'UpdatedDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime updatedDate;
 
   DBProxyTargetGroup({
@@ -16590,26 +17797,38 @@ class DBProxyTargetGroup {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBSecurityGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSecurityGroup {
   /// The Amazon Resource Name (ARN) for the DB security group.
+  @_s.JsonKey(name: 'DBSecurityGroupArn')
   final String dBSecurityGroupArn;
 
   /// Provides the description of the DB security group.
+  @_s.JsonKey(name: 'DBSecurityGroupDescription')
   final String dBSecurityGroupDescription;
 
   /// Specifies the name of the DB security group.
+  @_s.JsonKey(name: 'DBSecurityGroupName')
   final String dBSecurityGroupName;
 
   /// Contains a list of <code>EC2SecurityGroup</code> elements.
+  @_s.JsonKey(name: 'EC2SecurityGroups')
   final List<EC2SecurityGroup> eC2SecurityGroups;
 
   /// Contains a list of <code>IPRange</code> elements.
+  @_s.JsonKey(name: 'IPRanges')
   final List<IPRange> iPRanges;
 
   /// Provides the AWS ID of the owner of a specific DB security group.
+  @_s.JsonKey(name: 'OwnerId')
   final String ownerId;
 
   /// Provides the VpcId of the DB security group.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBSecurityGroup({
@@ -16657,11 +17876,18 @@ class DBSecurityGroup {
 /// <code>RestoreDBInstanceToPointInTime</code>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSecurityGroupMembership {
   /// The name of the DB security group.
+  @_s.JsonKey(name: 'DBSecurityGroupName')
   final String dBSecurityGroupName;
 
   /// The status of the DB security group.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DBSecurityGroupMembership({
@@ -16679,13 +17905,20 @@ class DBSecurityGroupMembership {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBSecurityGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSecurityGroupMessage {
   /// A list of <code>DBSecurityGroup</code> instances.
+  @_s.JsonKey(name: 'DBSecurityGroups')
   final List<DBSecurityGroup> dBSecurityGroups;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBSecurityGroupMessage({
@@ -16708,104 +17941,139 @@ class DBSecurityGroupMessage {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBSnapshots</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSnapshot {
   /// Specifies the allocated storage size in gibibytes (GiB).
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
 
   /// Specifies the name of the Availability Zone the DB instance was located in
   /// at the time of the DB snapshot.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// Specifies the DB instance identifier of the DB instance this DB snapshot was
   /// created from.
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
 
   /// The Amazon Resource Name (ARN) for the DB snapshot.
+  @_s.JsonKey(name: 'DBSnapshotArn')
   final String dBSnapshotArn;
 
   /// Specifies the identifier for the DB snapshot.
+  @_s.JsonKey(name: 'DBSnapshotIdentifier')
   final String dBSnapshotIdentifier;
 
   /// The identifier for the source DB instance, which can't be changed and which
   /// is unique to an AWS Region.
+  @_s.JsonKey(name: 'DbiResourceId')
   final String dbiResourceId;
 
   /// Specifies whether the DB snapshot is encrypted.
+  @_s.JsonKey(name: 'Encrypted')
   final bool encrypted;
 
   /// Specifies the name of the database engine.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// Specifies the version of the database engine.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// True if mapping of AWS Identity and Access Management (IAM) accounts to
   /// database accounts is enabled, and otherwise false.
+  @_s.JsonKey(name: 'IAMDatabaseAuthenticationEnabled')
   final bool iAMDatabaseAuthenticationEnabled;
 
   /// Specifies the time when the snapshot was taken, in Universal Coordinated
   /// Time (UTC).
+  @_s.JsonKey(
+      name: 'InstanceCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime instanceCreateTime;
 
   /// Specifies the Provisioned IOPS (I/O operations per second) value of the DB
   /// instance at the time of the snapshot.
+  @_s.JsonKey(name: 'Iops')
   final int iops;
 
   /// If <code>Encrypted</code> is true, the AWS KMS key identifier for the
   /// encrypted DB snapshot.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// License model information for the restored DB instance.
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
 
   /// Provides the master username for the DB snapshot.
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
 
   /// Provides the option group name for the DB snapshot.
+  @_s.JsonKey(name: 'OptionGroupName')
   final String optionGroupName;
 
   /// The percentage of the estimated data that has been transferred.
+  @_s.JsonKey(name: 'PercentProgress')
   final int percentProgress;
 
   /// Specifies the port that the database engine was listening on at the time of
   /// the snapshot.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The number of CPU cores and the number of threads per core for the DB
   /// instance class of the DB instance when the DB snapshot was created.
+  @_s.JsonKey(name: 'ProcessorFeatures')
   final List<ProcessorFeature> processorFeatures;
 
   /// Provides the time when the snapshot was taken, in Universal Coordinated Time
   /// (UTC).
+  @_s.JsonKey(
+      name: 'SnapshotCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime snapshotCreateTime;
 
   /// Provides the type of the DB snapshot.
+  @_s.JsonKey(name: 'SnapshotType')
   final String snapshotType;
 
   /// The DB snapshot Amazon Resource Name (ARN) that the DB snapshot was copied
   /// from. It only has value in case of cross-customer or cross-region copy.
+  @_s.JsonKey(name: 'SourceDBSnapshotIdentifier')
   final String sourceDBSnapshotIdentifier;
 
   /// The AWS Region that the DB snapshot was created in or copied from.
+  @_s.JsonKey(name: 'SourceRegion')
   final String sourceRegion;
 
   /// Specifies the status of this DB snapshot.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// Specifies the storage type associated with DB snapshot.
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
 
   /// The ARN from the key store with which to associate the instance for TDE
   /// encryption.
+  @_s.JsonKey(name: 'TdeCredentialArn')
   final String tdeCredentialArn;
 
   /// The time zone of the DB snapshot. In most cases, the <code>Timezone</code>
   /// element is empty. <code>Timezone</code> content appears only for snapshots
   /// taken from Microsoft SQL Server DB instances that were created with a time
   /// zone specified.
+  @_s.JsonKey(name: 'Timezone')
   final String timezone;
 
   /// Provides the VPC ID associated with the DB snapshot.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBSnapshot({
@@ -16887,12 +18155,18 @@ class DBSnapshot {
 /// Manual DB snapshot attributes are used to authorize other AWS accounts to
 /// restore a manual DB snapshot. For more information, see the
 /// <code>ModifyDBSnapshotAttribute</code> API.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSnapshotAttribute {
   /// The name of the manual DB snapshot attribute.
   ///
   /// The attribute named <code>restore</code> refers to the list of AWS accounts
   /// that have permission to copy or restore the manual DB cluster snapshot. For
   /// more information, see the <code>ModifyDBSnapshotAttribute</code> API action.
+  @_s.JsonKey(name: 'AttributeName')
   final String attributeName;
 
   /// The value or values for the manual DB snapshot attribute.
@@ -16902,6 +18176,7 @@ class DBSnapshotAttribute {
   /// to copy or restore the manual DB snapshot. If a value of <code>all</code> is
   /// in the list, then the manual DB snapshot is public and available for any AWS
   /// account to copy or restore.
+  @_s.JsonKey(name: 'AttributeValues')
   final List<String> attributeValues;
 
   DBSnapshotAttribute({
@@ -16923,11 +18198,18 @@ class DBSnapshotAttribute {
 /// Manual DB snapshot attributes are used to authorize other AWS accounts to
 /// copy or restore a manual DB snapshot. For more information, see the
 /// <code>ModifyDBSnapshotAttribute</code> API action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSnapshotAttributesResult {
   /// The list of attributes and values for the manual DB snapshot.
+  @_s.JsonKey(name: 'DBSnapshotAttributes')
   final List<DBSnapshotAttribute> dBSnapshotAttributes;
 
   /// The identifier of the manual DB snapshot that the attributes apply to.
+  @_s.JsonKey(name: 'DBSnapshotIdentifier')
   final String dBSnapshotIdentifier;
 
   DBSnapshotAttributesResult({
@@ -16950,13 +18232,20 @@ class DBSnapshotAttributesResult {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBSnapshots</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSnapshotMessage {
   /// A list of <code>DBSnapshot</code> instances.
+  @_s.JsonKey(name: 'DBSnapshots')
   final List<DBSnapshot> dBSnapshots;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBSnapshotMessage({
@@ -16978,23 +18267,34 @@ class DBSnapshotMessage {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeDBSubnetGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSubnetGroup {
   /// The Amazon Resource Name (ARN) for the DB subnet group.
+  @_s.JsonKey(name: 'DBSubnetGroupArn')
   final String dBSubnetGroupArn;
 
   /// Provides the description of the DB subnet group.
+  @_s.JsonKey(name: 'DBSubnetGroupDescription')
   final String dBSubnetGroupDescription;
 
   /// The name of the DB subnet group.
+  @_s.JsonKey(name: 'DBSubnetGroupName')
   final String dBSubnetGroupName;
 
   /// Provides the status of the DB subnet group.
+  @_s.JsonKey(name: 'SubnetGroupStatus')
   final String subnetGroupStatus;
 
   /// Contains a list of <code>Subnet</code> elements.
+  @_s.JsonKey(name: 'Subnets')
   final List<Subnet> subnets;
 
   /// Provides the VpcId of the DB subnet group.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBSubnetGroup({
@@ -17021,13 +18321,20 @@ class DBSubnetGroup {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeDBSubnetGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSubnetGroupMessage {
   /// A list of <code>DBSubnetGroup</code> instances.
+  @_s.JsonKey(name: 'DBSubnetGroups')
   final List<DBSubnetGroup> dBSubnetGroups;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBSubnetGroupMessage({
@@ -17046,7 +18353,13 @@ class DBSubnetGroupMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteCustomAvailabilityZoneResult {
+  @_s.JsonKey(name: 'CustomAvailabilityZone')
   final CustomAvailabilityZone customAvailabilityZone;
 
   DeleteCustomAvailabilityZoneResult({
@@ -17061,7 +18374,13 @@ class DeleteCustomAvailabilityZoneResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBClusterResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   DeleteDBClusterResult({
@@ -17076,7 +18395,13 @@ class DeleteDBClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBClusterSnapshotResult {
+  @_s.JsonKey(name: 'DBClusterSnapshot')
   final DBClusterSnapshot dBClusterSnapshot;
 
   DeleteDBClusterSnapshotResult({
@@ -17091,7 +18416,13 @@ class DeleteDBClusterSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBInstanceAutomatedBackupResult {
+  @_s.JsonKey(name: 'DBInstanceAutomatedBackup')
   final DBInstanceAutomatedBackup dBInstanceAutomatedBackup;
 
   DeleteDBInstanceAutomatedBackupResult({
@@ -17106,7 +18437,13 @@ class DeleteDBInstanceAutomatedBackupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   DeleteDBInstanceResult({
@@ -17121,8 +18458,14 @@ class DeleteDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBProxyResponse {
   /// The data structure representing the details of the DB proxy that you delete.
+  @_s.JsonKey(name: 'DBProxy')
   final DBProxy dBProxy;
 
   DeleteDBProxyResponse({
@@ -17136,7 +18479,13 @@ class DeleteDBProxyResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBSnapshotResult {
+  @_s.JsonKey(name: 'DBSnapshot')
   final DBSnapshot dBSnapshot;
 
   DeleteDBSnapshotResult({
@@ -17151,7 +18500,13 @@ class DeleteDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   DeleteEventSubscriptionResult({
@@ -17166,7 +18521,13 @@ class DeleteEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteGlobalClusterResult {
+  @_s.JsonKey(name: 'GlobalCluster')
   final GlobalCluster globalCluster;
 
   DeleteGlobalClusterResult({
@@ -17181,6 +18542,11 @@ class DeleteGlobalClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeregisterDBProxyTargetsResponse {
   DeregisterDBProxyTargetsResponse();
   factory DeregisterDBProxyTargetsResponse.fromXml(
@@ -17190,7 +18556,13 @@ class DeregisterDBProxyTargetsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBClusterSnapshotAttributesResult {
+  @_s.JsonKey(name: 'DBClusterSnapshotAttributesResult')
   final DBClusterSnapshotAttributesResult dBClusterSnapshotAttributesResult;
 
   DescribeDBClusterSnapshotAttributesResult({
@@ -17208,14 +18580,22 @@ class DescribeDBClusterSnapshotAttributesResult {
 
 /// This data type is used as a response element to
 /// <code>DescribeDBLogFiles</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBLogFilesDetails {
   /// A POSIX timestamp when the last log entry was written.
+  @_s.JsonKey(name: 'LastWritten')
   final int lastWritten;
 
   /// The name of the log file for the specified DB instance.
+  @_s.JsonKey(name: 'LogFileName')
   final String logFileName;
 
   /// The size, in bytes, of the log file for the specified DB instance.
+  @_s.JsonKey(name: 'Size')
   final int size;
 
   DescribeDBLogFilesDetails({
@@ -17233,12 +18613,18 @@ class DescribeDBLogFilesDetails {
 }
 
 /// The response from a call to <code>DescribeDBLogFiles</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBLogFilesResponse {
   /// The DB log files returned.
+  @_s.JsonKey(name: 'DescribeDBLogFiles')
   final List<DescribeDBLogFilesDetails> describeDBLogFiles;
 
-  /// A pagination token that can be used in a subsequent DescribeDBLogFiles
-  /// request.
+  /// A pagination token that can be used in a later DescribeDBLogFiles request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DescribeDBLogFilesResponse({
@@ -17257,14 +18643,21 @@ class DescribeDBLogFilesResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBProxiesResponse {
   /// A return value representing an arbitrary number of <code>DBProxy</code> data
   /// structures.
+  @_s.JsonKey(name: 'DBProxies')
   final List<DBProxy> dBProxies;
 
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DescribeDBProxiesResponse({
@@ -17282,14 +18675,21 @@ class DescribeDBProxiesResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBProxyTargetGroupsResponse {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// An arbitrary number of <code>DBProxyTargetGroup</code> objects, containing
   /// details of the corresponding target groups.
+  @_s.JsonKey(name: 'TargetGroups')
   final List<DBProxyTargetGroup> targetGroups;
 
   DescribeDBProxyTargetGroupsResponse({
@@ -17307,14 +18707,21 @@ class DescribeDBProxyTargetGroupsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBProxyTargetsResponse {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// An arbitrary number of <code>DBProxyTarget</code> objects, containing
   /// details of the corresponding targets.
+  @_s.JsonKey(name: 'Targets')
   final List<DBProxyTarget> targets;
 
   DescribeDBProxyTargetsResponse({
@@ -17332,7 +18739,13 @@ class DescribeDBProxyTargetsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBSnapshotAttributesResult {
+  @_s.JsonKey(name: 'DBSnapshotAttributesResult')
   final DBSnapshotAttributesResult dBSnapshotAttributesResult;
 
   DescribeDBSnapshotAttributesResult({
@@ -17347,7 +18760,13 @@ class DescribeDBSnapshotAttributesResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEngineDefaultClusterParametersResult {
+  @_s.JsonKey(name: 'EngineDefaults')
   final EngineDefaults engineDefaults;
 
   DescribeEngineDefaultClusterParametersResult({
@@ -17363,7 +18782,13 @@ class DescribeEngineDefaultClusterParametersResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEngineDefaultParametersResult {
+  @_s.JsonKey(name: 'EngineDefaults')
   final EngineDefaults engineDefaults;
 
   DescribeEngineDefaultParametersResult({
@@ -17378,7 +18803,13 @@ class DescribeEngineDefaultParametersResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeValidDBInstanceModificationsResult {
+  @_s.JsonKey(name: 'ValidDBInstanceModificationsMessage')
   final ValidDBInstanceModificationsMessage validDBInstanceModificationsMessage;
 
   DescribeValidDBInstanceModificationsResult({
@@ -17394,21 +18825,30 @@ class DescribeValidDBInstanceModificationsResult {
   }
 }
 
-/// An Active Directory Domain membership record associated with the DB
-/// instance.
+/// An Active Directory Domain membership record associated with the DB instance
+/// or cluster.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DomainMembership {
   /// The identifier of the Active Directory Domain.
+  @_s.JsonKey(name: 'Domain')
   final String domain;
 
   /// The fully qualified domain name of the Active Directory Domain.
+  @_s.JsonKey(name: 'FQDN')
   final String fqdn;
 
   /// The name of the IAM role to be used when making API calls to the Directory
   /// Service.
+  @_s.JsonKey(name: 'IAMRoleName')
   final String iAMRoleName;
 
-  /// The status of the DB instance's Active Directory Domain membership, such as
-  /// joined, pending-join, failed etc).
+  /// The status of the Active Directory Domain membership for the DB instance or
+  /// cluster. Values include joined, pending-join, failed, and so on.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DomainMembership({
@@ -17428,11 +18868,18 @@ class DomainMembership {
 }
 
 /// A range of double values.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DoubleRange {
   /// The minimum value in the range.
+  @_s.JsonKey(name: 'From')
   final double from;
 
   /// The maximum value in the range.
+  @_s.JsonKey(name: 'To')
   final double to;
 
   DoubleRange({
@@ -17449,15 +18896,23 @@ class DoubleRange {
 
 /// This data type is used as a response element to
 /// <code>DownloadDBLogFilePortion</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DownloadDBLogFilePortionDetails {
   /// Boolean value that if true, indicates there is more data to be downloaded.
+  @_s.JsonKey(name: 'AdditionalDataPending')
   final bool additionalDataPending;
 
   /// Entries from the specified log file.
+  @_s.JsonKey(name: 'LogFileData')
   final String logFileData;
 
-  /// A pagination token that can be used in a subsequent DownloadDBLogFilePortion
+  /// A pagination token that can be used in a later DownloadDBLogFilePortion
   /// request.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DownloadDBLogFilePortionDetails({
@@ -17488,19 +18943,28 @@ class DownloadDBLogFilePortionDetails {
 /// <code>RevokeDBSecurityGroupIngress</code>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EC2SecurityGroup {
   /// Specifies the id of the EC2 security group.
+  @_s.JsonKey(name: 'EC2SecurityGroupId')
   final String eC2SecurityGroupId;
 
   /// Specifies the name of the EC2 security group.
+  @_s.JsonKey(name: 'EC2SecurityGroupName')
   final String eC2SecurityGroupName;
 
   /// Specifies the AWS ID of the owner of the EC2 security group specified in the
   /// <code>EC2SecurityGroupName</code> field.
+  @_s.JsonKey(name: 'EC2SecurityGroupOwnerId')
   final String eC2SecurityGroupOwnerId;
 
   /// Provides the status of the EC2 security group. Status can be "authorizing",
   /// "authorized", "revoking", and "revoked".
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   EC2SecurityGroup({
@@ -17538,14 +19002,22 @@ class EC2SecurityGroup {
 /// </ul>
 /// For the data structure that represents Amazon Aurora DB cluster endpoints,
 /// see <code>DBClusterEndpoint</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Endpoint {
   /// Specifies the DNS address of the DB instance.
+  @_s.JsonKey(name: 'Address')
   final String address;
 
   /// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
+  @_s.JsonKey(name: 'HostedZoneId')
   final String hostedZoneId;
 
   /// Specifies the port that the database engine is listening on.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   Endpoint({
@@ -17564,17 +19036,25 @@ class Endpoint {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeEngineDefaultParameters</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EngineDefaults {
   /// Specifies the name of the DB parameter group family that the engine default
   /// parameters apply to.
+  @_s.JsonKey(name: 'DBParameterGroupFamily')
   final String dBParameterGroupFamily;
 
   /// An optional pagination token provided by a previous EngineDefaults request.
   /// If this parameter is specified, the response includes only records beyond
   /// the marker, up to the value specified by <code>MaxRecords</code> .
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// Contains a list of engine default parameters.
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   EngineDefaults({
@@ -17596,6 +19076,7 @@ class EngineDefaults {
 }
 
 enum EngineFamily {
+  @_s.JsonValue('MYSQL')
   mysql,
 }
 
@@ -17611,23 +19092,34 @@ extension on String {
 
 /// This data type is used as a response element in the
 /// <code>DescribeEvents</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Event {
   /// Specifies the date and time of the event.
+  @_s.JsonKey(name: 'Date', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime date;
 
   /// Specifies the category for the event.
+  @_s.JsonKey(name: 'EventCategories')
   final List<String> eventCategories;
 
   /// Provides the text of this event.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// The Amazon Resource Name (ARN) for the event.
+  @_s.JsonKey(name: 'SourceArn')
   final String sourceArn;
 
   /// Provides the identifier for the source of the event.
+  @_s.JsonKey(name: 'SourceIdentifier')
   final String sourceIdentifier;
 
   /// Specifies the source type for this event.
+  @_s.JsonKey(name: 'SourceType')
   final SourceType sourceType;
 
   Event({
@@ -17654,11 +19146,18 @@ class Event {
 
 /// Contains the results of a successful invocation of the
 /// <code>DescribeEventCategories</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventCategoriesMap {
   /// The event categories for the specified source type
+  @_s.JsonKey(name: 'EventCategories')
   final List<String> eventCategories;
 
   /// The source type that the returned categories belong to
+  @_s.JsonKey(name: 'SourceType')
   final String sourceType;
 
   EventCategoriesMap({
@@ -17676,8 +19175,14 @@ class EventCategoriesMap {
 }
 
 /// Data returned from the <b>DescribeEventCategories</b> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventCategoriesMessage {
   /// A list of EventCategoriesMap data types.
+  @_s.JsonKey(name: 'EventCategoriesMapList')
   final List<EventCategoriesMap> eventCategoriesMapList;
 
   EventCategoriesMessage({
@@ -17697,31 +19202,44 @@ class EventCategoriesMessage {
 
 /// Contains the results of a successful invocation of the
 /// <code>DescribeEventSubscriptions</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventSubscription {
   /// The RDS event notification subscription Id.
+  @_s.JsonKey(name: 'CustSubscriptionId')
   final String custSubscriptionId;
 
   /// The AWS customer account associated with the RDS event notification
   /// subscription.
+  @_s.JsonKey(name: 'CustomerAwsId')
   final String customerAwsId;
 
   /// A Boolean value indicating if the subscription is enabled. True indicates
   /// the subscription is enabled.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// A list of event categories for the RDS event notification subscription.
+  @_s.JsonKey(name: 'EventCategoriesList')
   final List<String> eventCategoriesList;
 
   /// The Amazon Resource Name (ARN) for the event subscription.
+  @_s.JsonKey(name: 'EventSubscriptionArn')
   final String eventSubscriptionArn;
 
   /// The topic ARN of the RDS event notification subscription.
+  @_s.JsonKey(name: 'SnsTopicArn')
   final String snsTopicArn;
 
   /// A list of source IDs for the RDS event notification subscription.
+  @_s.JsonKey(name: 'SourceIdsList')
   final List<String> sourceIdsList;
 
   /// The source type for the RDS event notification subscription.
+  @_s.JsonKey(name: 'SourceType')
   final String sourceType;
 
   /// The status of the RDS event notification subscription.
@@ -17734,9 +19252,11 @@ class EventSubscription {
   /// The status "no-permission" indicates that RDS no longer has permission to
   /// post to the SNS topic. The status "topic-not-exist" indicates that the topic
   /// was deleted after the subscription was created.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The time the RDS event notification subscription was created.
+  @_s.JsonKey(name: 'SubscriptionCreationTime')
   final String subscriptionCreationTime;
 
   EventSubscription({
@@ -17774,14 +19294,21 @@ class EventSubscription {
 }
 
 /// Data returned by the <b>DescribeEventSubscriptions</b> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventSubscriptionsMessage {
   /// A list of EventSubscriptions data types.
+  @_s.JsonKey(name: 'EventSubscriptionsList')
   final List<EventSubscription> eventSubscriptionsList;
 
   /// An optional pagination token provided by a previous
   /// DescribeOrderableDBInstanceOptions request. If this parameter is specified,
   /// the response includes only records beyond the marker, up to the value
   /// specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   EventSubscriptionsMessage({
@@ -17803,13 +19330,20 @@ class EventSubscriptionsMessage {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeEvents</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventsMessage {
   /// A list of <code>Event</code> instances.
+  @_s.JsonKey(name: 'Events')
   final List<Event> events;
 
   /// An optional pagination token provided by a previous Events request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code> .
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   EventsMessage({
@@ -17825,7 +19359,183 @@ class EventsMessage {
   }
 }
 
+/// Contains the details of a snapshot export to Amazon S3.
+///
+/// This data type is used as a response element in the
+/// <code>DescribeExportTasks</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class ExportTask {
+  /// The data exported from the snapshot. Valid values are the following:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>database</code> - Export all the data of the snapshot.
+  /// </li>
+  /// <li>
+  /// <code>database.table [table-name]</code> - Export a table of the snapshot.
+  /// </li>
+  /// <li>
+  /// <code>database.schema [schema-name]</code> - Export a database schema of the
+  /// snapshot. This value isn't valid for RDS for MySQL, RDS for MariaDB, or
+  /// Aurora MySQL.
+  /// </li>
+  /// <li>
+  /// <code>database.schema.table [table-name]</code> - Export a table of the
+  /// database schema. This value isn't valid for RDS for MySQL, RDS for MariaDB,
+  /// or Aurora MySQL.
+  /// </li>
+  /// </ul>
+  @_s.JsonKey(name: 'ExportOnly')
+  final List<String> exportOnly;
+
+  /// A unique identifier for the snapshot export task. This ID isn't an
+  /// identifier for the Amazon S3 bucket where the snapshot is exported to.
+  @_s.JsonKey(name: 'ExportTaskIdentifier')
+  final String exportTaskIdentifier;
+
+  /// The reason the export failed, if it failed.
+  @_s.JsonKey(name: 'FailureCause')
+  final String failureCause;
+
+  /// The name of the IAM role that is used to write to Amazon S3 when exporting a
+  /// snapshot.
+  @_s.JsonKey(name: 'IamRoleArn')
+  final String iamRoleArn;
+
+  /// The ID of the AWS KMS key that is used to encrypt the snapshot when it's
+  /// exported to Amazon S3. The KMS key ID is the Amazon Resource Name (ARN), the
+  /// KMS key identifier, or the KMS key alias for the KMS encryption key. The IAM
+  /// role used for the snapshot export must have encryption and decryption
+  /// permissions to use this KMS key.
+  @_s.JsonKey(name: 'KmsKeyId')
+  final String kmsKeyId;
+
+  /// The progress of the snapshot export task as a percentage.
+  @_s.JsonKey(name: 'PercentProgress')
+  final int percentProgress;
+
+  /// The Amazon S3 bucket that the snapshot is exported to.
+  @_s.JsonKey(name: 'S3Bucket')
+  final String s3Bucket;
+
+  /// The Amazon S3 bucket prefix that is the file name and path of the exported
+  /// snapshot.
+  @_s.JsonKey(name: 'S3Prefix')
+  final String s3Prefix;
+
+  /// The time that the snapshot was created.
+  @_s.JsonKey(name: 'SnapshotTime', fromJson: unixFromJson, toJson: unixToJson)
+  final DateTime snapshotTime;
+
+  /// The Amazon Resource Name (ARN) of the snapshot exported to Amazon S3.
+  @_s.JsonKey(name: 'SourceArn')
+  final String sourceArn;
+
+  /// The progress status of the export task.
+  @_s.JsonKey(name: 'Status')
+  final String status;
+
+  /// The time that the snapshot export task completed.
+  @_s.JsonKey(name: 'TaskEndTime', fromJson: unixFromJson, toJson: unixToJson)
+  final DateTime taskEndTime;
+
+  /// The time that the snapshot export task started.
+  @_s.JsonKey(name: 'TaskStartTime', fromJson: unixFromJson, toJson: unixToJson)
+  final DateTime taskStartTime;
+
+  /// The total amount of data exported, in gigabytes.
+  @_s.JsonKey(name: 'TotalExtractedDataInGB')
+  final int totalExtractedDataInGB;
+
+  /// A warning about the snapshot export task.
+  @_s.JsonKey(name: 'WarningMessage')
+  final String warningMessage;
+
+  ExportTask({
+    this.exportOnly,
+    this.exportTaskIdentifier,
+    this.failureCause,
+    this.iamRoleArn,
+    this.kmsKeyId,
+    this.percentProgress,
+    this.s3Bucket,
+    this.s3Prefix,
+    this.snapshotTime,
+    this.sourceArn,
+    this.status,
+    this.taskEndTime,
+    this.taskStartTime,
+    this.totalExtractedDataInGB,
+    this.warningMessage,
+  });
+  factory ExportTask.fromXml(_s.XmlElement elem) {
+    return ExportTask(
+      exportOnly: _s
+          .extractXmlChild(elem, 'ExportOnly')
+          ?.let((elem) => _s.extractXmlStringListValues(elem, 'ExportOnly')),
+      exportTaskIdentifier:
+          _s.extractXmlStringValue(elem, 'ExportTaskIdentifier'),
+      failureCause: _s.extractXmlStringValue(elem, 'FailureCause'),
+      iamRoleArn: _s.extractXmlStringValue(elem, 'IamRoleArn'),
+      kmsKeyId: _s.extractXmlStringValue(elem, 'KmsKeyId'),
+      percentProgress: _s.extractXmlIntValue(elem, 'PercentProgress'),
+      s3Bucket: _s.extractXmlStringValue(elem, 'S3Bucket'),
+      s3Prefix: _s.extractXmlStringValue(elem, 'S3Prefix'),
+      snapshotTime: _s.extractXmlDateTimeValue(elem, 'SnapshotTime'),
+      sourceArn: _s.extractXmlStringValue(elem, 'SourceArn'),
+      status: _s.extractXmlStringValue(elem, 'Status'),
+      taskEndTime: _s.extractXmlDateTimeValue(elem, 'TaskEndTime'),
+      taskStartTime: _s.extractXmlDateTimeValue(elem, 'TaskStartTime'),
+      totalExtractedDataInGB:
+          _s.extractXmlIntValue(elem, 'TotalExtractedDataInGB'),
+      warningMessage: _s.extractXmlStringValue(elem, 'WarningMessage'),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class ExportTasksMessage {
+  /// Information about an export of a snapshot to Amazon S3.
+  @_s.JsonKey(name: 'ExportTasks')
+  final List<ExportTask> exportTasks;
+
+  /// A pagination token that can be used in a later
+  /// <code>DescribeExportTasks</code> request. A marker is used for pagination to
+  /// identify the location to begin output for the next response of
+  /// <code>DescribeExportTasks</code>.
+  @_s.JsonKey(name: 'Marker')
+  final String marker;
+
+  ExportTasksMessage({
+    this.exportTasks,
+    this.marker,
+  });
+  factory ExportTasksMessage.fromXml(_s.XmlElement elem) {
+    return ExportTasksMessage(
+      exportTasks: _s.extractXmlChild(elem, 'ExportTasks')?.let((elem) => elem
+          .findElements('ExportTask')
+          .map((c) => ExportTask.fromXml(c))
+          .toList()),
+      marker: _s.extractXmlStringValue(elem, 'Marker'),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class FailoverDBClusterResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   FailoverDBClusterResult({
@@ -17866,53 +19576,76 @@ class FailoverDBClusterResult {
 /// <code>DescribePendingMaintenanceActions</code>
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Filter {
   /// The name of the filter. Filter names are case-sensitive.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// One or more filter values. Filter values are case-sensitive.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   Filter({
     @_s.required this.name,
     @_s.required this.values,
   });
+  Map<String, dynamic> toJson() => _$FilterToJson(this);
 }
 
 /// A data type representing an Aurora global database.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GlobalCluster {
   /// The default database name within the new global database cluster.
+  @_s.JsonKey(name: 'DatabaseName')
   final String databaseName;
 
   /// The deletion protection setting for the new global database cluster.
+  @_s.JsonKey(name: 'DeletionProtection')
   final bool deletionProtection;
 
   /// The Aurora database engine used by the global database cluster.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// Indicates the database engine version.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// The Amazon Resource Name (ARN) for the global database cluster.
+  @_s.JsonKey(name: 'GlobalClusterArn')
   final String globalClusterArn;
 
   /// Contains a user-supplied global database cluster identifier. This identifier
   /// is the unique key that identifies a global database cluster.
+  @_s.JsonKey(name: 'GlobalClusterIdentifier')
   final String globalClusterIdentifier;
 
   /// The list of cluster IDs for secondary clusters within the global database
   /// cluster. Currently limited to 1 item.
+  @_s.JsonKey(name: 'GlobalClusterMembers')
   final List<GlobalClusterMember> globalClusterMembers;
 
   /// The AWS Region-unique, immutable identifier for the global database cluster.
   /// This identifier is found in AWS CloudTrail log entries whenever the AWS KMS
   /// key for the DB cluster is accessed.
+  @_s.JsonKey(name: 'GlobalClusterResourceId')
   final String globalClusterResourceId;
 
   /// Specifies the current state of this global database cluster.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The storage encryption setting for the global database cluster.
+  @_s.JsonKey(name: 'StorageEncrypted')
   final bool storageEncrypted;
 
   GlobalCluster({
@@ -17952,17 +19685,25 @@ class GlobalCluster {
 
 /// A data structure with information about any primary and secondary clusters
 /// associated with an Aurora global database.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GlobalClusterMember {
   /// The Amazon Resource Name (ARN) for each Aurora cluster.
+  @_s.JsonKey(name: 'DBClusterArn')
   final String dBClusterArn;
 
   /// Specifies whether the Aurora cluster is the primary cluster (that is, has
   /// read-write capability) for the Aurora global database with which it is
   /// associated.
+  @_s.JsonKey(name: 'IsWriter')
   final bool isWriter;
 
   /// The Amazon Resource Name (ARN) for each read-only secondary cluster
   /// associated with the Aurora global database.
+  @_s.JsonKey(name: 'Readers')
   final List<String> readers;
 
   GlobalClusterMember({
@@ -17981,14 +19722,21 @@ class GlobalClusterMember {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GlobalClustersMessage {
   /// The list of global clusters returned by this request.
+  @_s.JsonKey(name: 'GlobalClusters')
   final List<GlobalCluster> globalClusters;
 
   /// An optional pagination token provided by a previous
   /// <code>DescribeGlobalClusters</code> request. If this parameter is specified,
   /// the response includes only records beyond the marker, up to the value
   /// specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   GlobalClustersMessage({
@@ -18008,7 +19756,9 @@ class GlobalClustersMessage {
 }
 
 enum IAMAuthMode {
+  @_s.JsonValue('DISABLED')
   disabled,
+  @_s.JsonValue('REQUIRED')
   required,
 }
 
@@ -18026,12 +19776,19 @@ extension on String {
 
 /// This data type is used as a response element in the
 /// <code>DescribeDBSecurityGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IPRange {
   /// Specifies the IP range.
+  @_s.JsonKey(name: 'CIDRIP')
   final String cidrip;
 
   /// Specifies the status of the IP range. Status can be "authorizing",
   /// "authorized", "revoking", and "revoked".
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   IPRange({
@@ -18048,30 +19805,43 @@ class IPRange {
 
 /// Contains the installation media for a DB engine that requires an on-premises
 /// customer provided license, such as Microsoft SQL Server.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InstallationMedia {
   /// The custom Availability Zone (AZ) that contains the installation media.
+  @_s.JsonKey(name: 'CustomAvailabilityZoneId')
   final String customAvailabilityZoneId;
 
   /// The DB engine.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The path to the installation medium for the DB engine.
+  @_s.JsonKey(name: 'EngineInstallationMediaPath')
   final String engineInstallationMediaPath;
 
   /// The engine version of the DB engine.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// If an installation media failure occurred, the cause of the failure.
+  @_s.JsonKey(name: 'FailureCause')
   final InstallationMediaFailureCause failureCause;
 
   /// The installation medium ID.
+  @_s.JsonKey(name: 'InstallationMediaId')
   final String installationMediaId;
 
   /// The path to the installation medium for the operating system associated with
   /// the DB engine.
+  @_s.JsonKey(name: 'OSInstallationMediaPath')
   final String oSInstallationMediaPath;
 
   /// The status of the installation medium.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   InstallationMedia({
@@ -18107,8 +19877,14 @@ class InstallationMedia {
 /// Contains the cause of an installation media failure. Installation media is
 /// used for a DB engine that requires an on-premises customer provided license,
 /// such as Microsoft SQL Server.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InstallationMediaFailureCause {
   /// The reason that an installation media import failed.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   InstallationMediaFailureCause({
@@ -18121,14 +19897,21 @@ class InstallationMediaFailureCause {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InstallationMediaMessage {
   /// The list of <a>InstallationMedia</a> objects for the AWS account.
+  @_s.JsonKey(name: 'InstallationMedia')
   final List<InstallationMedia> installationMedia;
 
   /// An optional pagination token provided by a previous
   /// <a>DescribeInstallationMedia</a> request. If this parameter is specified,
   /// the response includes only records beyond the marker, up to the value
   /// specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   InstallationMediaMessage({
@@ -18149,11 +19932,18 @@ class InstallationMediaMessage {
 
 /// The minimum DB engine version required for each corresponding allowed value
 /// for an option setting.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MinimumEngineVersionPerAllowedValue {
   /// The allowed value for an option setting.
+  @_s.JsonKey(name: 'AllowedValue')
   final String allowedValue;
 
   /// The minimum DB engine version required for the allowed value.
+  @_s.JsonKey(name: 'MinimumEngineVersion')
   final String minimumEngineVersion;
 
   MinimumEngineVersionPerAllowedValue({
@@ -18169,7 +19959,34 @@ class MinimumEngineVersionPerAllowedValue {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class ModifyCertificatesResult {
+  @_s.JsonKey(name: 'Certificate')
+  final Certificate certificate;
+
+  ModifyCertificatesResult({
+    this.certificate,
+  });
+  factory ModifyCertificatesResult.fromXml(_s.XmlElement elem) {
+    return ModifyCertificatesResult(
+      certificate: _s
+          .extractXmlChild(elem, 'Certificate')
+          ?.let((e) => Certificate.fromXml(e)),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBClusterResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   ModifyDBClusterResult({
@@ -18184,7 +20001,13 @@ class ModifyDBClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBClusterSnapshotAttributeResult {
+  @_s.JsonKey(name: 'DBClusterSnapshotAttributesResult')
   final DBClusterSnapshotAttributesResult dBClusterSnapshotAttributesResult;
 
   ModifyDBClusterSnapshotAttributeResult({
@@ -18199,7 +20022,13 @@ class ModifyDBClusterSnapshotAttributeResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   ModifyDBInstanceResult({
@@ -18214,8 +20043,14 @@ class ModifyDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBProxyResponse {
   /// The <code>DBProxy</code> object representing the new settings for the proxy.
+  @_s.JsonKey(name: 'DBProxy')
   final DBProxy dBProxy;
 
   ModifyDBProxyResponse({
@@ -18229,8 +20064,14 @@ class ModifyDBProxyResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBProxyTargetGroupResponse {
   /// The settings of the modified <code>DBProxyTarget</code>.
+  @_s.JsonKey(name: 'DBProxyTargetGroup')
   final DBProxyTargetGroup dBProxyTargetGroup;
 
   ModifyDBProxyTargetGroupResponse({
@@ -18245,7 +20086,13 @@ class ModifyDBProxyTargetGroupResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBSnapshotAttributeResult {
+  @_s.JsonKey(name: 'DBSnapshotAttributesResult')
   final DBSnapshotAttributesResult dBSnapshotAttributesResult;
 
   ModifyDBSnapshotAttributeResult({
@@ -18260,7 +20107,13 @@ class ModifyDBSnapshotAttributeResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBSnapshotResult {
+  @_s.JsonKey(name: 'DBSnapshot')
   final DBSnapshot dBSnapshot;
 
   ModifyDBSnapshotResult({
@@ -18275,7 +20128,13 @@ class ModifyDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBSubnetGroupResult {
+  @_s.JsonKey(name: 'DBSubnetGroup')
   final DBSubnetGroup dBSubnetGroup;
 
   ModifyDBSubnetGroupResult({
@@ -18290,7 +20149,13 @@ class ModifyDBSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   ModifyEventSubscriptionResult({
@@ -18305,7 +20170,13 @@ class ModifyEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyGlobalClusterResult {
+  @_s.JsonKey(name: 'GlobalCluster')
   final GlobalCluster globalCluster;
 
   ModifyGlobalClusterResult({
@@ -18320,7 +20191,13 @@ class ModifyGlobalClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyOptionGroupResult {
+  @_s.JsonKey(name: 'OptionGroup')
   final OptionGroup optionGroup;
 
   ModifyOptionGroupResult({
@@ -18336,34 +20213,48 @@ class ModifyOptionGroupResult {
 }
 
 /// Option details.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Option {
   /// If the option requires access to a port, then this DB security group allows
   /// access to the port.
+  @_s.JsonKey(name: 'DBSecurityGroupMemberships')
   final List<DBSecurityGroupMembership> dBSecurityGroupMemberships;
 
   /// The description of the option.
+  @_s.JsonKey(name: 'OptionDescription')
   final String optionDescription;
 
   /// The name of the option.
+  @_s.JsonKey(name: 'OptionName')
   final String optionName;
 
   /// The option settings for this option.
+  @_s.JsonKey(name: 'OptionSettings')
   final List<OptionSetting> optionSettings;
 
   /// The version of the option.
+  @_s.JsonKey(name: 'OptionVersion')
   final String optionVersion;
 
   /// Indicate if this option is permanent.
+  @_s.JsonKey(name: 'Permanent')
   final bool permanent;
 
   /// Indicate if this option is persistent.
+  @_s.JsonKey(name: 'Persistent')
   final bool persistent;
 
   /// If required, the port configured for this option to use.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// If the option requires access to a port, then this VPC security group allows
   /// access to the port.
+  @_s.JsonKey(name: 'VpcSecurityGroupMemberships')
   final List<VpcSecurityGroupMembership> vpcSecurityGroupMemberships;
 
   Option({
@@ -18407,23 +20298,34 @@ class Option {
 }
 
 /// A list of all available options
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class OptionConfiguration {
   /// The configuration of options to include in a group.
+  @_s.JsonKey(name: 'OptionName')
   final String optionName;
 
   /// A list of DBSecurityGroupMembership name strings used for this option.
+  @_s.JsonKey(name: 'DBSecurityGroupMemberships')
   final List<String> dBSecurityGroupMemberships;
 
   /// The option settings to include in an option group.
+  @_s.JsonKey(name: 'OptionSettings')
   final List<OptionSetting> optionSettings;
 
   /// The version for the option.
+  @_s.JsonKey(name: 'OptionVersion')
   final String optionVersion;
 
   /// The optional port for the option.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// A list of VpcSecurityGroupMembership name strings used for this option.
+  @_s.JsonKey(name: 'VpcSecurityGroupMemberships')
   final List<String> vpcSecurityGroupMemberships;
 
   OptionConfiguration({
@@ -18434,31 +20336,44 @@ class OptionConfiguration {
     this.port,
     this.vpcSecurityGroupMemberships,
   });
+  Map<String, dynamic> toJson() => _$OptionConfigurationToJson(this);
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroup {
   /// Indicates whether this option group can be applied to both VPC and non-VPC
   /// instances. The value <code>true</code> indicates the option group can be
   /// applied to both VPC and non-VPC instances.
+  @_s.JsonKey(name: 'AllowsVpcAndNonVpcInstanceMemberships')
   final bool allowsVpcAndNonVpcInstanceMemberships;
 
   /// Indicates the name of the engine that this option group can be applied to.
+  @_s.JsonKey(name: 'EngineName')
   final String engineName;
 
   /// Indicates the major engine version associated with this option group.
+  @_s.JsonKey(name: 'MajorEngineVersion')
   final String majorEngineVersion;
 
   /// The Amazon Resource Name (ARN) for the option group.
+  @_s.JsonKey(name: 'OptionGroupArn')
   final String optionGroupArn;
 
   /// Provides a description of the option group.
+  @_s.JsonKey(name: 'OptionGroupDescription')
   final String optionGroupDescription;
 
   /// Specifies the name of the option group.
+  @_s.JsonKey(name: 'OptionGroupName')
   final String optionGroupName;
 
   /// Indicates what options are available in the option group.
+  @_s.JsonKey(name: 'Options')
   final List<Option> options;
 
   /// If <b>AllowsVpcAndNonVpcInstanceMemberships</b> is <code>false</code>, this
@@ -18467,6 +20382,7 @@ class OptionGroup {
   /// applied to both VPC and non-VPC instances. If this field contains a value,
   /// then this option group can only be applied to instances that are in the VPC
   /// indicated by this field.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   OptionGroup({
@@ -18497,8 +20413,14 @@ class OptionGroup {
 }
 
 /// Provides information on the option groups the DB instance is a member of.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupMembership {
   /// The name of the option group that the instance belongs to.
+  @_s.JsonKey(name: 'OptionGroupName')
   final String optionGroupName;
 
   /// The status of the DB instance's option group membership. Valid values are:
@@ -18506,6 +20428,7 @@ class OptionGroupMembership {
   /// <code>pending-removal</code>, <code>pending-maintenance-apply</code>,
   /// <code>pending-maintenance-removal</code>, <code>applying</code>,
   /// <code>removing</code>, and <code>failed</code>.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   OptionGroupMembership({
@@ -18521,62 +20444,83 @@ class OptionGroupMembership {
 }
 
 /// Available option.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupOption {
   /// If the option requires a port, specifies the default port for the option.
+  @_s.JsonKey(name: 'DefaultPort')
   final int defaultPort;
 
   /// The description of the option.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The name of the engine that this option can be applied to.
+  @_s.JsonKey(name: 'EngineName')
   final String engineName;
 
   /// Indicates the major engine version that the option is available for.
+  @_s.JsonKey(name: 'MajorEngineVersion')
   final String majorEngineVersion;
 
   /// The minimum required engine version for the option to be applied.
+  @_s.JsonKey(name: 'MinimumRequiredMinorEngineVersion')
   final String minimumRequiredMinorEngineVersion;
 
   /// The name of the option.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The option settings that are available (and the default value) for each
   /// option in an option group.
+  @_s.JsonKey(name: 'OptionGroupOptionSettings')
   final List<OptionGroupOptionSetting> optionGroupOptionSettings;
 
   /// The versions that are available for the option.
+  @_s.JsonKey(name: 'OptionGroupOptionVersions')
   final List<OptionVersion> optionGroupOptionVersions;
 
   /// The options that conflict with this option.
+  @_s.JsonKey(name: 'OptionsConflictsWith')
   final List<String> optionsConflictsWith;
 
   /// The options that are prerequisites for this option.
+  @_s.JsonKey(name: 'OptionsDependedOn')
   final List<String> optionsDependedOn;
 
   /// Permanent options can never be removed from an option group. An option group
   /// containing a permanent option can't be removed from a DB instance.
+  @_s.JsonKey(name: 'Permanent')
   final bool permanent;
 
   /// Persistent options can't be removed from an option group while DB instances
   /// are associated with the option group. If you disassociate all DB instances
   /// from the option group, your can remove the persistent option from the option
   /// group.
+  @_s.JsonKey(name: 'Persistent')
   final bool persistent;
 
   /// Specifies whether the option requires a port.
+  @_s.JsonKey(name: 'PortRequired')
   final bool portRequired;
 
   /// If true, you must enable the Auto Minor Version Upgrade setting for your DB
   /// instance before you can use this option. You can enable Auto Minor Version
   /// Upgrade when you first create your DB instance, or by modifying your DB
   /// instance later.
+  @_s.JsonKey(name: 'RequiresAutoMinorEngineVersionUpgrade')
   final bool requiresAutoMinorEngineVersionUpgrade;
 
   /// If true, you can change the option to an earlier version of the option. This
   /// only applies to options that have different versions available.
+  @_s.JsonKey(name: 'SupportsOptionVersionDowngrade')
   final bool supportsOptionVersionDowngrade;
 
   /// If true, you can only use this option with a DB instance that is in a VPC.
+  @_s.JsonKey(name: 'VpcOnly')
   final bool vpcOnly;
 
   OptionGroupOption({
@@ -18640,33 +20584,46 @@ class OptionGroupOption {
 /// Option group option settings are used to display settings available for each
 /// option with their default values and other information. These values are
 /// used with the DescribeOptionGroupOptions action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupOptionSetting {
   /// Indicates the acceptable values for the option group option.
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
 
   /// The DB engine specific parameter type for the option group option.
+  @_s.JsonKey(name: 'ApplyType')
   final String applyType;
 
   /// The default value for the option group option.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// Boolean value where true indicates that this option group option can be
   /// changed from the default value.
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
 
   /// Boolean value where true indicates that a value must be specified for this
   /// option setting of the option group option.
+  @_s.JsonKey(name: 'IsRequired')
   final bool isRequired;
 
   /// The minimum DB engine version required for the corresponding allowed value
   /// for this option setting.
+  @_s.JsonKey(name: 'MinimumEngineVersionPerAllowedValue')
   final List<MinimumEngineVersionPerAllowedValue>
       minimumEngineVersionPerAllowedValue;
 
   /// The description of the option group option.
+  @_s.JsonKey(name: 'SettingDescription')
   final String settingDescription;
 
   /// The name of the option group option.
+  @_s.JsonKey(name: 'SettingName')
   final String settingName;
 
   OptionGroupOptionSetting({
@@ -18699,11 +20656,18 @@ class OptionGroupOptionSetting {
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupOptionsMessage {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'OptionGroupOptions')
   final List<OptionGroupOption> optionGroupOptions;
 
   OptionGroupOptionsMessage({
@@ -18723,13 +20687,20 @@ class OptionGroupOptionsMessage {
 }
 
 /// List of option groups.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroups {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// List of option groups.
+  @_s.JsonKey(name: 'OptionGroupsList')
   final List<OptionGroup> optionGroupsList;
 
   OptionGroups({
@@ -18752,33 +20723,47 @@ class OptionGroups {
 /// option. It is used when you modify an option group or describe option
 /// groups. For example, the NATIVE_NETWORK_ENCRYPTION option has a setting
 /// called SQLNET.ENCRYPTION_SERVER that can have several different values.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class OptionSetting {
   /// The allowed values of the option setting.
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
 
   /// The DB engine specific parameter type.
+  @_s.JsonKey(name: 'ApplyType')
   final String applyType;
 
   /// The data type of the option setting.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// The default value of the option setting.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// The description of the option setting.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Indicates if the option setting is part of a collection.
+  @_s.JsonKey(name: 'IsCollection')
   final bool isCollection;
 
   /// A Boolean value that, when true, indicates the option setting can be
   /// modified from the default.
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
 
   /// The name of the option that has settings that you can set.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The current value of the option setting.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   OptionSetting({
@@ -18805,16 +20790,25 @@ class OptionSetting {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$OptionSettingToJson(this);
 }
 
 /// The version for an option. Option group option versions are returned by the
 /// <code>DescribeOptionGroupOptions</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionVersion {
   /// True if the version is the default version of the option, and otherwise
   /// false.
+  @_s.JsonKey(name: 'IsDefault')
   final bool isDefault;
 
   /// The version of the option.
+  @_s.JsonKey(name: 'Version')
   final String version;
 
   OptionVersion({
@@ -18833,80 +20827,114 @@ class OptionVersion {
 ///
 /// This data type is used as a response element in the
 /// <code>DescribeOrderableDBInstanceOptions</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OrderableDBInstanceOption {
   /// A list of Availability Zones for a DB instance.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<AvailabilityZone> availabilityZones;
 
   /// A list of the available processor features for the DB instance class of a DB
   /// instance.
+  @_s.JsonKey(name: 'AvailableProcessorFeatures')
   final List<AvailableProcessorFeature> availableProcessorFeatures;
 
   /// The DB instance class for a DB instance.
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
 
   /// The engine type of a DB instance.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The engine version of a DB instance.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// The license model for a DB instance.
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
 
   /// Maximum total provisioned IOPS for a DB instance.
+  @_s.JsonKey(name: 'MaxIopsPerDbInstance')
   final int maxIopsPerDbInstance;
 
   /// Maximum provisioned IOPS per GiB for a DB instance.
+  @_s.JsonKey(name: 'MaxIopsPerGib')
   final double maxIopsPerGib;
 
   /// Maximum storage size for a DB instance.
+  @_s.JsonKey(name: 'MaxStorageSize')
   final int maxStorageSize;
 
   /// Minimum total provisioned IOPS for a DB instance.
+  @_s.JsonKey(name: 'MinIopsPerDbInstance')
   final int minIopsPerDbInstance;
 
   /// Minimum provisioned IOPS per GiB for a DB instance.
+  @_s.JsonKey(name: 'MinIopsPerGib')
   final double minIopsPerGib;
 
   /// Minimum storage size for a DB instance.
+  @_s.JsonKey(name: 'MinStorageSize')
   final int minStorageSize;
 
   /// Indicates whether a DB instance is Multi-AZ capable.
+  @_s.JsonKey(name: 'MultiAZCapable')
   final bool multiAZCapable;
 
-  /// Indicates whether a DB instance can have a Read Replica.
+  /// Indicates whether a DB instance can have a read replica.
+  @_s.JsonKey(name: 'ReadReplicaCapable')
   final bool readReplicaCapable;
 
   /// Indicates the storage type for a DB instance.
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
 
   /// A list of the supported DB engine modes.
+  /// <note>
+  /// <code>global</code> engine mode only applies for global database clusters
+  /// created with Aurora MySQL version 5.6.10a. For higher Aurora MySQL versions,
+  /// the clusters in a global database use <code>provisioned</code> engine mode.
+  /// </note>
+  @_s.JsonKey(name: 'SupportedEngineModes')
   final List<String> supportedEngineModes;
 
   /// Indicates whether a DB instance supports Enhanced Monitoring at intervals
   /// from 1 to 60 seconds.
+  @_s.JsonKey(name: 'SupportsEnhancedMonitoring')
   final bool supportsEnhancedMonitoring;
 
   /// Indicates whether a DB instance supports IAM database authentication.
+  @_s.JsonKey(name: 'SupportsIAMDatabaseAuthentication')
   final bool supportsIAMDatabaseAuthentication;
 
   /// Indicates whether a DB instance supports provisioned IOPS.
+  @_s.JsonKey(name: 'SupportsIops')
   final bool supportsIops;
 
   /// Whether a DB instance supports Kerberos Authentication.
+  @_s.JsonKey(name: 'SupportsKerberosAuthentication')
   final bool supportsKerberosAuthentication;
 
   /// True if a DB instance supports Performance Insights, otherwise false.
+  @_s.JsonKey(name: 'SupportsPerformanceInsights')
   final bool supportsPerformanceInsights;
 
   /// Whether or not Amazon RDS can automatically scale storage for DB instances
   /// that use the specified instance class.
+  @_s.JsonKey(name: 'SupportsStorageAutoscaling')
   final bool supportsStorageAutoscaling;
 
   /// Indicates whether a DB instance supports encrypted storage.
+  @_s.JsonKey(name: 'SupportsStorageEncryption')
   final bool supportsStorageEncryption;
 
   /// Indicates whether a DB instance is in a VPC.
+  @_s.JsonKey(name: 'Vpc')
   final bool vpc;
 
   OrderableDBInstanceOption({
@@ -18985,15 +21013,22 @@ class OrderableDBInstanceOption {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeOrderableDBInstanceOptions</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OrderableDBInstanceOptionsMessage {
   /// An optional pagination token provided by a previous
   /// OrderableDBInstanceOptions request. If this parameter is specified, the
   /// response includes only records beyond the marker, up to the value specified
   /// by <code>MaxRecords</code> .
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// An <code>OrderableDBInstanceOption</code> structure containing information
   /// about orderable options for the DB instance.
+  @_s.JsonKey(name: 'OrderableDBInstanceOptions')
   final List<OrderableDBInstanceOption> orderableDBInstanceOptions;
 
   OrderableDBInstanceOptionsMessage({
@@ -19020,40 +21055,56 @@ class OrderableDBInstanceOptionsMessage {
 /// This data type is used as a response element in the
 /// <code>DescribeEngineDefaultParameters</code> and
 /// <code>DescribeDBParameters</code> actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Parameter {
   /// Specifies the valid range of values for the parameter.
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
 
   /// Indicates when to apply parameter updates.
+  @_s.JsonKey(name: 'ApplyMethod')
   final ApplyMethod applyMethod;
 
   /// Specifies the engine specific parameters type.
+  @_s.JsonKey(name: 'ApplyType')
   final String applyType;
 
   /// Specifies the valid data type for the parameter.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// Provides a description of the parameter.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Indicates whether (<code>true</code>) or not (<code>false</code>) the
   /// parameter can be modified. Some parameters have security or operational
   /// implications that prevent them from being changed.
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
 
   /// The earliest engine version to which the parameter can apply.
+  @_s.JsonKey(name: 'MinimumEngineVersion')
   final String minimumEngineVersion;
 
   /// Specifies the name of the parameter.
+  @_s.JsonKey(name: 'ParameterName')
   final String parameterName;
 
   /// Specifies the value of the parameter.
+  @_s.JsonKey(name: 'ParameterValue')
   final String parameterValue;
 
   /// Indicates the source of the parameter value.
+  @_s.JsonKey(name: 'Source')
   final String source;
 
   /// The valid DB engine modes.
+  @_s.JsonKey(name: 'SupportedEngineModes')
   final List<String> supportedEngineModes;
 
   Parameter({
@@ -19089,17 +21140,26 @@ class Parameter {
               _s.extractXmlStringListValues(elem, 'SupportedEngineModes')),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ParameterToJson(this);
 }
 
 /// A list of the log types whose configuration is still pending. In other
 /// words, these log types are in the process of being activated or deactivated.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PendingCloudwatchLogsExports {
   /// Log types that are in the process of being enabled. After they are enabled,
   /// these log types are exported to CloudWatch Logs.
+  @_s.JsonKey(name: 'LogTypesToDisable')
   final List<String> logTypesToDisable;
 
   /// Log types that are in the process of being deactivated. After they are
   /// deactivated, these log types aren't exported to CloudWatch Logs.
+  @_s.JsonKey(name: 'LogTypesToEnable')
   final List<String> logTypesToEnable;
 
   PendingCloudwatchLogsExports({
@@ -19117,15 +21177,23 @@ class PendingCloudwatchLogsExports {
 }
 
 /// Provides information about a pending maintenance action for a resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PendingMaintenanceAction {
   /// The type of pending maintenance action that is available for the resource.
   /// Valid actions are <code>system-update</code>, <code>db-upgrade</code>,
   /// <code>hardware-maintenance</code>, and <code>ca-certificate-rotation</code>.
+  @_s.JsonKey(name: 'Action')
   final String action;
 
   /// The date of the maintenance window when the action is applied. The
   /// maintenance action is applied to the resource during its first maintenance
   /// window after this date.
+  @_s.JsonKey(
+      name: 'AutoAppliedAfterDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime autoAppliedAfterDate;
 
   /// The effective date when the pending maintenance action is applied to the
@@ -19135,18 +21203,24 @@ class PendingMaintenanceAction {
   /// This value is blank if an opt-in request has not been received and nothing
   /// has been specified as <code>AutoAppliedAfterDate</code> or
   /// <code>ForcedApplyDate</code>.
+  @_s.JsonKey(
+      name: 'CurrentApplyDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime currentApplyDate;
 
   /// A description providing more detail about the maintenance action.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The date when the maintenance action is automatically applied. The
   /// maintenance action is applied to the resource on this date regardless of the
   /// maintenance window for the resource.
+  @_s.JsonKey(
+      name: 'ForcedApplyDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime forcedApplyDate;
 
   /// Indicates the type of opt-in request that has been received for the
   /// resource.
+  @_s.JsonKey(name: 'OptInStatus')
   final String optInStatus;
 
   PendingMaintenanceAction({
@@ -19171,14 +21245,21 @@ class PendingMaintenanceAction {
 }
 
 /// Data returned from the <b>DescribePendingMaintenanceActions</b> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PendingMaintenanceActionsMessage {
   /// An optional pagination token provided by a previous
   /// <code>DescribePendingMaintenanceActions</code> request. If this parameter is
   /// specified, the response includes only records beyond the marker, up to a
   /// number of records specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of the pending maintenance actions for the resource.
+  @_s.JsonKey(name: 'PendingMaintenanceActions')
   final List<ResourcePendingMaintenanceActions> pendingMaintenanceActions;
 
   PendingMaintenanceActionsMessage({
@@ -19200,59 +21281,79 @@ class PendingMaintenanceActionsMessage {
 
 /// This data type is used as a response element in the
 /// <code>ModifyDBInstance</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PendingModifiedValues {
   /// Contains the new <code>AllocatedStorage</code> size for the DB instance that
   /// will be applied or is currently being applied.
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
 
   /// Specifies the pending number of days for which automated backups are
   /// retained.
+  @_s.JsonKey(name: 'BackupRetentionPeriod')
   final int backupRetentionPeriod;
 
   /// Specifies the identifier of the CA certificate for the DB instance.
+  @_s.JsonKey(name: 'CACertificateIdentifier')
   final String cACertificateIdentifier;
 
   /// Contains the new <code>DBInstanceClass</code> for the DB instance that will
   /// be applied or is currently being applied.
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
 
   /// Contains the new <code>DBInstanceIdentifier</code> for the DB instance that
   /// will be applied or is currently being applied.
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
 
   /// The new DB subnet group for the DB instance.
+  @_s.JsonKey(name: 'DBSubnetGroupName')
   final String dBSubnetGroupName;
 
   /// Indicates the database engine version.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// Specifies the new Provisioned IOPS value for the DB instance that will be
   /// applied or is currently being applied.
+  @_s.JsonKey(name: 'Iops')
   final int iops;
 
   /// The license model for the DB instance.
   ///
   /// Valid values: <code>license-included</code> |
   /// <code>bring-your-own-license</code> | <code>general-public-license</code>
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
 
   /// Contains the pending or currently-in-progress change of the master
   /// credentials for the DB instance.
+  @_s.JsonKey(name: 'MasterUserPassword')
   final String masterUserPassword;
 
   /// Indicates that the Single-AZ DB instance is to change to a Multi-AZ
   /// deployment.
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
+  @_s.JsonKey(name: 'PendingCloudwatchLogsExports')
   final PendingCloudwatchLogsExports pendingCloudwatchLogsExports;
 
   /// Specifies the pending port for the DB instance.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The number of CPU cores and the number of threads per core for the DB
   /// instance class of the DB instance.
+  @_s.JsonKey(name: 'ProcessorFeatures')
   final List<ProcessorFeature> processorFeatures;
 
   /// Specifies the storage type to be associated with the DB instance.
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
 
   PendingModifiedValues({
@@ -19352,12 +21453,19 @@ class PendingModifiedValues {
 /// href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html#USER_ConfigureProcessor">Configuring
 /// the Processor of the DB Instance Class</a> in the <i>Amazon RDS User Guide.
 /// </i>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ProcessorFeature {
   /// The name of the processor feature. Valid names are <code>coreCount</code>
   /// and <code>threadsPerCore</code>.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of a processor feature name.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   ProcessorFeature({
@@ -19370,9 +21478,17 @@ class ProcessorFeature {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ProcessorFeatureToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PromoteReadReplicaDBClusterResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   PromoteReadReplicaDBClusterResult({
@@ -19387,7 +21503,13 @@ class PromoteReadReplicaDBClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PromoteReadReplicaResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   PromoteReadReplicaResult({
@@ -19402,7 +21524,13 @@ class PromoteReadReplicaResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PurchaseReservedDBInstancesOfferingResult {
+  @_s.JsonKey(name: 'ReservedDBInstance')
   final ReservedDBInstance reservedDBInstance;
 
   PurchaseReservedDBInstancesOfferingResult({
@@ -19419,17 +21547,25 @@ class PurchaseReservedDBInstancesOfferingResult {
 }
 
 /// A range of integer values.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Range {
   /// The minimum value in the range.
+  @_s.JsonKey(name: 'From')
   final int from;
 
   /// The step value for the range. For example, if you have a range of 5,000 to
   /// 10,000, with a step value of 1,000, the valid values start at 5,000 and step
   /// up by 1,000. Even though 7,500 is within the range, it isn't a valid value
   /// for the range. The valid values are 5,000, 6,000, 7,000, 8,000...
+  @_s.JsonKey(name: 'Step')
   final int step;
 
   /// The maximum value in the range.
+  @_s.JsonKey(name: 'To')
   final int to;
 
   Range({
@@ -19446,7 +21582,13 @@ class Range {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RebootDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   RebootDBInstanceResult({
@@ -19464,11 +21606,18 @@ class RebootDBInstanceResult {
 /// This data type is used as a response element in the
 /// <code>DescribeReservedDBInstances</code> and
 /// <code>DescribeReservedDBInstancesOfferings</code> actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RecurringCharge {
   /// The amount of the recurring charge.
+  @_s.JsonKey(name: 'RecurringChargeAmount')
   final double recurringChargeAmount;
 
   /// The frequency of the recurring charge.
+  @_s.JsonKey(name: 'RecurringChargeFrequency')
   final String recurringChargeFrequency;
 
   RecurringCharge({
@@ -19485,9 +21634,15 @@ class RecurringCharge {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RegisterDBProxyTargetsResponse {
   /// One or more <code>DBProxyTarget</code> objects that are created when you
   /// register targets with a target group.
+  @_s.JsonKey(name: 'DBProxyTargets')
   final List<DBProxyTarget> dBProxyTargets;
 
   RegisterDBProxyTargetsResponse({
@@ -19504,7 +21659,13 @@ class RegisterDBProxyTargetsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RemoveFromGlobalClusterResult {
+  @_s.JsonKey(name: 'GlobalCluster')
   final GlobalCluster globalCluster;
 
   RemoveFromGlobalClusterResult({
@@ -19519,7 +21680,13 @@ class RemoveFromGlobalClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RemoveSourceIdentifierFromSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   RemoveSourceIdentifierFromSubscriptionResult({
@@ -19538,20 +21705,30 @@ class RemoveSourceIdentifierFromSubscriptionResult {
 /// This data type is used as a response element in the
 /// <code>DescribeReservedDBInstances</code> and
 /// <code>PurchaseReservedDBInstancesOffering</code> actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstance {
   /// The currency code for the reserved DB instance.
+  @_s.JsonKey(name: 'CurrencyCode')
   final String currencyCode;
 
   /// The DB instance class for the reserved DB instance.
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
 
   /// The number of reserved DB instances.
+  @_s.JsonKey(name: 'DBInstanceCount')
   final int dBInstanceCount;
 
   /// The duration of the reservation in seconds.
+  @_s.JsonKey(name: 'Duration')
   final int duration;
 
   /// The fixed price charged for this reserved DB instance.
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
 
   /// The unique identifier for the lease associated with the reserved DB
@@ -19560,36 +21737,47 @@ class ReservedDBInstance {
   /// AWS Support might request the lease ID for an issue related to a reserved DB
   /// instance.
   /// </note>
+  @_s.JsonKey(name: 'LeaseId')
   final String leaseId;
 
   /// Indicates if the reservation applies to Multi-AZ deployments.
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
 
   /// The offering type of this reserved DB instance.
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
 
   /// The description of the reserved DB instance.
+  @_s.JsonKey(name: 'ProductDescription')
   final String productDescription;
 
   /// The recurring price charged to run this reserved DB instance.
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
 
   /// The Amazon Resource Name (ARN) for the reserved DB instance.
+  @_s.JsonKey(name: 'ReservedDBInstanceArn')
   final String reservedDBInstanceArn;
 
   /// The unique identifier for the reservation.
+  @_s.JsonKey(name: 'ReservedDBInstanceId')
   final String reservedDBInstanceId;
 
   /// The offering identifier.
+  @_s.JsonKey(name: 'ReservedDBInstancesOfferingId')
   final String reservedDBInstancesOfferingId;
 
   /// The time the reservation started.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   /// The state of the reserved DB instance.
+  @_s.JsonKey(name: 'State')
   final String state;
 
   /// The hourly price charged for this reserved DB instance.
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedDBInstance({
@@ -19641,13 +21829,20 @@ class ReservedDBInstance {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeReservedDBInstances</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstanceMessage {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of reserved DB instances.
+  @_s.JsonKey(name: 'ReservedDBInstances')
   final List<ReservedDBInstance> reservedDBInstances;
 
   ReservedDBInstanceMessage({
@@ -19668,35 +21863,50 @@ class ReservedDBInstanceMessage {
 
 /// This data type is used as a response element in the
 /// <code>DescribeReservedDBInstancesOfferings</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstancesOffering {
   /// The currency code for the reserved DB instance offering.
+  @_s.JsonKey(name: 'CurrencyCode')
   final String currencyCode;
 
   /// The DB instance class for the reserved DB instance.
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
 
   /// The duration of the offering in seconds.
+  @_s.JsonKey(name: 'Duration')
   final int duration;
 
   /// The fixed price charged for this offering.
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
 
   /// Indicates if the offering applies to Multi-AZ deployments.
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
 
   /// The offering type.
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
 
   /// The database engine used by the offering.
+  @_s.JsonKey(name: 'ProductDescription')
   final String productDescription;
 
   /// The recurring price charged to run this reserved DB instance.
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
 
   /// The offering identifier.
+  @_s.JsonKey(name: 'ReservedDBInstancesOfferingId')
   final String reservedDBInstancesOfferingId;
 
   /// The hourly price charged for this offering.
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedDBInstancesOffering({
@@ -19734,13 +21944,20 @@ class ReservedDBInstancesOffering {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeReservedDBInstancesOfferings</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstancesOfferingMessage {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of reserved DB instance offerings.
+  @_s.JsonKey(name: 'ReservedDBInstancesOfferings')
   final List<ReservedDBInstancesOffering> reservedDBInstancesOfferings;
 
   ReservedDBInstancesOfferingMessage({
@@ -19761,12 +21978,19 @@ class ReservedDBInstancesOfferingMessage {
 }
 
 /// Describes the pending maintenance actions for a resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourcePendingMaintenanceActions {
   /// A list that provides details about the pending maintenance actions for the
   /// resource.
+  @_s.JsonKey(name: 'PendingMaintenanceActionDetails')
   final List<PendingMaintenanceAction> pendingMaintenanceActionDetails;
 
   /// The ARN of the resource that has pending maintenance actions.
+  @_s.JsonKey(name: 'ResourceIdentifier')
   final String resourceIdentifier;
 
   ResourcePendingMaintenanceActions({
@@ -19786,7 +22010,13 @@ class ResourcePendingMaintenanceActions {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBClusterFromS3Result {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   RestoreDBClusterFromS3Result({
@@ -19801,7 +22031,13 @@ class RestoreDBClusterFromS3Result {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBClusterFromSnapshotResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   RestoreDBClusterFromSnapshotResult({
@@ -19816,7 +22052,13 @@ class RestoreDBClusterFromSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBClusterToPointInTimeResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   RestoreDBClusterToPointInTimeResult({
@@ -19831,7 +22073,13 @@ class RestoreDBClusterToPointInTimeResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBInstanceFromDBSnapshotResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   RestoreDBInstanceFromDBSnapshotResult({
@@ -19846,7 +22094,13 @@ class RestoreDBInstanceFromDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBInstanceFromS3Result {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   RestoreDBInstanceFromS3Result({
@@ -19861,7 +22115,13 @@ class RestoreDBInstanceFromS3Result {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBInstanceToPointInTimeResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   RestoreDBInstanceToPointInTimeResult({
@@ -19877,11 +22137,18 @@ class RestoreDBInstanceToPointInTimeResult {
 }
 
 /// Earliest and latest time an instance can be restored to:
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreWindow {
   /// The earliest time you can restore an instance to.
+  @_s.JsonKey(name: 'EarliestTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime earliestTime;
 
   /// The latest time you can restore an instance to.
+  @_s.JsonKey(name: 'LatestTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime latestTime;
 
   RestoreWindow({
@@ -19896,7 +22163,13 @@ class RestoreWindow {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RevokeDBSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'DBSecurityGroup')
   final DBSecurityGroup dBSecurityGroup;
 
   RevokeDBSecurityGroupIngressResult({
@@ -19916,6 +22189,11 @@ class RevokeDBSecurityGroupIngressResult {
 /// For more information, see <a
 /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html">Using
 /// Amazon Aurora Serverless</a> in the <i>Amazon Aurora User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ScalingConfiguration {
   /// A value that indicates whether to allow or disallow automatic pause for an
   /// Aurora DB cluster in <code>serverless</code> DB engine mode. A DB cluster
@@ -19925,6 +22203,7 @@ class ScalingConfiguration {
   /// backed up with a snapshot. In this case, the DB cluster is restored when
   /// there is a request to connect to it.
   /// </note>
+  @_s.JsonKey(name: 'AutoPause')
   final bool autoPause;
 
   /// The maximum capacity for an Aurora DB cluster in <code>serverless</code> DB
@@ -19939,6 +22218,7 @@ class ScalingConfiguration {
   /// <code>64</code>, <code>192</code>, and <code>384</code>.
   ///
   /// The maximum capacity must be greater than or equal to the minimum capacity.
+  @_s.JsonKey(name: 'MaxCapacity')
   final int maxCapacity;
 
   /// The minimum capacity for an Aurora DB cluster in <code>serverless</code> DB
@@ -19953,10 +22233,12 @@ class ScalingConfiguration {
   /// <code>64</code>, <code>192</code>, and <code>384</code>.
   ///
   /// The minimum capacity must be less than or equal to the maximum capacity.
+  @_s.JsonKey(name: 'MinCapacity')
   final int minCapacity;
 
   /// The time, in seconds, before an Aurora DB cluster in <code>serverless</code>
   /// mode is paused.
+  @_s.JsonKey(name: 'SecondsUntilAutoPause')
   final int secondsUntilAutoPause;
 
   /// The action to take when the timeout is reached, either
@@ -19976,6 +22258,7 @@ class ScalingConfiguration {
   /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.how-it-works.html#aurora-serverless.how-it-works.auto-scaling">
   /// Autoscaling for Aurora Serverless</a> in the <i>Amazon Aurora User
   /// Guide</i>.
+  @_s.JsonKey(name: 'TimeoutAction')
   final String timeoutAction;
 
   ScalingConfiguration({
@@ -19985,6 +22268,7 @@ class ScalingConfiguration {
     this.secondsUntilAutoPause,
     this.timeoutAction,
   });
+  Map<String, dynamic> toJson() => _$ScalingConfigurationToJson(this);
 }
 
 /// Shows the scaling configuration for an Aurora DB cluster in
@@ -19993,30 +22277,40 @@ class ScalingConfiguration {
 /// For more information, see <a
 /// href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless.html">Using
 /// Amazon Aurora Serverless</a> in the <i>Amazon Aurora User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ScalingConfigurationInfo {
   /// A value that indicates whether automatic pause is allowed for the Aurora DB
   /// cluster in <code>serverless</code> DB engine mode.
   ///
   /// When the value is set to false for an Aurora Serverless DB cluster, the DB
   /// cluster automatically resumes.
+  @_s.JsonKey(name: 'AutoPause')
   final bool autoPause;
 
   /// The maximum capacity for an Aurora DB cluster in <code>serverless</code> DB
   /// engine mode.
+  @_s.JsonKey(name: 'MaxCapacity')
   final int maxCapacity;
 
   /// The maximum capacity for the Aurora DB cluster in <code>serverless</code> DB
   /// engine mode.
+  @_s.JsonKey(name: 'MinCapacity')
   final int minCapacity;
 
   /// The remaining amount of time, in seconds, before the Aurora DB cluster in
   /// <code>serverless</code> mode is paused. A DB cluster can be paused only when
   /// it's idle (it has no connections).
+  @_s.JsonKey(name: 'SecondsUntilAutoPause')
   final int secondsUntilAutoPause;
 
   /// The timeout action of a call to <code>ModifyCurrentDBClusterCapacity</code>,
   /// either <code>ForceApplyCapacityChange</code> or
   /// <code>RollbackCapacityChange</code>.
+  @_s.JsonKey(name: 'TimeoutAction')
   final String timeoutAction;
 
   ScalingConfigurationInfo({
@@ -20040,14 +22334,22 @@ class ScalingConfigurationInfo {
 
 /// Contains an AWS Region name as the result of a successful call to the
 /// <code>DescribeSourceRegions</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SourceRegion {
   /// The endpoint for the source AWS Region endpoint.
+  @_s.JsonKey(name: 'Endpoint')
   final String endpoint;
 
   /// The name of the source AWS Region.
+  @_s.JsonKey(name: 'RegionName')
   final String regionName;
 
   /// The status of the source AWS Region.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   SourceRegion({
@@ -20066,14 +22368,21 @@ class SourceRegion {
 
 /// Contains the result of a successful invocation of the
 /// <code>DescribeSourceRegions</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SourceRegionMessage {
   /// An optional pagination token provided by a previous request. If this
   /// parameter is specified, the response includes only records beyond the
   /// marker, up to the value specified by <code>MaxRecords</code>.
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   /// A list of SourceRegion instances that contains each source AWS Region that
-  /// the current AWS Region can get a Read Replica or a DB snapshot from.
+  /// the current AWS Region can get a read replica or a DB snapshot from.
+  @_s.JsonKey(name: 'SourceRegions')
   final List<SourceRegion> sourceRegions;
 
   SourceRegionMessage({
@@ -20093,11 +22402,17 @@ class SourceRegionMessage {
 }
 
 enum SourceType {
+  @_s.JsonValue('db-instance')
   dbInstance,
+  @_s.JsonValue('db-parameter-group')
   dbParameterGroup,
+  @_s.JsonValue('db-security-group')
   dbSecurityGroup,
+  @_s.JsonValue('db-snapshot')
   dbSnapshot,
+  @_s.JsonValue('db-cluster')
   dbCluster,
+  @_s.JsonValue('db-cluster-snapshot')
   dbClusterSnapshot,
 }
 
@@ -20121,23 +22436,33 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StartActivityStreamResponse {
   /// Indicates whether or not the database activity stream will start as soon as
   /// possible, regardless of the maintenance window for the database.
+  @_s.JsonKey(name: 'ApplyImmediately')
   final bool applyImmediately;
 
   /// The name of the Amazon Kinesis data stream to be used for the database
   /// activity stream.
+  @_s.JsonKey(name: 'KinesisStreamName')
   final String kinesisStreamName;
 
   /// The AWS KMS key identifier for encryption of messages in the database
   /// activity stream.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// The mode of the database activity stream.
+  @_s.JsonKey(name: 'Mode')
   final ActivityStreamMode mode;
 
   /// The status of the database activity stream.
+  @_s.JsonKey(name: 'Status')
   final ActivityStreamStatus status;
 
   StartActivityStreamResponse({
@@ -20159,7 +22484,13 @@ class StartActivityStreamResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StartDBClusterResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   StartDBClusterResult({
@@ -20174,7 +22505,13 @@ class StartDBClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StartDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   StartDBInstanceResult({
@@ -20189,16 +22526,24 @@ class StartDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StopActivityStreamResponse {
   /// The name of the Amazon Kinesis data stream used for the database activity
   /// stream.
+  @_s.JsonKey(name: 'KinesisStreamName')
   final String kinesisStreamName;
 
   /// The AWS KMS key identifier used for encrypting messages in the database
   /// activity stream.
+  @_s.JsonKey(name: 'KmsKeyId')
   final String kmsKeyId;
 
   /// The status of the database activity stream.
+  @_s.JsonKey(name: 'Status')
   final ActivityStreamStatus status;
 
   StopActivityStreamResponse({
@@ -20216,7 +22561,13 @@ class StopActivityStreamResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StopDBClusterResult {
+  @_s.JsonKey(name: 'DBCluster')
   final DBCluster dBCluster;
 
   StopDBClusterResult({
@@ -20231,7 +22582,13 @@ class StopDBClusterResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StopDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   StopDBInstanceResult({
@@ -20248,13 +22605,21 @@ class StopDBInstanceResult {
 
 /// This data type is used as a response element in the
 /// <code>DescribeDBSubnetGroups</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Subnet {
+  @_s.JsonKey(name: 'SubnetAvailabilityZone')
   final AvailabilityZone subnetAvailabilityZone;
 
   /// Specifies the identifier of the subnet.
+  @_s.JsonKey(name: 'SubnetIdentifier')
   final String subnetIdentifier;
 
   /// Specifies the status of the subnet.
+  @_s.JsonKey(name: 'SubnetStatus')
   final String subnetStatus;
 
   Subnet({
@@ -20274,12 +22639,18 @@ class Subnet {
 }
 
 /// Metadata assigned to an Amazon RDS resource consisting of a key-value pair.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// A key is the required name of the tag. The string value can be from 1 to 128
   /// Unicode characters in length and can't be prefixed with "aws:" or "rds:".
   /// The string can only contain only the set of Unicode letters, digits,
   /// white-space, '_', '.', '/', '=', '+', '-' (Java regex:
   /// "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// A value is the optional value of the tag. The string value can be from 1 to
@@ -20287,6 +22658,7 @@ class Tag {
   /// "rds:". The string can only contain only the set of Unicode letters, digits,
   /// white-space, '_', '.', '/', '=', '+', '-' (Java regex:
   /// "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-]*)$").
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -20299,11 +22671,19 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// <p/>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagListMessage {
   /// List of tags returned by the ListTagsForResource operation.
+  @_s.JsonKey(name: 'TagList')
   final List<Tag> tagList;
 
   TagListMessage({
@@ -20318,8 +22698,11 @@ class TagListMessage {
 }
 
 enum TargetType {
+  @_s.JsonValue('RDS_INSTANCE')
   rdsInstance,
+  @_s.JsonValue('RDS_SERVERLESS_ENDPOINT')
   rdsServerlessEndpoint,
+  @_s.JsonValue('TRACKED_CLUSTER')
   trackedCluster,
 }
 
@@ -20341,8 +22724,14 @@ extension on String {
 /// <code>DBSnapshot</code>. This data type is an element in the response to the
 /// <code>DescribeDBInstances</code>, the <code>DescribeDBSnapshots</code>, and
 /// the <code>DescribeDBEngineVersions</code> actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Timezone {
   /// The name of the time zone.
+  @_s.JsonKey(name: 'TimezoneName')
   final String timezoneName;
 
   Timezone({
@@ -20356,22 +22745,32 @@ class Timezone {
 }
 
 /// The version of the database engine that a DB instance can be upgraded to.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpgradeTarget {
   /// A value that indicates whether the target version is applied to any source
   /// DB instances that have <code>AutoMinorVersionUpgrade</code> set to true.
+  @_s.JsonKey(name: 'AutoUpgrade')
   final bool autoUpgrade;
 
   /// The version of the database engine that a DB instance can be upgraded to.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The name of the upgrade target database engine.
+  @_s.JsonKey(name: 'Engine')
   final String engine;
 
   /// The version number of the upgrade target database engine.
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
 
   /// A value that indicates whether a database engine is upgraded to a major
   /// version.
+  @_s.JsonKey(name: 'IsMajorVersionUpgrade')
   final bool isMajorVersionUpgrade;
 
   UpgradeTarget({
@@ -20399,25 +22798,35 @@ class UpgradeTarget {
 /// </note>
 /// Specifies the details of authentication used by a proxy to log in as a
 /// specific database user.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class UserAuthConfig {
   /// The type of authentication that the proxy uses for connections from the
   /// proxy to the underlying database.
+  @_s.JsonKey(name: 'AuthScheme')
   final AuthScheme authScheme;
 
   /// A user-specified description about the authentication used by a proxy to log
   /// in as a specific database user.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Whether to require or disallow AWS Identity and Access Management (IAM)
   /// authentication for connections to the proxy.
+  @_s.JsonKey(name: 'IAMAuth')
   final IAMAuthMode iAMAuth;
 
   /// The Amazon Resource Name (ARN) representing the secret that the proxy uses
   /// to authenticate to the RDS DB instance or Aurora DB cluster. These secrets
   /// are stored within Amazon Secrets Manager.
+  @_s.JsonKey(name: 'SecretArn')
   final String secretArn;
 
   /// The name of the database user to which the proxy connects.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   UserAuthConfig({
@@ -20427,6 +22836,7 @@ class UserAuthConfig {
     this.secretArn,
     this.userName,
   });
+  Map<String, dynamic> toJson() => _$UserAuthConfigToJson(this);
 }
 
 /// <note>
@@ -20435,25 +22845,35 @@ class UserAuthConfig {
 /// </note>
 /// Returns the details of authentication used by a proxy to log in as a
 /// specific database user.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UserAuthConfigInfo {
   /// The type of authentication that the proxy uses for connections from the
   /// proxy to the underlying database.
+  @_s.JsonKey(name: 'AuthScheme')
   final AuthScheme authScheme;
 
   /// A user-specified description about the authentication used by a proxy to log
   /// in as a specific database user.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// Whether to require or disallow AWS Identity and Access Management (IAM)
   /// authentication for connections to the proxy.
+  @_s.JsonKey(name: 'IAMAuth')
   final IAMAuthMode iAMAuth;
 
   /// The Amazon Resource Name (ARN) representing the secret that the proxy uses
   /// to authenticate to the RDS DB instance or Aurora DB cluster. These secrets
   /// are stored within Amazon Secrets Manager.
+  @_s.JsonKey(name: 'SecretArn')
   final String secretArn;
 
   /// The name of the database user to which the proxy connects.
+  @_s.JsonKey(name: 'UserName')
   final String userName;
 
   UserAuthConfigInfo({
@@ -20478,11 +22898,18 @@ class UserAuthConfigInfo {
 /// Contains the result of a successful call to the
 /// <code>DescribeValidDBInstanceModifications</code> action. You can use this
 /// information when you call <code>ModifyDBInstance</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ValidDBInstanceModificationsMessage {
   /// Valid storage options for your DB instance.
+  @_s.JsonKey(name: 'Storage')
   final List<ValidStorageOptions> storage;
 
   /// Valid processor features for your DB instance.
+  @_s.JsonKey(name: 'ValidProcessorFeatures')
   final List<AvailableProcessorFeature> validProcessorFeatures;
 
   ValidDBInstanceModificationsMessage({
@@ -20508,23 +22935,33 @@ class ValidDBInstanceModificationsMessage {
 /// Information about valid modifications that you can make to your DB instance.
 /// Contains the result of a successful call to the
 /// <code>DescribeValidDBInstanceModifications</code> action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ValidStorageOptions {
   /// The valid range of Provisioned IOPS to gibibytes of storage multiplier. For
   /// example, 3-10, which means that provisioned IOPS can be between 3 and 10
   /// times storage.
+  @_s.JsonKey(name: 'IopsToStorageRatio')
   final List<DoubleRange> iopsToStorageRatio;
 
   /// The valid range of provisioned IOPS. For example, 1000-20000.
+  @_s.JsonKey(name: 'ProvisionedIops')
   final List<Range> provisionedIops;
 
   /// The valid range of storage in gibibytes. For example, 100 to 16384.
+  @_s.JsonKey(name: 'StorageSize')
   final List<Range> storageSize;
 
   /// The valid storage types for your DB instance. For example, gp2, io1.
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
 
   /// Whether or not Amazon RDS can automatically scale storage for DB instances
   /// that use the new instance class.
+  @_s.JsonKey(name: 'SupportsStorageAutoscaling')
   final bool supportsStorageAutoscaling;
 
   ValidStorageOptions({
@@ -20555,11 +22992,18 @@ class ValidStorageOptions {
 
 /// This data type is used as a response element for queries on VPC security
 /// group membership.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VpcSecurityGroupMembership {
   /// The status of the VPC security group.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The name of the VPC security group.
+  @_s.JsonKey(name: 'VpcSecurityGroupId')
   final String vpcSecurityGroupId;
 
   VpcSecurityGroupMembership({
@@ -20580,24 +23024,35 @@ class VpcSecurityGroupMembership {
 /// For more information about RDS on VMware, see the <a
 /// href="https://docs.aws.amazon.com/AmazonRDS/latest/RDSonVMwareUserGuide/rds-on-vmware.html">
 /// <i>RDS on VMware User Guide.</i> </a>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VpnDetails {
   /// The IP address of network traffic from AWS to your on-premises data center.
+  @_s.JsonKey(name: 'VpnGatewayIp')
   final String vpnGatewayIp;
 
   /// The ID of the VPN.
+  @_s.JsonKey(name: 'VpnId')
   final String vpnId;
 
   /// The name of the VPN.
+  @_s.JsonKey(name: 'VpnName')
   final String vpnName;
 
   /// The preshared key (PSK) for the VPN.
+  @_s.JsonKey(name: 'VpnPSK')
   final String vpnPSK;
 
   /// The state of the VPN.
+  @_s.JsonKey(name: 'VpnState')
   final String vpnState;
 
   /// The IP address of network traffic from your on-premises data center. A
   /// custom AZ receives the network traffic.
+  @_s.JsonKey(name: 'VpnTunnelOriginatorIP')
   final String vpnTunnelOriginatorIP;
 
   VpnDetails({
@@ -20987,6 +23442,17 @@ class EventSubscriptionQuotaExceededFault extends _s.GenericAwsException {
             message: message);
 }
 
+class ExportTaskAlreadyExistsFault extends _s.GenericAwsException {
+  ExportTaskAlreadyExistsFault({String type, String message})
+      : super(
+            type: type, code: 'ExportTaskAlreadyExistsFault', message: message);
+}
+
+class ExportTaskNotFoundFault extends _s.GenericAwsException {
+  ExportTaskNotFoundFault({String type, String message})
+      : super(type: type, code: 'ExportTaskNotFoundFault', message: message);
+}
+
 class GlobalClusterAlreadyExistsFault extends _s.GenericAwsException {
   GlobalClusterAlreadyExistsFault({String type, String message})
       : super(
@@ -21006,6 +23472,19 @@ class GlobalClusterQuotaExceededFault extends _s.GenericAwsException {
             type: type,
             code: 'GlobalClusterQuotaExceededFault',
             message: message);
+}
+
+class IamRoleMissingPermissionsFault extends _s.GenericAwsException {
+  IamRoleMissingPermissionsFault({String type, String message})
+      : super(
+            type: type,
+            code: 'IamRoleMissingPermissionsFault',
+            message: message);
+}
+
+class IamRoleNotFoundFault extends _s.GenericAwsException {
+  IamRoleNotFoundFault({String type, String message})
+      : super(type: type, code: 'IamRoleNotFoundFault', message: message);
 }
 
 class InstallationMediaAlreadyExistsFault extends _s.GenericAwsException {
@@ -21148,6 +23627,25 @@ class InvalidEventSubscriptionStateFault extends _s.GenericAwsException {
             type: type,
             code: 'InvalidEventSubscriptionStateFault',
             message: message);
+}
+
+class InvalidExportOnlyFault extends _s.GenericAwsException {
+  InvalidExportOnlyFault({String type, String message})
+      : super(type: type, code: 'InvalidExportOnlyFault', message: message);
+}
+
+class InvalidExportSourceStateFault extends _s.GenericAwsException {
+  InvalidExportSourceStateFault({String type, String message})
+      : super(
+            type: type,
+            code: 'InvalidExportSourceStateFault',
+            message: message);
+}
+
+class InvalidExportTaskStateFault extends _s.GenericAwsException {
+  InvalidExportTaskStateFault({String type, String message})
+      : super(
+            type: type, code: 'InvalidExportTaskStateFault', message: message);
 }
 
 class InvalidGlobalClusterStateFault extends _s.GenericAwsException {
@@ -21441,12 +23939,20 @@ final _exceptionFns = <String, _s.AwsExceptionFn>{
       DomainNotFoundFault(type: type, message: message),
   'EventSubscriptionQuotaExceededFault': (type, message) =>
       EventSubscriptionQuotaExceededFault(type: type, message: message),
+  'ExportTaskAlreadyExistsFault': (type, message) =>
+      ExportTaskAlreadyExistsFault(type: type, message: message),
+  'ExportTaskNotFoundFault': (type, message) =>
+      ExportTaskNotFoundFault(type: type, message: message),
   'GlobalClusterAlreadyExistsFault': (type, message) =>
       GlobalClusterAlreadyExistsFault(type: type, message: message),
   'GlobalClusterNotFoundFault': (type, message) =>
       GlobalClusterNotFoundFault(type: type, message: message),
   'GlobalClusterQuotaExceededFault': (type, message) =>
       GlobalClusterQuotaExceededFault(type: type, message: message),
+  'IamRoleMissingPermissionsFault': (type, message) =>
+      IamRoleMissingPermissionsFault(type: type, message: message),
+  'IamRoleNotFoundFault': (type, message) =>
+      IamRoleNotFoundFault(type: type, message: message),
   'InstallationMediaAlreadyExistsFault': (type, message) =>
       InstallationMediaAlreadyExistsFault(type: type, message: message),
   'InstallationMediaNotFoundFault': (type, message) =>
@@ -21487,6 +23993,12 @@ final _exceptionFns = <String, _s.AwsExceptionFn>{
       InvalidDBSubnetStateFault(type: type, message: message),
   'InvalidEventSubscriptionStateFault': (type, message) =>
       InvalidEventSubscriptionStateFault(type: type, message: message),
+  'InvalidExportOnlyFault': (type, message) =>
+      InvalidExportOnlyFault(type: type, message: message),
+  'InvalidExportSourceStateFault': (type, message) =>
+      InvalidExportSourceStateFault(type: type, message: message),
+  'InvalidExportTaskStateFault': (type, message) =>
+      InvalidExportTaskStateFault(type: type, message: message),
   'InvalidGlobalClusterStateFault': (type, message) =>
       InvalidGlobalClusterStateFault(type: type, message: message),
   'InvalidOptionGroupStateFault': (type, message) =>

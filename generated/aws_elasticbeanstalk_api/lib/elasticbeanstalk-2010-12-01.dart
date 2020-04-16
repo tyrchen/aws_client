@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'elasticbeanstalk-2010-12-01.g.dart';
 
 /// AWS Elastic Beanstalk makes it easy for you to create, deploy, and manage
 /// scalable, fault-tolerant applications running on the Amazon Web Services
@@ -202,17 +212,13 @@ class ElasticBeanstalk {
   /// May throw [TooManyApplicationsException].
   ///
   /// Parameter [applicationName] :
-  /// The name of the application.
-  ///
-  /// Constraint: This name must be unique within your account. If the specified
-  /// name already exists, the action returns an
-  /// <code>InvalidParameterValue</code> error.
+  /// The name of the application. Must be unique within your account.
   ///
   /// Parameter [description] :
-  /// Describes the application.
+  /// Your description of the application.
   ///
   /// Parameter [resourceLifecycleConfig] :
-  /// Specify an application resource lifecycle configuration to prevent your
+  /// Specifies an application resource lifecycle configuration to prevent your
   /// application from accumulating too many versions.
   ///
   /// Parameter [tags] :
@@ -273,8 +279,8 @@ class ElasticBeanstalk {
   /// Omit both <code>SourceBuildInformation</code> and
   /// <code>SourceBundle</code> to use the default sample application.
   /// <note>
-  /// Once you create an application version with a specified Amazon S3 bucket
-  /// and key location, you cannot change that Amazon S3 location. If you change
+  /// After you create an application version with a specified Amazon S3 bucket
+  /// and key location, you can't change that Amazon S3 location. If you change
   /// the Amazon S3 location, you receive an exception when you attempt to
   /// launch an environment from the application version.
   /// </note>
@@ -305,7 +311,7 @@ class ElasticBeanstalk {
   /// Settings for an AWS CodeBuild build.
   ///
   /// Parameter [description] :
-  /// Describes this version.
+  /// A description of this application version.
   ///
   /// Parameter [process] :
   /// Pre-processes and validates the environment manifest
@@ -399,8 +405,10 @@ class ElasticBeanstalk {
     return ApplicationVersionDescriptionMessage.fromXml($result);
   }
 
-  /// Creates a configuration template. Templates are associated with a specific
-  /// application and are used to deploy different versions of the application
+  /// Creates an AWS Elastic Beanstalk configuration template, associated with a
+  /// specific Elastic Beanstalk application. You define application
+  /// configuration settings in a configuration template. You can then use the
+  /// configuration template to deploy different versions of the application
   /// with the same configuration settings.
   ///
   /// Templates aren't associated with any environment. The
@@ -425,64 +433,75 @@ class ElasticBeanstalk {
   /// May throw [TooManyConfigurationTemplatesException].
   ///
   /// Parameter [applicationName] :
-  /// The name of the application to associate with this configuration template.
-  /// If no application is found with this name, AWS Elastic Beanstalk returns
-  /// an <code>InvalidParameterValue</code> error.
+  /// The name of the Elastic Beanstalk application to associate with this
+  /// configuration template.
   ///
   /// Parameter [templateName] :
   /// The name of the configuration template.
   ///
   /// Constraint: This name must be unique per application.
   ///
-  /// Default: If a configuration template already exists with this name, AWS
-  /// Elastic Beanstalk returns an <code>InvalidParameterValue</code> error.
-  ///
   /// Parameter [description] :
-  /// Describes this configuration.
+  /// An optional description for this configuration.
   ///
   /// Parameter [environmentId] :
-  /// The ID of the environment used with this configuration template.
+  /// The ID of an environment whose settings you want to use to create the
+  /// configuration template. You must specify <code>EnvironmentId</code> if you
+  /// don't specify <code>PlatformArn</code>, <code>SolutionStackName</code>, or
+  /// <code>SourceConfiguration</code>.
   ///
   /// Parameter [optionSettings] :
-  /// If specified, AWS Elastic Beanstalk sets the specified configuration
-  /// option to the requested value. The new value overrides the value obtained
-  /// from the solution stack or the source configuration template.
+  /// Option values for the Elastic Beanstalk configuration, such as the
+  /// instance type. If specified, these values override the values obtained
+  /// from the solution stack or the source configuration template. For a
+  /// complete list of Elastic Beanstalk configuration options, see <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html">Option
+  /// Values</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>.
   ///
   /// Parameter [platformArn] :
-  /// The ARN of the custom platform.
+  /// The Amazon Resource Name (ARN) of the custom platform. For more
+  /// information, see <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/custom-platforms.html">
+  /// Custom Platforms</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>.
+  /// <note>
+  /// If you specify <code>PlatformArn</code>, then don't specify
+  /// <code>SolutionStackName</code>.
+  /// </note>
   ///
   /// Parameter [solutionStackName] :
-  /// The name of the solution stack used by this configuration. The solution
-  /// stack specifies the operating system, architecture, and application server
-  /// for a configuration template. It determines the set of configuration
-  /// options as well as the possible and default values.
+  /// The name of an Elastic Beanstalk solution stack (platform version) that
+  /// this configuration uses. For example, <code>64bit Amazon Linux 2013.09
+  /// running Tomcat 7 Java 7</code>. A solution stack specifies the operating
+  /// system, runtime, and application server for a configuration template. It
+  /// also determines the set of configuration options as well as the possible
+  /// and default values. For more information, see <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/concepts.platforms.html">Supported
+  /// Platforms</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>.
   ///
-  /// Use <a>ListAvailableSolutionStacks</a> to obtain a list of available
-  /// solution stacks.
+  /// You must specify <code>SolutionStackName</code> if you don't specify
+  /// <code>PlatformArn</code>, <code>EnvironmentId</code>, or
+  /// <code>SourceConfiguration</code>.
   ///
-  /// A solution stack name or a source configuration parameter must be
-  /// specified, otherwise AWS Elastic Beanstalk returns an
-  /// <code>InvalidParameterValue</code> error.
-  ///
-  /// If a solution stack name is not specified and the source configuration
-  /// parameter is specified, AWS Elastic Beanstalk uses the same solution stack
-  /// as the source configuration template.
+  /// Use the <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/api/API_ListAvailableSolutionStacks.html">
+  /// <code>ListAvailableSolutionStacks</code> </a> API to obtain a list of
+  /// available solution stacks.
   ///
   /// Parameter [sourceConfiguration] :
-  /// If specified, AWS Elastic Beanstalk uses the configuration values from the
+  /// An Elastic Beanstalk configuration template to base this one on. If
+  /// specified, Elastic Beanstalk uses the configuration values from the
   /// specified configuration template to create a new configuration.
   ///
-  /// Values specified in the <code>OptionSettings</code> parameter of this call
-  /// overrides any values obtained from the <code>SourceConfiguration</code>.
+  /// Values specified in <code>OptionSettings</code> override any values
+  /// obtained from the <code>SourceConfiguration</code>.
   ///
-  /// If no configuration template is found, returns an
-  /// <code>InvalidParameterValue</code> error.
+  /// You must specify <code>SourceConfiguration</code> if you don't specify
+  /// <code>PlatformArn</code>, <code>EnvironmentId</code>, or
+  /// <code>SolutionStackName</code>.
   ///
-  /// Constraint: If both the solution stack name parameter and the source
-  /// configuration parameters are specified, the solution stack of the source
-  /// configuration template must match the specified solution stack name or
-  /// else AWS Elastic Beanstalk returns an
-  /// <code>InvalidParameterCombination</code> error.
+  /// Constraint: If both solution stack name and source configuration are
+  /// specified, the solution stack of the source configuration template must
+  /// match the specified solution stack name.
   ///
   /// Parameter [tags] :
   /// Specifies the tags applied to the configuration template.
@@ -540,38 +559,36 @@ class ElasticBeanstalk {
     return ConfigurationSettingsDescription.fromXml($result);
   }
 
-  /// Launches an environment for the specified application using the specified
-  /// configuration.
+  /// Launches an AWS Elastic Beanstalk environment for the specified
+  /// application using the specified configuration.
   ///
   /// May throw [TooManyEnvironmentsException].
   /// May throw [InsufficientPrivilegesException].
   ///
   /// Parameter [applicationName] :
-  /// The name of the application that contains the version to be deployed.
-  ///
-  /// If no application is found with this name, <code>CreateEnvironment</code>
-  /// returns an <code>InvalidParameterValue</code> error.
+  /// The name of the application that is associated with this environment.
   ///
   /// Parameter [cNAMEPrefix] :
   /// If specified, the environment attempts to use this value as the prefix for
-  /// the CNAME. If not specified, the CNAME is generated automatically by
-  /// appending a random alphanumeric string to the environment name.
+  /// the CNAME in your Elastic Beanstalk environment URL. If not specified, the
+  /// CNAME is generated automatically by appending a random alphanumeric string
+  /// to the environment name.
   ///
   /// Parameter [description] :
-  /// Describes this environment.
+  /// Your description for this environment.
   ///
   /// Parameter [environmentName] :
-  /// A unique name for the deployment environment. Used in the application URL.
+  /// A unique name for the environment.
   ///
   /// Constraint: Must be from 4 to 40 characters in length. The name can
-  /// contain only letters, numbers, and hyphens. It cannot start or end with a
+  /// contain only letters, numbers, and hyphens. It can't start or end with a
   /// hyphen. This name must be unique within a region in your account. If the
-  /// specified name already exists in the region, AWS Elastic Beanstalk returns
-  /// an <code>InvalidParameterValue</code> error.
+  /// specified name already exists in the region, Elastic Beanstalk returns an
+  /// <code>InvalidParameterValue</code> error.
   ///
-  /// Default: If the CNAME parameter is not specified, the environment name
-  /// becomes part of the CNAME, and therefore part of the visible URL for your
-  /// application.
+  /// If you don't specify the <code>CNAMEPrefix</code> parameter, the
+  /// environment name becomes part of the CNAME, and therefore part of the
+  /// visible URL for your application.
   ///
   /// Parameter [groupName] :
   /// The name of the group to which the target environment belongs. Specify a
@@ -591,37 +608,50 @@ class ElasticBeanstalk {
   /// configuration set for this new environment.
   ///
   /// Parameter [platformArn] :
-  /// The ARN of the platform.
+  /// The Amazon Resource Name (ARN) of the custom platform to use with the
+  /// environment. For more information, see <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/custom-platforms.html">
+  /// Custom Platforms</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>.
+  /// <note>
+  /// If you specify <code>PlatformArn</code>, don't specify
+  /// <code>SolutionStackName</code>.
+  /// </note>
   ///
   /// Parameter [solutionStackName] :
-  /// This is an alternative to specifying a template name. If specified, AWS
-  /// Elastic Beanstalk sets the configuration values to the default values
-  /// associated with the specified solution stack.
-  ///
-  /// For a list of current solution stacks, see <a
-  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/concepts.platforms.html">Elastic
-  /// Beanstalk Supported Platforms</a>.
+  /// The name of an Elastic Beanstalk solution stack (platform version) to use
+  /// with the environment. If specified, Elastic Beanstalk sets the
+  /// configuration values to the default values associated with the specified
+  /// solution stack. For a list of current solution stacks, see <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html">Elastic
+  /// Beanstalk Supported Platforms</a> in the <i>AWS Elastic Beanstalk
+  /// Platforms</i> guide.
+  /// <note>
+  /// If you specify <code>SolutionStackName</code>, don't specify
+  /// <code>PlatformArn</code> or <code>TemplateName</code>.
+  /// </note>
   ///
   /// Parameter [tags] :
   /// Specifies the tags applied to resources in the environment.
   ///
   /// Parameter [templateName] :
-  /// The name of the configuration template to use in deployment. If no
-  /// configuration template is found with this name, AWS Elastic Beanstalk
-  /// returns an <code>InvalidParameterValue</code> error.
+  /// The name of the Elastic Beanstalk configuration template to use with the
+  /// environment.
+  /// <note>
+  /// If you specify <code>TemplateName</code>, then don't specify
+  /// <code>SolutionStackName</code>.
+  /// </note>
   ///
   /// Parameter [tier] :
-  /// This specifies the tier to use for creating this environment.
+  /// Specifies the tier to use in creating this environment. The environment
+  /// tier that you choose determines whether Elastic Beanstalk provisions
+  /// resources to support a web application that handles HTTP(S) requests or a
+  /// web application that handles background-processing tasks.
   ///
   /// Parameter [versionLabel] :
   /// The name of the application version to deploy.
   ///
-  /// If the specified application has no associated application versions, AWS
-  /// Elastic Beanstalk <code>UpdateEnvironment</code> returns an
-  /// <code>InvalidParameterValue</code> error.
-  ///
-  /// Default: If not specified, AWS Elastic Beanstalk attempts to launch the
-  /// sample application in the container.
+  /// Default: If not specified, Elastic Beanstalk attempts to deploy the sample
+  /// application.
   Future<EnvironmentDescription> createEnvironment({
     @_s.required String applicationName,
     String cNAMEPrefix,
@@ -1571,7 +1601,9 @@ class ElasticBeanstalk {
   /// results.
   ///
   /// Parameter [platformArn] :
-  /// The ARN of the version of the custom platform.
+  /// The ARN of a custom platform version. If specified, AWS Elastic Beanstalk
+  /// restricts the returned descriptions to those associated with this custom
+  /// platform version.
   ///
   /// Parameter [requestId] :
   /// If specified, AWS Elastic Beanstalk restricts the described events to
@@ -1719,13 +1751,20 @@ class ElasticBeanstalk {
     return DescribeInstancesHealthResult.fromXml($result);
   }
 
-  /// Describes the version of the platform.
+  /// Describes a platform version. Provides full details. Compare to
+  /// <a>ListPlatformVersions</a>, which provides summary information about a
+  /// list of platform versions.
+  ///
+  /// For definitions of platform version and other platform-related terms, see
+  /// <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/platforms-glossary.html">AWS
+  /// Elastic Beanstalk Platforms Glossary</a>.
   ///
   /// May throw [InsufficientPrivilegesException].
   /// May throw [ElasticBeanstalkServiceException].
   ///
   /// Parameter [platformArn] :
-  /// The ARN of the version of the platform.
+  /// The ARN of the platform version.
   Future<DescribePlatformVersionResult> describePlatformVersion({
     String platformArn,
   }) async {
@@ -1762,22 +1801,140 @@ class ElasticBeanstalk {
     return ListAvailableSolutionStacksResultMessage.fromXml($result);
   }
 
-  /// Lists the available platforms.
+  /// Lists the platform branches available for your account in an AWS Region.
+  /// Provides summary information about each platform branch.
+  ///
+  /// For definitions of platform branch and other platform-related terms, see
+  /// <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/platforms-glossary.html">AWS
+  /// Elastic Beanstalk Platforms Glossary</a>.
+  ///
+  /// Parameter [filters] :
+  /// Criteria for restricting the resulting list of platform branches. The
+  /// filter is evaluated as a logical conjunction (AND) of the separate
+  /// <code>SearchFilter</code> terms.
+  ///
+  /// The following list shows valid attribute values for each of the
+  /// <code>SearchFilter</code> terms. Most operators take a single value. The
+  /// <code>in</code> and <code>not_in</code> operators can take multiple
+  /// values.
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>Attribute = BranchName</code>:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>Operator</code>: <code>=</code> | <code>!=</code> |
+  /// <code>begins_with</code> | <code>ends_with</code> | <code>contains</code>
+  /// | <code>in</code> | <code>not_in</code>
+  /// </li>
+  /// </ul> </li>
+  /// <li>
+  /// <code>Attribute = LifecycleState</code>:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>Operator</code>: <code>=</code> | <code>!=</code> | <code>in</code>
+  /// | <code>not_in</code>
+  /// </li>
+  /// <li>
+  /// <code>Values</code>: <code>beta</code> | <code>supported</code> |
+  /// <code>deprecated</code> | <code>retired</code>
+  /// </li>
+  /// </ul> </li>
+  /// <li>
+  /// <code>Attribute = PlatformName</code>:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>Operator</code>: <code>=</code> | <code>!=</code> |
+  /// <code>begins_with</code> | <code>ends_with</code> | <code>contains</code>
+  /// | <code>in</code> | <code>not_in</code>
+  /// </li>
+  /// </ul> </li>
+  /// <li>
+  /// <code>Attribute = TierType</code>:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>Operator</code>: <code>=</code> | <code>!=</code>
+  /// </li>
+  /// <li>
+  /// <code>Values</code>: <code>WebServer/Standard</code> |
+  /// <code>Worker/SQS/HTTP</code>
+  /// </li>
+  /// </ul> </li>
+  /// </ul>
+  /// Array size: limited to 10 <code>SearchFilter</code> objects.
+  ///
+  /// Within each <code>SearchFilter</code> item, the <code>Values</code> array
+  /// is limited to 10 items.
+  ///
+  /// Parameter [maxRecords] :
+  /// The maximum number of platform branch values returned in one call.
+  ///
+  /// Parameter [nextToken] :
+  /// For a paginated request. Specify a token from a previous response page to
+  /// retrieve the next response page. All other parameter values must be
+  /// identical to the ones specified in the initial request.
+  ///
+  /// If no <code>NextToken</code> is specified, the first page is retrieved.
+  Future<ListPlatformBranchesResult> listPlatformBranches({
+    List<SearchFilter> filters,
+    int maxRecords,
+    String nextToken,
+  }) async {
+    _s.validateNumRange(
+      'maxRecords',
+      maxRecords,
+      1,
+      1152921504606846976,
+    );
+    final $request = <String, dynamic>{
+      'Action': 'ListPlatformBranches',
+      'Version': '2010-12-01',
+    };
+    filters?.also((arg) => $request['Filters'] = arg);
+    maxRecords?.also((arg) => $request['MaxRecords'] = arg);
+    nextToken?.also((arg) => $request['NextToken'] = arg);
+    final $result = await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      resultWrapper: 'ListPlatformBranchesResult',
+    );
+    return ListPlatformBranchesResult.fromXml($result);
+  }
+
+  /// Lists the platform versions available for your account in an AWS Region.
+  /// Provides summary information about each platform version. Compare to
+  /// <a>DescribePlatformVersion</a>, which provides full details about a single
+  /// platform version.
+  ///
+  /// For definitions of platform version and other platform-related terms, see
+  /// <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/platforms-glossary.html">AWS
+  /// Elastic Beanstalk Platforms Glossary</a>.
   ///
   /// May throw [InsufficientPrivilegesException].
   /// May throw [ElasticBeanstalkServiceException].
   ///
   /// Parameter [filters] :
-  /// List only the platforms where the platform member value relates to one of
-  /// the supplied values.
+  /// Criteria for restricting the resulting list of platform versions. The
+  /// filter is interpreted as a logical conjunction (AND) of the separate
+  /// <code>PlatformFilter</code> terms.
   ///
   /// Parameter [maxRecords] :
-  /// The maximum number of platform values returned in one call.
+  /// The maximum number of platform version values returned in one call.
   ///
   /// Parameter [nextToken] :
-  /// The starting index into the remaining list of platforms. Use the
-  /// <code>NextToken</code> value from a previous
-  /// <code>ListPlatformVersion</code> call.
+  /// For a paginated request. Specify a token from a previous response page to
+  /// retrieve the next response page. All other parameter values must be
+  /// identical to the ones specified in the initial request.
+  ///
+  /// If no <code>NextToken</code> is specified, the first page is retrieved.
   Future<ListPlatformVersionsResult> listPlatformVersions({
     List<PlatformFilter> filters,
     int maxRecords,
@@ -1806,13 +1963,13 @@ class ElasticBeanstalk {
     return ListPlatformVersionsResult.fromXml($result);
   }
 
-  /// Returns the tags applied to an AWS Elastic Beanstalk resource. The
-  /// response contains a list of tag key-value pairs.
+  /// Return the tags applied to an AWS Elastic Beanstalk resource. The response
+  /// contains a list of tag key-value pairs.
   ///
-  /// Currently, Elastic Beanstalk only supports tagging of Elastic Beanstalk
-  /// environments. For details about environment tagging, see <a
-  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.tagging.html">Tagging
-  /// Resources in Your Elastic Beanstalk Environment</a>.
+  /// Elastic Beanstalk supports tagging of all of its resources. For details
+  /// about resource tagging, see <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/applications-tagging-resources.html">Tagging
+  /// Application Resources</a>.
   ///
   /// May throw [InsufficientPrivilegesException].
   /// May throw [ResourceNotFoundException].
@@ -1822,7 +1979,7 @@ class ElasticBeanstalk {
   /// The Amazon Resource Name (ARN) of the resouce for which a tag list is
   /// requested.
   ///
-  /// Must be the ARN of an Elastic Beanstalk environment.
+  /// Must be the ARN of an Elastic Beanstalk resource.
   Future<ResourceTagsDescriptionMessage> listTagsForResource({
     @_s.required String resourceArn,
   }) async {
@@ -2610,10 +2767,10 @@ class ElasticBeanstalk {
   /// lists can be passed: <code>TagsToAdd</code> for tags to add or update, and
   /// <code>TagsToRemove</code>.
   ///
-  /// Currently, Elastic Beanstalk only supports tagging of Elastic Beanstalk
-  /// environments. For details about environment tagging, see <a
-  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.tagging.html">Tagging
-  /// Resources in Your Elastic Beanstalk Environment</a>.
+  /// Elastic Beanstalk supports tagging of all of its resources. For details
+  /// about resource tagging, see <a
+  /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/applications-tagging-resources.html">Tagging
+  /// Application Resources</a>.
   ///
   /// If you create a custom IAM user policy to control permission to this
   /// operation, specify one of the following two virtual actions (or both)
@@ -2638,7 +2795,7 @@ class ElasticBeanstalk {
   /// Parameter [resourceArn] :
   /// The Amazon Resource Name (ARN) of the resouce to be updated.
   ///
-  /// Must be the ARN of an Elastic Beanstalk environment.
+  /// Must be the ARN of an Elastic Beanstalk resource.
   ///
   /// Parameter [tagsToAdd] :
   /// A list of tags to add or update.
@@ -2742,8 +2899,11 @@ class ElasticBeanstalk {
 }
 
 enum ActionHistoryStatus {
+  @_s.JsonValue('Completed')
   completed,
+  @_s.JsonValue('Failed')
   failed,
+  @_s.JsonValue('Unknown')
   unknown,
 }
 
@@ -2762,9 +2922,13 @@ extension on String {
 }
 
 enum ActionStatus {
+  @_s.JsonValue('Scheduled')
   scheduled,
+  @_s.JsonValue('Pending')
   pending,
+  @_s.JsonValue('Running')
   running,
+  @_s.JsonValue('Unknown')
   unknown,
 }
 
@@ -2785,8 +2949,11 @@ extension on String {
 }
 
 enum ActionType {
+  @_s.JsonValue('InstanceRefresh')
   instanceRefresh,
+  @_s.JsonValue('PlatformUpdate')
   platformUpdate,
+  @_s.JsonValue('Unknown')
   unknown,
 }
 
@@ -2805,29 +2972,42 @@ extension on String {
 }
 
 /// Describes the properties of an application.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationDescription {
   /// The Amazon Resource Name (ARN) of the application.
+  @_s.JsonKey(name: 'ApplicationArn')
   final String applicationArn;
 
   /// The name of the application.
+  @_s.JsonKey(name: 'ApplicationName')
   final String applicationName;
 
   /// The names of the configuration templates associated with this application.
+  @_s.JsonKey(name: 'ConfigurationTemplates')
   final List<String> configurationTemplates;
 
   /// The date when the application was created.
+  @_s.JsonKey(name: 'DateCreated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateCreated;
 
   /// The date when the application was last modified.
+  @_s.JsonKey(name: 'DateUpdated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateUpdated;
 
   /// User-defined description of the application.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The lifecycle settings for the application.
+  @_s.JsonKey(name: 'ResourceLifecycleConfig')
   final ApplicationResourceLifecycleConfig resourceLifecycleConfig;
 
   /// The names of the versions for this application.
+  @_s.JsonKey(name: 'Versions')
   final List<String> versions;
 
   ApplicationDescription({
@@ -2862,8 +3042,14 @@ class ApplicationDescription {
 }
 
 /// Result message containing a single description of an application.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationDescriptionMessage {
   /// The <a>ApplicationDescription</a> of the application.
+  @_s.JsonKey(name: 'Application')
   final ApplicationDescription application;
 
   ApplicationDescriptionMessage({
@@ -2879,8 +3065,14 @@ class ApplicationDescriptionMessage {
 }
 
 /// Result message containing a list of application descriptions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationDescriptionsMessage {
   /// This parameter contains a list of <a>ApplicationDescription</a>.
+  @_s.JsonKey(name: 'Applications')
   final List<ApplicationDescription> applications;
 
   ApplicationDescriptionsMessage({
@@ -2897,23 +3089,32 @@ class ApplicationDescriptionsMessage {
 }
 
 /// Application request metrics for an AWS Elastic Beanstalk environment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationMetrics {
   /// The amount of time that the metrics cover (usually 10 seconds). For example,
   /// you might have 5 requests (<code>request_count</code>) within the most
   /// recent time slice of 10 seconds (<code>duration</code>).
+  @_s.JsonKey(name: 'Duration')
   final int duration;
 
   /// Represents the average latency for the slowest X percent of requests over
   /// the last 10 seconds. Latencies are in seconds with one millisecond
   /// resolution.
+  @_s.JsonKey(name: 'Latency')
   final Latency latency;
 
   /// Average number of requests handled by the web server per second over the
   /// last 10 seconds.
+  @_s.JsonKey(name: 'RequestCount')
   final int requestCount;
 
   /// Represents the percentage of requests over the last 10 seconds that resulted
   /// in each type of status code response.
+  @_s.JsonKey(name: 'StatusCodes')
   final StatusCodes statusCodes;
 
   ApplicationMetrics({
@@ -2937,9 +3138,14 @@ class ApplicationMetrics {
 
 /// The resource lifecycle configuration for an application. Defines lifecycle
 /// settings for resources that belong to the application, and the service role
-/// that Elastic Beanstalk assumes in order to apply lifecycle settings. The
+/// that AWS Elastic Beanstalk assumes in order to apply lifecycle settings. The
 /// version lifecycle configuration defines lifecycle settings for application
 /// versions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ApplicationResourceLifecycleConfig {
   /// The ARN of an IAM service role that Elastic Beanstalk has permission to
   /// assume.
@@ -2952,9 +3158,11 @@ class ApplicationResourceLifecycleConfig {
   /// the application, and you don't need to specify it again in subsequent
   /// <code>UpdateApplicationResourceLifecycle</code> calls. You can, however,
   /// specify it in subsequent calls to change the Service Role to another value.
+  @_s.JsonKey(name: 'ServiceRole')
   final String serviceRole;
 
-  /// The application version lifecycle configuration.
+  /// Defines lifecycle settings for application versions.
+  @_s.JsonKey(name: 'VersionLifecycleConfig')
   final ApplicationVersionLifecycleConfig versionLifecycleConfig;
 
   ApplicationResourceLifecycleConfig({
@@ -2969,13 +3177,23 @@ class ApplicationResourceLifecycleConfig {
           ?.let((e) => ApplicationVersionLifecycleConfig.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() =>
+      _$ApplicationResourceLifecycleConfigToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationResourceLifecycleDescriptionMessage {
   /// The name of the application.
+  @_s.JsonKey(name: 'ApplicationName')
   final String applicationName;
 
   /// The lifecycle configuration.
+  @_s.JsonKey(name: 'ResourceLifecycleConfig')
   final ApplicationResourceLifecycleConfig resourceLifecycleConfig;
 
   ApplicationResourceLifecycleDescriptionMessage({
@@ -2994,31 +3212,44 @@ class ApplicationResourceLifecycleDescriptionMessage {
 }
 
 /// Describes the properties of an application version.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationVersionDescription {
   /// The name of the application to which the application version belongs.
+  @_s.JsonKey(name: 'ApplicationName')
   final String applicationName;
 
   /// The Amazon Resource Name (ARN) of the application version.
+  @_s.JsonKey(name: 'ApplicationVersionArn')
   final String applicationVersionArn;
 
   /// Reference to the artifact from the AWS CodeBuild build.
+  @_s.JsonKey(name: 'BuildArn')
   final String buildArn;
 
   /// The creation date of the application version.
+  @_s.JsonKey(name: 'DateCreated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateCreated;
 
   /// The last modified date of the application version.
+  @_s.JsonKey(name: 'DateUpdated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateUpdated;
 
   /// The description of the application version.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// If the version's source code was retrieved from AWS CodeCommit, the location
   /// of the source code for the application version.
+  @_s.JsonKey(name: 'SourceBuildInformation')
   final SourceBuildInformation sourceBuildInformation;
 
   /// The storage location of the application version's source bundle in Amazon
   /// S3.
+  @_s.JsonKey(name: 'SourceBundle')
   final S3Location sourceBundle;
 
   /// The processing status of the application version. Reflects the state of the
@@ -3050,9 +3281,11 @@ class ApplicationVersionDescription {
   /// files didn't pass validation. This application version isn't usable.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final ApplicationVersionStatus status;
 
   /// A unique identifier for the application version.
+  @_s.JsonKey(name: 'VersionLabel')
   final String versionLabel;
 
   ApplicationVersionDescription({
@@ -3091,8 +3324,14 @@ class ApplicationVersionDescription {
 }
 
 /// Result message wrapping a single description of an application version.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationVersionDescriptionMessage {
   /// The <a>ApplicationVersionDescription</a> of the application version.
+  @_s.JsonKey(name: 'ApplicationVersion')
   final ApplicationVersionDescription applicationVersion;
 
   ApplicationVersionDescriptionMessage({
@@ -3108,13 +3347,20 @@ class ApplicationVersionDescriptionMessage {
 }
 
 /// Result message wrapping a list of application version descriptions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplicationVersionDescriptionsMessage {
   /// List of <code>ApplicationVersionDescription</code> objects sorted in order
   /// of creation.
+  @_s.JsonKey(name: 'ApplicationVersions')
   final List<ApplicationVersionDescription> applicationVersions;
 
   /// In a paginated request, the token that you can pass in a subsequent request
   /// to get the next response page.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ApplicationVersionDescriptionsMessage({
@@ -3140,13 +3386,20 @@ class ApplicationVersionDescriptionsMessage {
 /// When Elastic Beanstalk deletes an application version from its database, you
 /// can no longer deploy that version to an environment. The source bundle
 /// remains in S3 unless you configure the rule to delete it.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ApplicationVersionLifecycleConfig {
   /// Specify a max age rule to restrict the length of time that application
   /// versions are retained for an application.
+  @_s.JsonKey(name: 'MaxAgeRule')
   final MaxAgeRule maxAgeRule;
 
   /// Specify a max count rule to restrict the number of application versions that
   /// are retained for an application.
+  @_s.JsonKey(name: 'MaxCountRule')
   final MaxCountRule maxCountRule;
 
   ApplicationVersionLifecycleConfig({
@@ -3163,13 +3416,21 @@ class ApplicationVersionLifecycleConfig {
           ?.let((e) => MaxCountRule.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() =>
+      _$ApplicationVersionLifecycleConfigToJson(this);
 }
 
 enum ApplicationVersionStatus {
+  @_s.JsonValue('Processed')
   processed,
+  @_s.JsonValue('Unprocessed')
   unprocessed,
+  @_s.JsonValue('Failed')
   failed,
+  @_s.JsonValue('Processing')
   processing,
+  @_s.JsonValue('Building')
   building,
 }
 
@@ -3192,17 +3453,26 @@ extension on String {
 }
 
 /// The result message containing information about the managed action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ApplyEnvironmentManagedActionResult {
   /// A description of the managed action.
+  @_s.JsonKey(name: 'ActionDescription')
   final String actionDescription;
 
   /// The action ID of the managed action.
+  @_s.JsonKey(name: 'ActionId')
   final String actionId;
 
   /// The type of managed action.
+  @_s.JsonKey(name: 'ActionType')
   final ActionType actionType;
 
   /// The status of the managed action.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   ApplyEnvironmentManagedActionResult({
@@ -3222,8 +3492,14 @@ class ApplyEnvironmentManagedActionResult {
 }
 
 /// Describes an Auto Scaling launch configuration.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AutoScalingGroup {
   /// The name of the <code>AutoScalingGroup</code> .
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   AutoScalingGroup({
@@ -3237,13 +3513,20 @@ class AutoScalingGroup {
 }
 
 /// Settings for an AWS CodeBuild build.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class BuildConfiguration {
   /// The Amazon Resource Name (ARN) of the AWS Identity and Access Management
   /// (IAM) role that enables AWS CodeBuild to interact with dependent AWS
   /// services on behalf of the AWS account.
+  @_s.JsonKey(name: 'CodeBuildServiceRole')
   final String codeBuildServiceRole;
 
   /// The ID of the Docker image to use for this build project.
+  @_s.JsonKey(name: 'Image')
   final String image;
 
   /// The name of the artifact of the CodeBuild build. If provided, Elastic
@@ -3252,6 +3535,7 @@ class BuildConfiguration {
   /// If not provided, Elastic Beanstalk stores the build artifact in the S3
   /// location
   /// <i>S3-bucket</i>/resources/<i>application-name</i>/codebuild/codebuild-<i>version-label</i>.zip.
+  @_s.JsonKey(name: 'ArtifactName')
   final String artifactName;
 
   /// Information about the compute resources the build project will use.
@@ -3270,11 +3554,13 @@ class BuildConfiguration {
   /// builds</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ComputeType')
   final ComputeType computeType;
 
   /// How long in minutes, from 5 to 480 (8 hours), for AWS CodeBuild to wait
   /// until timing out any related build that does not get marked as completed.
   /// The default is 60 minutes.
+  @_s.JsonKey(name: 'TimeoutInMinutes')
   final int timeoutInMinutes;
 
   BuildConfiguration({
@@ -3284,11 +3570,18 @@ class BuildConfiguration {
     this.computeType,
     this.timeoutInMinutes,
   });
+  Map<String, dynamic> toJson() => _$BuildConfigurationToJson(this);
 }
 
 /// The builder used to build the custom platform.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Builder {
   /// The ARN of the builder.
+  @_s.JsonKey(name: 'ARN')
   final String arn;
 
   Builder({
@@ -3302,49 +3595,62 @@ class Builder {
 }
 
 /// CPU utilization metrics for an instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CPUUtilization {
   /// Available on Linux environments only.
   ///
   /// Percentage of time that the CPU has spent in the <code>I/O Wait</code> state
   /// over the last 10 seconds.
+  @_s.JsonKey(name: 'IOWait')
   final double iOWait;
 
   /// Available on Linux environments only.
   ///
   /// Percentage of time that the CPU has spent in the <code>IRQ</code> state over
   /// the last 10 seconds.
+  @_s.JsonKey(name: 'IRQ')
   final double irq;
 
   /// Percentage of time that the CPU has spent in the <code>Idle</code> state
   /// over the last 10 seconds.
+  @_s.JsonKey(name: 'Idle')
   final double idle;
 
   /// Available on Linux environments only.
   ///
   /// Percentage of time that the CPU has spent in the <code>Nice</code> state
   /// over the last 10 seconds.
+  @_s.JsonKey(name: 'Nice')
   final double nice;
 
   /// Available on Windows environments only.
   ///
   /// Percentage of time that the CPU has spent in the <code>Privileged</code>
   /// state over the last 10 seconds.
+  @_s.JsonKey(name: 'Privileged')
   final double privileged;
 
   /// Available on Linux environments only.
   ///
   /// Percentage of time that the CPU has spent in the <code>SoftIRQ</code> state
   /// over the last 10 seconds.
+  @_s.JsonKey(name: 'SoftIRQ')
   final double softIRQ;
 
   /// Available on Linux environments only.
   ///
   /// Percentage of time that the CPU has spent in the <code>System</code> state
   /// over the last 10 seconds.
+  @_s.JsonKey(name: 'System')
   final double system;
 
   /// Percentage of time that the CPU has spent in the <code>User</code> state
   /// over the last 10 seconds.
+  @_s.JsonKey(name: 'User')
   final double user;
 
   CPUUtilization({
@@ -3372,6 +3678,11 @@ class CPUUtilization {
 }
 
 /// Indicates if the specified CNAME is available.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CheckDNSAvailabilityResultMessage {
   /// Indicates if the specified CNAME is available:
   ///
@@ -3383,10 +3694,12 @@ class CheckDNSAvailabilityResultMessage {
   /// <code>false</code> : The CNAME is not available.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Available')
   final bool available;
 
   /// The fully qualified CNAME to reserve when <a>CreateEnvironment</a> is called
   /// with the provided prefix.
+  @_s.JsonKey(name: 'FullyQualifiedCNAME')
   final String fullyQualifiedCNAME;
 
   CheckDNSAvailabilityResultMessage({
@@ -3403,8 +3716,11 @@ class CheckDNSAvailabilityResultMessage {
 }
 
 enum ComputeType {
+  @_s.JsonValue('BUILD_GENERAL1_SMALL')
   buildGeneral1Small,
+  @_s.JsonValue('BUILD_GENERAL1_MEDIUM')
   buildGeneral1Medium,
+  @_s.JsonValue('BUILD_GENERAL1_LARGE')
   buildGeneral1Large,
 }
 
@@ -3423,8 +3739,11 @@ extension on String {
 }
 
 enum ConfigurationDeploymentStatus {
+  @_s.JsonValue('deployed')
   deployed,
+  @_s.JsonValue('pending')
   pending,
+  @_s.JsonValue('failed')
   failed,
 }
 
@@ -3443,6 +3762,11 @@ extension on String {
 }
 
 /// Describes the possible values for a configuration option.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConfigurationOptionDescription {
   /// An indication of which action is required if the value for this
   /// configuration option changes:
@@ -3463,31 +3787,39 @@ class ConfigurationOptionDescription {
   /// servers on the running Amazon EC2 instances are restarted.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ChangeSeverity')
   final String changeSeverity;
 
   /// The default value for this configuration option.
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
 
   /// If specified, the configuration option must be a string value no longer than
   /// this value.
+  @_s.JsonKey(name: 'MaxLength')
   final int maxLength;
 
   /// If specified, the configuration option must be a numeric value less than
   /// this value.
+  @_s.JsonKey(name: 'MaxValue')
   final int maxValue;
 
   /// If specified, the configuration option must be a numeric value greater than
   /// this value.
+  @_s.JsonKey(name: 'MinValue')
   final int minValue;
 
   /// The name of the configuration option.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// A unique namespace identifying the option's associated AWS resource.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   /// If specified, the configuration option must be a string value that satisfies
   /// this regular expression.
+  @_s.JsonKey(name: 'Regex')
   final OptionRestrictionRegex regex;
 
   /// An indication of whether the user defined this configuration option:
@@ -3506,10 +3838,12 @@ class ConfigurationOptionDescription {
   /// configuration.
   ///
   /// Valid Values: <code>true</code> | <code>false</code>
+  @_s.JsonKey(name: 'UserDefined')
   final bool userDefined;
 
   /// If specified, values for the configuration option are selected from this
   /// list.
+  @_s.JsonKey(name: 'ValueOptions')
   final List<String> valueOptions;
 
   /// An indication of which type of values this option has and whether it is
@@ -3534,6 +3868,7 @@ class ConfigurationOptionDescription {
   /// <code>ConfigDocument</code>.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ValueType')
   final ConfigurationOptionValueType valueType;
 
   ConfigurationOptionDescription({
@@ -3573,20 +3908,31 @@ class ConfigurationOptionDescription {
 }
 
 /// A specification identifying an individual configuration option along with
-/// its current value. For a list of possible option values, go to <a
+/// its current value. For a list of possible namespaces and option values, see
+/// <a
 /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html">Option
 /// Values</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ConfigurationOptionSetting {
-  /// A unique namespace identifying the option's associated AWS resource.
+  /// A unique namespace that identifies the option's associated AWS resource.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   /// The name of the configuration option.
+  @_s.JsonKey(name: 'OptionName')
   final String optionName;
 
-  /// A unique resource name for a time-based scaling configuration option.
+  /// A unique resource name for the option setting. Use it for a time–based
+  /// scaling configuration option.
+  @_s.JsonKey(name: 'ResourceName')
   final String resourceName;
 
   /// The current value for the configuration option.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   ConfigurationOptionSetting({
@@ -3603,10 +3949,14 @@ class ConfigurationOptionSetting {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ConfigurationOptionSettingToJson(this);
 }
 
 enum ConfigurationOptionValueType {
+  @_s.JsonValue('Scalar')
   scalar,
+  @_s.JsonValue('List')
   list,
 }
 
@@ -3623,14 +3973,22 @@ extension on String {
 }
 
 /// Describes the settings for a specified configuration set.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConfigurationOptionsDescription {
   /// A list of <a>ConfigurationOptionDescription</a>.
+  @_s.JsonKey(name: 'Options')
   final List<ConfigurationOptionDescription> options;
 
-  /// The ARN of the platform.
+  /// The ARN of the platform version.
+  @_s.JsonKey(name: 'PlatformArn')
   final String platformArn;
 
   /// The name of the solution stack these configuration options belong to.
+  @_s.JsonKey(name: 'SolutionStackName')
   final String solutionStackName;
 
   ConfigurationOptionsDescription({
@@ -3651,14 +4009,22 @@ class ConfigurationOptionsDescription {
 }
 
 /// Describes the settings for a configuration set.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConfigurationSettingsDescription {
   /// The name of the application associated with this configuration set.
+  @_s.JsonKey(name: 'ApplicationName')
   final String applicationName;
 
   /// The date (in UTC time) when this configuration set was created.
+  @_s.JsonKey(name: 'DateCreated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateCreated;
 
   /// The date (in UTC time) when this configuration set was last modified.
+  @_s.JsonKey(name: 'DateUpdated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateUpdated;
 
   /// If this configuration set is associated with an environment, the
@@ -3683,27 +4049,34 @@ class ConfigurationSettingsDescription {
   /// successfully deploy.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'DeploymentStatus')
   final ConfigurationDeploymentStatus deploymentStatus;
 
   /// Describes this configuration set.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// If not <code>null</code>, the name of the environment for this configuration
   /// set.
+  @_s.JsonKey(name: 'EnvironmentName')
   final String environmentName;
 
   /// A list of the configuration options and their values in this configuration
   /// set.
+  @_s.JsonKey(name: 'OptionSettings')
   final List<ConfigurationOptionSetting> optionSettings;
 
-  /// The ARN of the platform.
+  /// The ARN of the platform version.
+  @_s.JsonKey(name: 'PlatformArn')
   final String platformArn;
 
   /// The name of the solution stack this configuration set uses.
+  @_s.JsonKey(name: 'SolutionStackName')
   final String solutionStackName;
 
   /// If not <code>null</code>, the name of the configuration template for this
   /// configuration set.
+  @_s.JsonKey(name: 'TemplateName')
   final String templateName;
 
   ConfigurationSettingsDescription({
@@ -3742,8 +4115,14 @@ class ConfigurationSettingsDescription {
 
 /// The results from a request to change the configuration settings of an
 /// environment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConfigurationSettingsDescriptions {
   /// A list of <a>ConfigurationSettingsDescription</a>.
+  @_s.JsonKey(name: 'ConfigurationSettings')
   final List<ConfigurationSettingsDescription> configurationSettings;
 
   ConfigurationSettingsDescriptions({
@@ -3762,8 +4141,14 @@ class ConfigurationSettingsDescriptions {
 }
 
 /// Provides a list of validation messages.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ConfigurationSettingsValidationMessages {
   /// A list of <a>ValidationMessage</a>.
+  @_s.JsonKey(name: 'Messages')
   final List<ValidationMessage> messages;
 
   ConfigurationSettingsValidationMessages({
@@ -3779,11 +4164,18 @@ class ConfigurationSettingsValidationMessages {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreatePlatformVersionResult {
   /// The builder used to create the custom platform.
+  @_s.JsonKey(name: 'Builder')
   final Builder builder;
 
   /// Detailed information about the new version of the custom platform.
+  @_s.JsonKey(name: 'PlatformSummary')
   final PlatformSummary platformSummary;
 
   CreatePlatformVersionResult({
@@ -3802,8 +4194,14 @@ class CreatePlatformVersionResult {
 }
 
 /// Results of a <a>CreateStorageLocationResult</a> call.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateStorageLocationResultMessage {
   /// The name of the Amazon S3 bucket created.
+  @_s.JsonKey(name: 'S3Bucket')
   final String s3Bucket;
 
   CreateStorageLocationResultMessage({
@@ -3817,11 +4215,18 @@ class CreateStorageLocationResultMessage {
 }
 
 /// A custom AMI available to platforms.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CustomAmi {
   /// THe ID of the image used to create the custom AMI.
+  @_s.JsonKey(name: 'ImageId')
   final String imageId;
 
   /// The type of virtualization used to create the custom AMI.
+  @_s.JsonKey(name: 'VirtualizationType')
   final String virtualizationType;
 
   CustomAmi({
@@ -3836,8 +4241,14 @@ class CustomAmi {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeletePlatformVersionResult {
   /// Detailed information about the version of the custom platform.
+  @_s.JsonKey(name: 'PlatformSummary')
   final PlatformSummary platformSummary;
 
   DeletePlatformVersionResult({
@@ -3853,14 +4264,22 @@ class DeletePlatformVersionResult {
 }
 
 /// Information about an application version deployment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Deployment {
   /// The ID of the deployment. This number increases by one each time that you
   /// deploy source code or change instance configuration settings.
+  @_s.JsonKey(name: 'DeploymentId')
   final int deploymentId;
 
   /// For in-progress deployments, the time that the deployment started.
   ///
   /// For completed deployments, the time that the deployment ended.
+  @_s.JsonKey(
+      name: 'DeploymentTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime deploymentTime;
 
   /// The status of the deployment:
@@ -3876,9 +4295,11 @@ class Deployment {
   /// <code>Failed</code> : The deployment failed.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The version label of the application version in the deployment.
+  @_s.JsonKey(name: 'VersionLabel')
   final String versionLabel;
 
   Deployment({
@@ -3897,9 +4318,15 @@ class Deployment {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAccountAttributesResult {
   /// The Elastic Beanstalk resource quotas associated with the calling AWS
   /// account.
+  @_s.JsonKey(name: 'ResourceQuotas')
   final ResourceQuotas resourceQuotas;
 
   DescribeAccountAttributesResult({
@@ -3915,36 +4342,49 @@ class DescribeAccountAttributesResult {
 }
 
 /// Health details for an AWS Elastic Beanstalk environment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEnvironmentHealthResult {
   /// Application request metrics for the environment.
+  @_s.JsonKey(name: 'ApplicationMetrics')
   final ApplicationMetrics applicationMetrics;
 
   /// Descriptions of the data that contributed to the environment's current
   /// health status.
+  @_s.JsonKey(name: 'Causes')
   final List<String> causes;
 
   /// The <a
   /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html">health
   /// color</a> of the environment.
+  @_s.JsonKey(name: 'Color')
   final String color;
 
   /// The environment's name.
+  @_s.JsonKey(name: 'EnvironmentName')
   final String environmentName;
 
   /// The <a
   /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html">health
   /// status</a> of the environment. For example, <code>Ok</code>.
+  @_s.JsonKey(name: 'HealthStatus')
   final String healthStatus;
 
   /// Summary health information for the instances in the environment.
+  @_s.JsonKey(name: 'InstancesHealth')
   final InstanceHealthSummary instancesHealth;
 
   /// The date and time that the health information was retrieved.
+  @_s.JsonKey(name: 'RefreshedAt', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime refreshedAt;
 
   /// The environment's operational status. <code>Ready</code>,
   /// <code>Launching</code>, <code>Updating</code>, <code>Terminating</code>, or
   /// <code>Terminated</code>.
+  @_s.JsonKey(name: 'Status')
   final EnvironmentHealth status;
 
   DescribeEnvironmentHealthResult({
@@ -3978,13 +4418,20 @@ class DescribeEnvironmentHealthResult {
 }
 
 /// A result message containing a list of completed and failed managed actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEnvironmentManagedActionHistoryResult {
   /// A list of completed and failed managed actions.
+  @_s.JsonKey(name: 'ManagedActionHistoryItems')
   final List<ManagedActionHistoryItem> managedActionHistoryItems;
 
   /// A pagination token that you pass to
   /// <a>DescribeEnvironmentManagedActionHistory</a> to get the next page of
   /// results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeEnvironmentManagedActionHistoryResult({
@@ -4006,8 +4453,14 @@ class DescribeEnvironmentManagedActionHistoryResult {
 }
 
 /// The result message containing a list of managed actions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEnvironmentManagedActionsResult {
   /// A list of upcoming and in-progress managed actions.
+  @_s.JsonKey(name: 'ManagedActions')
   final List<ManagedAction> managedActions;
 
   DescribeEnvironmentManagedActionsResult({
@@ -4026,18 +4479,26 @@ class DescribeEnvironmentManagedActionsResult {
 
 /// Detailed health information about the Amazon EC2 instances in an AWS Elastic
 /// Beanstalk environment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeInstancesHealthResult {
   /// Detailed health information about each instance.
   ///
   /// The output differs slightly between Linux and Windows environments. There is
   /// a difference in the members that are supported under the
   /// <code>&lt;CPUUtilization&gt;</code> type.
+  @_s.JsonKey(name: 'InstanceHealthList')
   final List<SingleInstanceHealth> instanceHealthList;
 
   /// Pagination token for the next page of results, if available.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// The date and time that the health information was retrieved.
+  @_s.JsonKey(name: 'RefreshedAt', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime refreshedAt;
 
   DescribeInstancesHealthResult({
@@ -4058,8 +4519,14 @@ class DescribeInstancesHealthResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribePlatformVersionResult {
-  /// Detailed information about the version of the platform.
+  /// Detailed information about the platform version.
+  @_s.JsonKey(name: 'PlatformDescription')
   final PlatformDescription platformDescription;
 
   DescribePlatformVersionResult({
@@ -4075,6 +4542,11 @@ class DescribePlatformVersionResult {
 }
 
 /// Describes the properties of an environment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnvironmentDescription {
   /// Indicates if there is an in-progress environment configuration update or
   /// application version deployment that you can cancel.
@@ -4082,38 +4554,49 @@ class EnvironmentDescription {
   /// <code>true:</code> There is an update in progress.
   ///
   /// <code>false:</code> There are no updates currently in progress.
+  @_s.JsonKey(name: 'AbortableOperationInProgress')
   final bool abortableOperationInProgress;
 
   /// The name of the application associated with this environment.
+  @_s.JsonKey(name: 'ApplicationName')
   final String applicationName;
 
   /// The URL to the CNAME for this environment.
+  @_s.JsonKey(name: 'CNAME')
   final String cname;
 
   /// The creation date for this environment.
+  @_s.JsonKey(name: 'DateCreated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateCreated;
 
   /// The last modified date for this environment.
+  @_s.JsonKey(name: 'DateUpdated', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime dateUpdated;
 
   /// Describes this environment.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// For load-balanced, autoscaling environments, the URL to the LoadBalancer.
   /// For single-instance environments, the IP address of the instance.
+  @_s.JsonKey(name: 'EndpointURL')
   final String endpointURL;
 
   /// The environment's Amazon Resource Name (ARN), which can be used in other API
   /// requests that require an ARN.
+  @_s.JsonKey(name: 'EnvironmentArn')
   final String environmentArn;
 
   /// The ID of this environment.
+  @_s.JsonKey(name: 'EnvironmentId')
   final String environmentId;
 
   /// A list of links to other environments in the same group.
+  @_s.JsonKey(name: 'EnvironmentLinks')
   final List<EnvironmentLink> environmentLinks;
 
   /// The name of this environment.
+  @_s.JsonKey(name: 'EnvironmentName')
   final String environmentName;
 
   /// Describes the health status of the environment. AWS Elastic Beanstalk
@@ -4140,21 +4623,26 @@ class EnvironmentDescription {
   /// </li>
   /// </ul>
   /// Default: <code>Grey</code>
+  @_s.JsonKey(name: 'Health')
   final EnvironmentHealth health;
 
   /// Returns the health status of the application running in your environment.
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html">Health
   /// Colors and Statuses</a>.
+  @_s.JsonKey(name: 'HealthStatus')
   final EnvironmentHealthStatus healthStatus;
 
-  /// The ARN of the platform.
+  /// The ARN of the platform version.
+  @_s.JsonKey(name: 'PlatformArn')
   final String platformArn;
 
   /// The description of the AWS resources used by this environment.
+  @_s.JsonKey(name: 'Resources')
   final EnvironmentResourcesDescription resources;
 
   /// The name of the <code>SolutionStack</code> deployed with this environment.
+  @_s.JsonKey(name: 'SolutionStackName')
   final String solutionStackName;
 
   /// The current operational status of the environment:
@@ -4178,16 +4666,20 @@ class EnvironmentDescription {
   /// <code>Terminated</code>: Environment is not running.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Status')
   final EnvironmentStatus status;
 
   /// The name of the configuration template used to originally launch this
   /// environment.
+  @_s.JsonKey(name: 'TemplateName')
   final String templateName;
 
   /// Describes the current tier of this environment.
+  @_s.JsonKey(name: 'Tier')
   final EnvironmentTier tier;
 
   /// The application version deployed in this environment.
+  @_s.JsonKey(name: 'VersionLabel')
   final String versionLabel;
 
   EnvironmentDescription({
@@ -4250,12 +4742,19 @@ class EnvironmentDescription {
 }
 
 /// Result message containing a list of environment descriptions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnvironmentDescriptionsMessage {
   /// Returns an <a>EnvironmentDescription</a> list.
+  @_s.JsonKey(name: 'Environments')
   final List<EnvironmentDescription> environments;
 
   /// In a paginated request, the token that you can pass in a subsequent request
   /// to get the next response page.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   EnvironmentDescriptionsMessage({
@@ -4274,9 +4773,13 @@ class EnvironmentDescriptionsMessage {
 }
 
 enum EnvironmentHealth {
+  @_s.JsonValue('Green')
   green,
+  @_s.JsonValue('Yellow')
   yellow,
+  @_s.JsonValue('Red')
   red,
+  @_s.JsonValue('Grey')
   grey,
 }
 
@@ -4297,13 +4800,21 @@ extension on String {
 }
 
 enum EnvironmentHealthAttribute {
+  @_s.JsonValue('Status')
   status,
+  @_s.JsonValue('Color')
   color,
+  @_s.JsonValue('Causes')
   causes,
+  @_s.JsonValue('ApplicationMetrics')
   applicationMetrics,
+  @_s.JsonValue('InstancesHealth')
   instancesHealth,
+  @_s.JsonValue('All')
   all,
+  @_s.JsonValue('HealthStatus')
   healthStatus,
+  @_s.JsonValue('RefreshedAt')
   refreshedAt,
 }
 
@@ -4332,14 +4843,23 @@ extension on String {
 }
 
 enum EnvironmentHealthStatus {
+  @_s.JsonValue('NoData')
   noData,
+  @_s.JsonValue('Unknown')
   unknown,
+  @_s.JsonValue('Pending')
   pending,
+  @_s.JsonValue('Ok')
   ok,
+  @_s.JsonValue('Info')
   info,
+  @_s.JsonValue('Warning')
   warning,
+  @_s.JsonValue('Degraded')
   degraded,
+  @_s.JsonValue('Severe')
   severe,
+  @_s.JsonValue('Suspended')
   suspended,
 }
 
@@ -4370,11 +4890,18 @@ extension on String {
 }
 
 /// The information retrieved from the Amazon EC2 instances.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnvironmentInfoDescription {
   /// The Amazon EC2 Instance ID for this information.
+  @_s.JsonKey(name: 'Ec2InstanceId')
   final String ec2InstanceId;
 
   /// The type of information retrieved.
+  @_s.JsonKey(name: 'InfoType')
   final EnvironmentInfoType infoType;
 
   /// The retrieved information. Currently contains a presigned Amazon S3 URL. The
@@ -4382,9 +4909,12 @@ class EnvironmentInfoDescription {
   ///
   /// Anyone in possession of this URL can access the files before they are
   /// deleted. Make the URL available only to trusted parties.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// The time stamp when this information was retrieved.
+  @_s.JsonKey(
+      name: 'SampleTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime sampleTimestamp;
 
   EnvironmentInfoDescription({
@@ -4405,7 +4935,9 @@ class EnvironmentInfoDescription {
 }
 
 enum EnvironmentInfoType {
+  @_s.JsonValue('tail')
   tail,
+  @_s.JsonValue('bundle')
   bundle,
 }
 
@@ -4426,11 +4958,18 @@ extension on String {
 /// connect to another environment in the same group. See <a
 /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environment-cfg-manifest.html">Environment
 /// Manifest (env.yaml)</a> for details.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnvironmentLink {
   /// The name of the linked environment (the dependency).
+  @_s.JsonKey(name: 'EnvironmentName')
   final String environmentName;
 
   /// The name of the link.
+  @_s.JsonKey(name: 'LinkName')
   final String linkName;
 
   EnvironmentLink({
@@ -4446,29 +4985,42 @@ class EnvironmentLink {
 }
 
 /// Describes the AWS resources in use by this environment. This data is live.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnvironmentResourceDescription {
   /// The <code>AutoScalingGroups</code> used by this environment.
+  @_s.JsonKey(name: 'AutoScalingGroups')
   final List<AutoScalingGroup> autoScalingGroups;
 
   /// The name of the environment.
+  @_s.JsonKey(name: 'EnvironmentName')
   final String environmentName;
 
   /// The Amazon EC2 instances used by this environment.
+  @_s.JsonKey(name: 'Instances')
   final List<Instance> instances;
 
   /// The Auto Scaling launch configurations in use by this environment.
+  @_s.JsonKey(name: 'LaunchConfigurations')
   final List<LaunchConfiguration> launchConfigurations;
 
   /// The Amazon EC2 launch templates in use by this environment.
+  @_s.JsonKey(name: 'LaunchTemplates')
   final List<LaunchTemplate> launchTemplates;
 
   /// The LoadBalancers in use by this environment.
+  @_s.JsonKey(name: 'LoadBalancers')
   final List<LoadBalancer> loadBalancers;
 
   /// The queues used by this environment.
+  @_s.JsonKey(name: 'Queues')
   final List<Queue> queues;
 
   /// The <code>AutoScaling</code> triggers in use by this environment.
+  @_s.JsonKey(name: 'Triggers')
   final List<Trigger> triggers;
 
   EnvironmentResourceDescription({
@@ -4520,8 +5072,14 @@ class EnvironmentResourceDescription {
 }
 
 /// Result message containing a list of environment resource descriptions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnvironmentResourceDescriptionsMessage {
   /// A list of <a>EnvironmentResourceDescription</a>.
+  @_s.JsonKey(name: 'EnvironmentResources')
   final EnvironmentResourceDescription environmentResources;
 
   EnvironmentResourceDescriptionsMessage({
@@ -4538,8 +5096,14 @@ class EnvironmentResourceDescriptionsMessage {
 
 /// Describes the AWS resources in use by this environment. This data is not
 /// live data.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnvironmentResourcesDescription {
   /// Describes the LoadBalancer.
+  @_s.JsonKey(name: 'LoadBalancer')
   final LoadBalancerDescription loadBalancer;
 
   EnvironmentResourcesDescription({
@@ -4555,10 +5119,15 @@ class EnvironmentResourcesDescription {
 }
 
 enum EnvironmentStatus {
+  @_s.JsonValue('Launching')
   launching,
+  @_s.JsonValue('Updating')
   updating,
+  @_s.JsonValue('Ready')
   ready,
+  @_s.JsonValue('Terminating')
   terminating,
+  @_s.JsonValue('Terminated')
   terminated,
 }
 
@@ -4581,6 +5150,11 @@ extension on String {
 }
 
 /// Describes the properties of an environment tier
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class EnvironmentTier {
   /// The name of this environment tier.
   ///
@@ -4594,6 +5168,7 @@ class EnvironmentTier {
   /// For <i>Worker tier</i> – <code>Worker</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The type of this environment tier.
@@ -4608,6 +5183,7 @@ class EnvironmentTier {
   /// For <i>Worker tier</i> – <code>SQS/HTTP</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Type')
   final String type;
 
   /// The version of this environment tier. When you don't set a value to it,
@@ -4616,6 +5192,7 @@ class EnvironmentTier {
   /// This member is deprecated. Any specific version that you set may become out
   /// of date. We recommend leaving it unspecified.
   /// </note>
+  @_s.JsonKey(name: 'Version')
   final String version;
 
   EnvironmentTier({
@@ -4630,35 +5207,51 @@ class EnvironmentTier {
       version: _s.extractXmlStringValue(elem, 'Version'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$EnvironmentTierToJson(this);
 }
 
 /// Describes an event.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventDescription {
   /// The application associated with the event.
+  @_s.JsonKey(name: 'ApplicationName')
   final String applicationName;
 
   /// The name of the environment associated with this event.
+  @_s.JsonKey(name: 'EnvironmentName')
   final String environmentName;
 
   /// The date when the event occurred.
+  @_s.JsonKey(name: 'EventDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime eventDate;
 
   /// The event message.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
-  /// The ARN of the platform.
+  /// The ARN of the platform version.
+  @_s.JsonKey(name: 'PlatformArn')
   final String platformArn;
 
   /// The web service request ID for the activity of this event.
+  @_s.JsonKey(name: 'RequestId')
   final String requestId;
 
   /// The severity level of this event.
+  @_s.JsonKey(name: 'Severity')
   final EventSeverity severity;
 
   /// The name of the configuration associated with this event.
+  @_s.JsonKey(name: 'TemplateName')
   final String templateName;
 
   /// The release label for the application version associated with this event.
+  @_s.JsonKey(name: 'VersionLabel')
   final String versionLabel;
 
   EventDescription({
@@ -4688,13 +5281,20 @@ class EventDescription {
 }
 
 /// Result message wrapping a list of event descriptions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventDescriptionsMessage {
   /// A list of <a>EventDescription</a>.
+  @_s.JsonKey(name: 'Events')
   final List<EventDescription> events;
 
   /// If returned, this indicates that there are more results to obtain. Use this
   /// token in the next <a>DescribeEvents</a> call to get the next batch of
   /// events.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   EventDescriptionsMessage({
@@ -4713,11 +5313,17 @@ class EventDescriptionsMessage {
 }
 
 enum EventSeverity {
+  @_s.JsonValue('TRACE')
   trace,
+  @_s.JsonValue('DEBUG')
   debug,
+  @_s.JsonValue('INFO')
   info,
+  @_s.JsonValue('WARN')
   warn,
+  @_s.JsonValue('ERROR')
   error,
+  @_s.JsonValue('FATAL')
   fatal,
 }
 
@@ -4742,12 +5348,19 @@ extension on String {
 }
 
 enum FailureType {
+  @_s.JsonValue('UpdateCancelled')
   updateCancelled,
+  @_s.JsonValue('CancellationFailed')
   cancellationFailed,
+  @_s.JsonValue('RollbackFailed')
   rollbackFailed,
+  @_s.JsonValue('RollbackSuccessful')
   rollbackSuccessful,
+  @_s.JsonValue('InternalFailure')
   internalFailure,
+  @_s.JsonValue('InvalidEnvironmentState')
   invalidEnvironmentState,
+  @_s.JsonValue('PermissionsError')
   permissionsError,
 }
 
@@ -4774,8 +5387,14 @@ extension on String {
 }
 
 /// The description of an Amazon EC2 instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Instance {
   /// The ID of the Amazon EC2 instance.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   Instance({
@@ -4792,36 +5411,49 @@ class Instance {
 /// information, see <a
 /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html">Health
 /// Colors and Statuses</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InstanceHealthSummary {
   /// <b>Red.</b> The health agent is reporting a high number of request failures
   /// or other issues for an instance or environment.
+  @_s.JsonKey(name: 'Degraded')
   final int degraded;
 
   /// <b>Green.</b> An operation is in progress on an instance.
+  @_s.JsonKey(name: 'Info')
   final int info;
 
   /// <b>Grey.</b> AWS Elastic Beanstalk and the health agent are reporting no
   /// data on an instance.
+  @_s.JsonKey(name: 'NoData')
   final int noData;
 
   /// <b>Green.</b> An instance is passing health checks and the health agent is
   /// not reporting any problems.
+  @_s.JsonKey(name: 'Ok')
   final int ok;
 
   /// <b>Grey.</b> An operation is in progress on an instance within the command
   /// timeout.
+  @_s.JsonKey(name: 'Pending')
   final int pending;
 
   /// <b>Red.</b> The health agent is reporting a very high number of request
   /// failures or other issues for an instance or environment.
+  @_s.JsonKey(name: 'Severe')
   final int severe;
 
   /// <b>Grey.</b> AWS Elastic Beanstalk and the health agent are reporting an
   /// insufficient amount of data on an instance.
+  @_s.JsonKey(name: 'Unknown')
   final int unknown;
 
   /// <b>Yellow.</b> The health agent is reporting a moderate number of request
   /// failures or other issues for an instance or environment.
+  @_s.JsonKey(name: 'Warning')
   final int warning;
 
   InstanceHealthSummary({
@@ -4849,16 +5481,27 @@ class InstanceHealthSummary {
 }
 
 enum InstancesHealthAttribute {
+  @_s.JsonValue('HealthStatus')
   healthStatus,
+  @_s.JsonValue('Color')
   color,
+  @_s.JsonValue('Causes')
   causes,
+  @_s.JsonValue('ApplicationMetrics')
   applicationMetrics,
+  @_s.JsonValue('RefreshedAt')
   refreshedAt,
+  @_s.JsonValue('LaunchedAt')
   launchedAt,
+  @_s.JsonValue('System')
   system,
+  @_s.JsonValue('Deployment')
   deployment,
+  @_s.JsonValue('AvailabilityZone')
   availabilityZone,
+  @_s.JsonValue('InstanceType')
   instanceType,
+  @_s.JsonValue('All')
   all,
 }
 
@@ -4894,37 +5537,50 @@ extension on String {
 
 /// Represents the average latency for the slowest X percent of requests over
 /// the last 10 seconds.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Latency {
   /// The average latency for the slowest 90 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P10')
   final double p10;
 
   /// The average latency for the slowest 50 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P50')
   final double p50;
 
   /// The average latency for the slowest 25 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P75')
   final double p75;
 
   /// The average latency for the slowest 15 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P85')
   final double p85;
 
   /// The average latency for the slowest 10 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P90')
   final double p90;
 
   /// The average latency for the slowest 5 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P95')
   final double p95;
 
   /// The average latency for the slowest 1 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P99')
   final double p99;
 
   /// The average latency for the slowest 0.1 percent of requests over the last 10
   /// seconds.
+  @_s.JsonKey(name: 'P999')
   final double p999;
 
   Latency({
@@ -4952,8 +5608,14 @@ class Latency {
 }
 
 /// Describes an Auto Scaling launch configuration.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LaunchConfiguration {
   /// The name of the launch configuration.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   LaunchConfiguration({
@@ -4967,8 +5629,14 @@ class LaunchConfiguration {
 }
 
 /// Describes an Amazon EC2 launch template.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LaunchTemplate {
   /// The ID of the launch template.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   LaunchTemplate({
@@ -4982,12 +5650,19 @@ class LaunchTemplate {
 }
 
 /// A list of available AWS Elastic Beanstalk solution stacks.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListAvailableSolutionStacksResultMessage {
   /// A list of available solution stacks and their
   /// <a>SolutionStackDescription</a>.
+  @_s.JsonKey(name: 'SolutionStackDetails')
   final List<SolutionStackDescription> solutionStackDetails;
 
   /// A list of available solution stacks.
+  @_s.JsonKey(name: 'SolutionStacks')
   final List<String> solutionStacks;
 
   ListAvailableSolutionStacksResultMessage({
@@ -5008,13 +5683,53 @@ class ListAvailableSolutionStacksResultMessage {
   }
 }
 
-class ListPlatformVersionsResult {
-  /// The starting index into the remaining list of platforms. if this value is
-  /// not <code>null</code>, you can use it in a subsequent
-  /// <code>ListPlatformVersion</code> call.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class ListPlatformBranchesResult {
+  /// In a paginated request, if this value isn't <code>null</code>, it's the
+  /// token that you can pass in a subsequent request to get the next response
+  /// page.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
-  /// Detailed information about the platforms.
+  /// Summary information about the platform branches.
+  @_s.JsonKey(name: 'PlatformBranchSummaryList')
+  final List<PlatformBranchSummary> platformBranchSummaryList;
+
+  ListPlatformBranchesResult({
+    this.nextToken,
+    this.platformBranchSummaryList,
+  });
+  factory ListPlatformBranchesResult.fromXml(_s.XmlElement elem) {
+    return ListPlatformBranchesResult(
+      nextToken: _s.extractXmlStringValue(elem, 'NextToken'),
+      platformBranchSummaryList: _s
+          .extractXmlChild(elem, 'PlatformBranchSummaryList')
+          ?.let((elem) => elem
+              .findElements('PlatformBranchSummaryList')
+              .map((c) => PlatformBranchSummary.fromXml(c))
+              .toList()),
+    );
+  }
+}
+
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class ListPlatformVersionsResult {
+  /// In a paginated request, if this value isn't <code>null</code>, it's the
+  /// token that you can pass in a subsequent request to get the next response
+  /// page.
+  @_s.JsonKey(name: 'NextToken')
+  final String nextToken;
+
+  /// Summary information about the platform versions.
+  @_s.JsonKey(name: 'PlatformSummaryList')
   final List<PlatformSummary> platformSummaryList;
 
   ListPlatformVersionsResult({
@@ -5034,11 +5749,18 @@ class ListPlatformVersionsResult {
 }
 
 /// Describes the properties of a Listener for the LoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Listener {
   /// The port that is used by the Listener.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The protocol that is used by the Listener.
+  @_s.JsonKey(name: 'Protocol')
   final String protocol;
 
   Listener({
@@ -5054,8 +5776,14 @@ class Listener {
 }
 
 /// Describes a LoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancer {
   /// The name of the LoadBalancer.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   LoadBalancer({
@@ -5069,14 +5797,22 @@ class LoadBalancer {
 }
 
 /// Describes the details of a LoadBalancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancerDescription {
   /// The domain name of the LoadBalancer.
+  @_s.JsonKey(name: 'Domain')
   final String domain;
 
   /// A list of Listeners used by the LoadBalancer.
+  @_s.JsonKey(name: 'Listeners')
   final List<Listener> listeners;
 
   /// The name of the LoadBalancer.
+  @_s.JsonKey(name: 'LoadBalancerName')
   final String loadBalancerName;
 
   LoadBalancerDescription({
@@ -5097,22 +5833,33 @@ class LoadBalancerDescription {
 }
 
 /// The record of an upcoming or in-progress managed action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ManagedAction {
   /// A description of the managed action.
+  @_s.JsonKey(name: 'ActionDescription')
   final String actionDescription;
 
   /// A unique identifier for the managed action.
+  @_s.JsonKey(name: 'ActionId')
   final String actionId;
 
   /// The type of managed action.
+  @_s.JsonKey(name: 'ActionType')
   final ActionType actionType;
 
   /// The status of the managed action. If the action is <code>Scheduled</code>,
   /// you can apply it immediately with <a>ApplyEnvironmentManagedAction</a>.
+  @_s.JsonKey(name: 'Status')
   final ActionStatus status;
 
   /// The start time of the maintenance window in which the managed action will
   /// execute.
+  @_s.JsonKey(
+      name: 'WindowStartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime windowStartTime;
 
   ManagedAction({
@@ -5134,29 +5881,42 @@ class ManagedAction {
 }
 
 /// The record of a completed or failed managed action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ManagedActionHistoryItem {
   /// A description of the managed action.
+  @_s.JsonKey(name: 'ActionDescription')
   final String actionDescription;
 
   /// A unique identifier for the managed action.
+  @_s.JsonKey(name: 'ActionId')
   final String actionId;
 
   /// The type of the managed action.
+  @_s.JsonKey(name: 'ActionType')
   final ActionType actionType;
 
   /// The date and time that the action started executing.
+  @_s.JsonKey(name: 'ExecutedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime executedTime;
 
   /// If the action failed, a description of the failure.
+  @_s.JsonKey(name: 'FailureDescription')
   final String failureDescription;
 
   /// If the action failed, the type of failure.
+  @_s.JsonKey(name: 'FailureType')
   final FailureType failureType;
 
   /// The date and time that the action finished executing.
+  @_s.JsonKey(name: 'FinishedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime finishedTime;
 
   /// The status of the action.
+  @_s.JsonKey(name: 'Status')
   final ActionHistoryStatus status;
 
   ManagedActionHistoryItem({
@@ -5186,16 +5946,24 @@ class ManagedActionHistoryItem {
 
 /// A lifecycle rule that deletes application versions after the specified
 /// number of days.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MaxAgeRule {
   /// Specify <code>true</code> to apply the rule, or <code>false</code> to
   /// disable it.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// Set to <code>true</code> to delete a version's source bundle from Amazon S3
   /// when Elastic Beanstalk deletes the application version.
+  @_s.JsonKey(name: 'DeleteSourceFromS3')
   final bool deleteSourceFromS3;
 
   /// Specify the number of days to retain an application versions.
+  @_s.JsonKey(name: 'MaxAgeInDays')
   final int maxAgeInDays;
 
   MaxAgeRule({
@@ -5210,20 +5978,30 @@ class MaxAgeRule {
       maxAgeInDays: _s.extractXmlIntValue(elem, 'MaxAgeInDays'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MaxAgeRuleToJson(this);
 }
 
 /// A lifecycle rule that deletes the oldest application version when the
 /// maximum count is exceeded.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MaxCountRule {
   /// Specify <code>true</code> to apply the rule, or <code>false</code> to
   /// disable it.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   /// Set to <code>true</code> to delete a version's source bundle from Amazon S3
   /// when Elastic Beanstalk deletes the application version.
+  @_s.JsonKey(name: 'DeleteSourceFromS3')
   final bool deleteSourceFromS3;
 
   /// Specify the maximum number of application versions to retain.
+  @_s.JsonKey(name: 'MaxCount')
   final int maxCount;
 
   MaxCountRule({
@@ -5238,16 +6016,25 @@ class MaxCountRule {
       maxCount: _s.extractXmlIntValue(elem, 'MaxCount'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MaxCountRuleToJson(this);
 }
 
 /// A regular expression representing a restriction on a string configuration
 /// option value.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionRestrictionRegex {
   /// A unique name representing this regular expression.
+  @_s.JsonKey(name: 'Label')
   final String label;
 
   /// The regular expression pattern that a string configuration option value with
   /// this restriction must match.
+  @_s.JsonKey(name: 'Pattern')
   final String pattern;
 
   OptionRestrictionRegex({
@@ -5263,14 +6050,22 @@ class OptionRestrictionRegex {
 }
 
 /// A specification identifying an individual configuration option.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class OptionSpecification {
   /// A unique namespace identifying the option's associated AWS resource.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   /// The name of the configuration option.
+  @_s.JsonKey(name: 'OptionName')
   final String optionName;
 
   /// A unique resource name for a time-based scaling configuration option.
+  @_s.JsonKey(name: 'ResourceName')
   final String resourceName;
 
   OptionSpecification({
@@ -5278,62 +6073,165 @@ class OptionSpecification {
     this.optionName,
     this.resourceName,
   });
+  Map<String, dynamic> toJson() => _$OptionSpecificationToJson(this);
 }
 
-/// Detailed information about a platform.
-class PlatformDescription {
-  /// The custom AMIs supported by the platform.
-  final List<CustomAmi> customAmiList;
+/// Summary information about a platform branch.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class PlatformBranchSummary {
+  /// The name of the platform branch.
+  @_s.JsonKey(name: 'BranchName')
+  final String branchName;
 
-  /// The date when the platform was created.
-  final DateTime dateCreated;
+  /// An ordinal number that designates the order in which platform branches have
+  /// been added to a platform. This can be helpful, for example, if your code
+  /// calls the <code>ListPlatformBranches</code> action and then displays a list
+  /// of platform branches.
+  ///
+  /// A larger <code>BranchOrder</code> value designates a newer platform branch
+  /// within the platform.
+  @_s.JsonKey(name: 'BranchOrder')
+  final int branchOrder;
 
-  /// The date when the platform was last updated.
-  final DateTime dateUpdated;
+  /// The support life cycle state of the platform branch.
+  ///
+  /// Possible values: <code>beta</code> | <code>supported</code> |
+  /// <code>deprecated</code> | <code>retired</code>
+  @_s.JsonKey(name: 'LifecycleState')
+  final String lifecycleState;
 
-  /// The description of the platform.
-  final String description;
-
-  /// The frameworks supported by the platform.
-  final List<PlatformFramework> frameworks;
-
-  /// Information about the maintainer of the platform.
-  final String maintainer;
-
-  /// The operating system used by the platform.
-  final String operatingSystemName;
-
-  /// The version of the operating system used by the platform.
-  final String operatingSystemVersion;
-
-  /// The ARN of the platform.
-  final String platformArn;
-
-  /// The category of the platform.
-  final String platformCategory;
-
-  /// The name of the platform.
+  /// The name of the platform to which this platform branch belongs.
+  @_s.JsonKey(name: 'PlatformName')
   final String platformName;
 
-  /// The AWS account ID of the person who created the platform.
+  /// The environment tiers that platform versions in this branch support.
+  ///
+  /// Possible values: <code>WebServer/Standard</code> |
+  /// <code>Worker/SQS/HTTP</code>
+  @_s.JsonKey(name: 'SupportedTierList')
+  final List<String> supportedTierList;
+
+  PlatformBranchSummary({
+    this.branchName,
+    this.branchOrder,
+    this.lifecycleState,
+    this.platformName,
+    this.supportedTierList,
+  });
+  factory PlatformBranchSummary.fromXml(_s.XmlElement elem) {
+    return PlatformBranchSummary(
+      branchName: _s.extractXmlStringValue(elem, 'BranchName'),
+      branchOrder: _s.extractXmlIntValue(elem, 'BranchOrder'),
+      lifecycleState: _s.extractXmlStringValue(elem, 'LifecycleState'),
+      platformName: _s.extractXmlStringValue(elem, 'PlatformName'),
+      supportedTierList: _s.extractXmlChild(elem, 'SupportedTierList')?.let(
+          (elem) => _s.extractXmlStringListValues(elem, 'SupportedTierList')),
+    );
+  }
+}
+
+/// Detailed information about a platform version.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class PlatformDescription {
+  /// The custom AMIs supported by the platform version.
+  @_s.JsonKey(name: 'CustomAmiList')
+  final List<CustomAmi> customAmiList;
+
+  /// The date when the platform version was created.
+  @_s.JsonKey(name: 'DateCreated', fromJson: unixFromJson, toJson: unixToJson)
+  final DateTime dateCreated;
+
+  /// The date when the platform version was last updated.
+  @_s.JsonKey(name: 'DateUpdated', fromJson: unixFromJson, toJson: unixToJson)
+  final DateTime dateUpdated;
+
+  /// The description of the platform version.
+  @_s.JsonKey(name: 'Description')
+  final String description;
+
+  /// The frameworks supported by the platform version.
+  @_s.JsonKey(name: 'Frameworks')
+  final List<PlatformFramework> frameworks;
+
+  /// Information about the maintainer of the platform version.
+  @_s.JsonKey(name: 'Maintainer')
+  final String maintainer;
+
+  /// The operating system used by the platform version.
+  @_s.JsonKey(name: 'OperatingSystemName')
+  final String operatingSystemName;
+
+  /// The version of the operating system used by the platform version.
+  @_s.JsonKey(name: 'OperatingSystemVersion')
+  final String operatingSystemVersion;
+
+  /// The ARN of the platform version.
+  @_s.JsonKey(name: 'PlatformArn')
+  final String platformArn;
+
+  /// The state of the platform version's branch in its lifecycle.
+  ///
+  /// Possible values: <code>Beta</code> | <code>Supported</code> |
+  /// <code>Deprecated</code> | <code>Retired</code>
+  @_s.JsonKey(name: 'PlatformBranchLifecycleState')
+  final String platformBranchLifecycleState;
+
+  /// The platform branch to which the platform version belongs.
+  @_s.JsonKey(name: 'PlatformBranchName')
+  final String platformBranchName;
+
+  /// The category of the platform version.
+  @_s.JsonKey(name: 'PlatformCategory')
+  final String platformCategory;
+
+  /// The state of the platform version in its lifecycle.
+  ///
+  /// Possible values: <code>Recommended</code> | <code>null</code>
+  ///
+  /// If a null value is returned, the platform version isn't the recommended one
+  /// for its branch. Each platform branch has a single recommended platform
+  /// version, typically the most recent one.
+  @_s.JsonKey(name: 'PlatformLifecycleState')
+  final String platformLifecycleState;
+
+  /// The name of the platform version.
+  @_s.JsonKey(name: 'PlatformName')
+  final String platformName;
+
+  /// The AWS account ID of the person who created the platform version.
+  @_s.JsonKey(name: 'PlatformOwner')
   final String platformOwner;
 
-  /// The status of the platform.
+  /// The status of the platform version.
+  @_s.JsonKey(name: 'PlatformStatus')
   final PlatformStatus platformStatus;
 
-  /// The version of the platform.
+  /// The version of the platform version.
+  @_s.JsonKey(name: 'PlatformVersion')
   final String platformVersion;
 
-  /// The programming languages supported by the platform.
+  /// The programming languages supported by the platform version.
+  @_s.JsonKey(name: 'ProgrammingLanguages')
   final List<PlatformProgrammingLanguage> programmingLanguages;
 
-  /// The name of the solution stack used by the platform.
+  /// The name of the solution stack used by the platform version.
+  @_s.JsonKey(name: 'SolutionStackName')
   final String solutionStackName;
 
-  /// The additions supported by the platform.
+  /// The additions supported by the platform version.
+  @_s.JsonKey(name: 'SupportedAddonList')
   final List<String> supportedAddonList;
 
-  /// The tiers supported by the platform.
+  /// The tiers supported by the platform version.
+  @_s.JsonKey(name: 'SupportedTierList')
   final List<String> supportedTierList;
 
   PlatformDescription({
@@ -5346,7 +6244,10 @@ class PlatformDescription {
     this.operatingSystemName,
     this.operatingSystemVersion,
     this.platformArn,
+    this.platformBranchLifecycleState,
+    this.platformBranchName,
     this.platformCategory,
+    this.platformLifecycleState,
     this.platformName,
     this.platformOwner,
     this.platformStatus,
@@ -5376,7 +6277,12 @@ class PlatformDescription {
       operatingSystemVersion:
           _s.extractXmlStringValue(elem, 'OperatingSystemVersion'),
       platformArn: _s.extractXmlStringValue(elem, 'PlatformArn'),
+      platformBranchLifecycleState:
+          _s.extractXmlStringValue(elem, 'PlatformBranchLifecycleState'),
+      platformBranchName: _s.extractXmlStringValue(elem, 'PlatformBranchName'),
       platformCategory: _s.extractXmlStringValue(elem, 'PlatformCategory'),
+      platformLifecycleState:
+          _s.extractXmlStringValue(elem, 'PlatformLifecycleState'),
       platformName: _s.extractXmlStringValue(elem, 'PlatformName'),
       platformOwner: _s.extractXmlStringValue(elem, 'PlatformOwner'),
       platformStatus:
@@ -5397,29 +6303,57 @@ class PlatformDescription {
   }
 }
 
-/// Specify criteria to restrict the results when listing custom platforms.
+/// Describes criteria to restrict the results when listing platform versions.
 ///
-/// The filter is evaluated as the expression:
-///
-/// <code>Type</code> <code>Operator</code> <code>Values[i]</code>
+/// The filter is evaluated as follows: <code>Type Operator Values[1]</code>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class PlatformFilter {
   /// The operator to apply to the <code>Type</code> with each of the
   /// <code>Values</code>.
   ///
-  /// Valid Values: <code>=</code> (equal to) | <code>!=</code> (not equal to) |
-  /// <code>&lt;</code> (less than) | <code>&lt;=</code> (less than or equal to) |
-  /// <code>&gt;</code> (greater than) | <code>&gt;=</code> (greater than or equal
-  /// to) | <code>contains</code> | <code>begins_with</code> |
-  /// <code>ends_with</code>
+  /// Valid values: <code>=</code> | <code>!=</code> | <code>&lt;</code> |
+  /// <code>&lt;=</code> | <code>&gt;</code> | <code>&gt;=</code> |
+  /// <code>contains</code> | <code>begins_with</code> | <code>ends_with</code>
+  @_s.JsonKey(name: 'Operator')
   final String operator;
 
-  /// The custom platform attribute to which the filter values are applied.
+  /// The platform version attribute to which the filter values are applied.
   ///
-  /// Valid Values: <code>PlatformName</code> | <code>PlatformVersion</code> |
-  /// <code>PlatformStatus</code> | <code>PlatformOwner</code>
+  /// Valid values: <code>PlatformName</code> | <code>PlatformVersion</code> |
+  /// <code>PlatformStatus</code> | <code>PlatformBranchName</code> |
+  /// <code>PlatformLifecycleState</code> | <code>PlatformOwner</code> |
+  /// <code>SupportedTier</code> | <code>SupportedAddon</code> |
+  /// <code>ProgrammingLanguageName</code> | <code>OperatingSystemName</code>
+  @_s.JsonKey(name: 'Type')
   final String type;
 
-  /// The list of values applied to the custom platform attribute.
+  /// The list of values applied to the filtering platform version attribute. Only
+  /// one value is supported for all current operators.
+  ///
+  /// The following list shows valid filter values for some filter attributes.
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>PlatformStatus</code>: <code>Creating</code> | <code>Failed</code> |
+  /// <code>Ready</code> | <code>Deleting</code> | <code>Deleted</code>
+  /// </li>
+  /// <li>
+  /// <code>PlatformLifecycleState</code>: <code>recommended</code>
+  /// </li>
+  /// <li>
+  /// <code>SupportedTier</code>: <code>WebServer/Standard</code> |
+  /// <code>Worker/SQS/HTTP</code>
+  /// </li>
+  /// <li>
+  /// <code>SupportedAddon</code>: <code>Log/S3</code> |
+  /// <code>Monitoring/Healthd</code> | <code>WorkerDaemon/SQSD</code>
+  /// </li>
+  /// </ul>
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   PlatformFilter({
@@ -5427,14 +6361,22 @@ class PlatformFilter {
     this.type,
     this.values,
   });
+  Map<String, dynamic> toJson() => _$PlatformFilterToJson(this);
 }
 
-/// A framework supported by the custom platform.
+/// A framework supported by the platform.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PlatformFramework {
   /// The name of the framework.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The version of the framework.
+  @_s.JsonKey(name: 'Version')
   final String version;
 
   PlatformFramework({
@@ -5450,11 +6392,18 @@ class PlatformFramework {
 }
 
 /// A programming language supported by the platform.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PlatformProgrammingLanguage {
   /// The name of the programming language.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The version of the programming language.
+  @_s.JsonKey(name: 'Version')
   final String version;
 
   PlatformProgrammingLanguage({
@@ -5470,10 +6419,15 @@ class PlatformProgrammingLanguage {
 }
 
 enum PlatformStatus {
+  @_s.JsonValue('Creating')
   creating,
+  @_s.JsonValue('Failed')
   failed,
+  @_s.JsonValue('Ready')
   ready,
+  @_s.JsonValue('Deleting')
   deleting,
+  @_s.JsonValue('Deleted')
   deleted,
 }
 
@@ -5495,40 +6449,81 @@ extension on String {
   }
 }
 
-/// Detailed information about a platform.
+/// Summary information about a platform version.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PlatformSummary {
-  /// The operating system used by the platform.
+  /// The operating system used by the platform version.
+  @_s.JsonKey(name: 'OperatingSystemName')
   final String operatingSystemName;
 
-  /// The version of the operating system used by the platform.
+  /// The version of the operating system used by the platform version.
+  @_s.JsonKey(name: 'OperatingSystemVersion')
   final String operatingSystemVersion;
 
-  /// The ARN of the platform.
+  /// The ARN of the platform version.
+  @_s.JsonKey(name: 'PlatformArn')
   final String platformArn;
 
-  /// The category of platform.
+  /// The state of the platform version's branch in its lifecycle.
+  ///
+  /// Possible values: <code>beta</code> | <code>supported</code> |
+  /// <code>deprecated</code> | <code>retired</code>
+  @_s.JsonKey(name: 'PlatformBranchLifecycleState')
+  final String platformBranchLifecycleState;
+
+  /// The platform branch to which the platform version belongs.
+  @_s.JsonKey(name: 'PlatformBranchName')
+  final String platformBranchName;
+
+  /// The category of platform version.
+  @_s.JsonKey(name: 'PlatformCategory')
   final String platformCategory;
 
-  /// The AWS account ID of the person who created the platform.
+  /// The state of the platform version in its lifecycle.
+  ///
+  /// Possible values: <code>recommended</code> | empty
+  ///
+  /// If an empty value is returned, the platform version is supported but isn't
+  /// the recommended one for its branch.
+  @_s.JsonKey(name: 'PlatformLifecycleState')
+  final String platformLifecycleState;
+
+  /// The AWS account ID of the person who created the platform version.
+  @_s.JsonKey(name: 'PlatformOwner')
   final String platformOwner;
 
-  /// The status of the platform. You can create an environment from the platform
-  /// once it is ready.
+  /// The status of the platform version. You can create an environment from the
+  /// platform version once it is ready.
+  @_s.JsonKey(name: 'PlatformStatus')
   final PlatformStatus platformStatus;
 
-  /// The additions associated with the platform.
+  /// The version string of the platform version.
+  @_s.JsonKey(name: 'PlatformVersion')
+  final String platformVersion;
+
+  /// The additions associated with the platform version.
+  @_s.JsonKey(name: 'SupportedAddonList')
   final List<String> supportedAddonList;
 
-  /// The tiers in which the platform runs.
+  /// The tiers in which the platform version runs.
+  @_s.JsonKey(name: 'SupportedTierList')
   final List<String> supportedTierList;
 
   PlatformSummary({
     this.operatingSystemName,
     this.operatingSystemVersion,
     this.platformArn,
+    this.platformBranchLifecycleState,
+    this.platformBranchName,
     this.platformCategory,
+    this.platformLifecycleState,
     this.platformOwner,
     this.platformStatus,
+    this.platformVersion,
     this.supportedAddonList,
     this.supportedTierList,
   });
@@ -5539,10 +6534,16 @@ class PlatformSummary {
       operatingSystemVersion:
           _s.extractXmlStringValue(elem, 'OperatingSystemVersion'),
       platformArn: _s.extractXmlStringValue(elem, 'PlatformArn'),
+      platformBranchLifecycleState:
+          _s.extractXmlStringValue(elem, 'PlatformBranchLifecycleState'),
+      platformBranchName: _s.extractXmlStringValue(elem, 'PlatformBranchName'),
       platformCategory: _s.extractXmlStringValue(elem, 'PlatformCategory'),
+      platformLifecycleState:
+          _s.extractXmlStringValue(elem, 'PlatformLifecycleState'),
       platformOwner: _s.extractXmlStringValue(elem, 'PlatformOwner'),
       platformStatus:
           _s.extractXmlStringValue(elem, 'PlatformStatus')?.toPlatformStatus(),
+      platformVersion: _s.extractXmlStringValue(elem, 'PlatformVersion'),
       supportedAddonList: _s.extractXmlChild(elem, 'SupportedAddonList')?.let(
           (elem) => _s.extractXmlStringListValues(elem, 'SupportedAddonList')),
       supportedTierList: _s.extractXmlChild(elem, 'SupportedTierList')?.let(
@@ -5552,11 +6553,18 @@ class PlatformSummary {
 }
 
 /// Describes a queue.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Queue {
   /// The name of the queue.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The URL of the queue.
+  @_s.JsonKey(name: 'URL')
   final String url;
 
   Queue({
@@ -5573,9 +6581,15 @@ class Queue {
 
 /// The AWS Elastic Beanstalk quota information for a single resource type in an
 /// AWS account. It reflects the resource's limits for this account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceQuota {
   /// The maximum number of instances of this Elastic Beanstalk resource type that
   /// an AWS account can use.
+  @_s.JsonKey(name: 'Maximum')
   final int maximum;
 
   ResourceQuota({
@@ -5590,20 +6604,30 @@ class ResourceQuota {
 
 /// A set of per-resource AWS Elastic Beanstalk quotas associated with an AWS
 /// account. They reflect Elastic Beanstalk resource limits for this account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceQuotas {
   /// The quota for applications in the AWS account.
+  @_s.JsonKey(name: 'ApplicationQuota')
   final ResourceQuota applicationQuota;
 
   /// The quota for application versions in the AWS account.
+  @_s.JsonKey(name: 'ApplicationVersionQuota')
   final ResourceQuota applicationVersionQuota;
 
   /// The quota for configuration templates in the AWS account.
+  @_s.JsonKey(name: 'ConfigurationTemplateQuota')
   final ResourceQuota configurationTemplateQuota;
 
   /// The quota for custom platforms in the AWS account.
+  @_s.JsonKey(name: 'CustomPlatformQuota')
   final ResourceQuota customPlatformQuota;
 
   /// The quota for environments in the AWS account.
+  @_s.JsonKey(name: 'EnvironmentQuota')
   final ResourceQuota environmentQuota;
 
   ResourceQuotas({
@@ -5634,12 +6658,19 @@ class ResourceQuotas {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ResourceTagsDescriptionMessage {
-  /// The Amazon Resource Name (ARN) of the resouce for which a tag list was
+  /// The Amazon Resource Name (ARN) of the resource for which a tag list was
   /// requested.
+  @_s.JsonKey(name: 'ResourceArn')
   final String resourceArn;
 
   /// A list of tag key-value pairs.
+  @_s.JsonKey(name: 'ResourceTags')
   final List<Tag> resourceTags;
 
   ResourceTagsDescriptionMessage({
@@ -5658,8 +6689,14 @@ class ResourceTagsDescriptionMessage {
 }
 
 /// Result message containing a description of the requested environment info.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RetrieveEnvironmentInfoResultMessage {
   /// The <a>EnvironmentInfoDescription</a> of the environment.
+  @_s.JsonKey(name: 'EnvironmentInfo')
   final List<EnvironmentInfoDescription> environmentInfo;
 
   RetrieveEnvironmentInfoResultMessage({
@@ -5677,11 +6714,18 @@ class RetrieveEnvironmentInfoResultMessage {
 }
 
 /// The bucket and key of an item stored in Amazon S3.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class S3Location {
   /// The Amazon S3 bucket where the data is located.
+  @_s.JsonKey(name: 'S3Bucket')
   final String s3Bucket;
 
   /// The Amazon S3 key where the data is located.
+  @_s.JsonKey(name: 'S3Key')
   final String s3Key;
 
   S3Location({
@@ -5694,46 +6738,106 @@ class S3Location {
       s3Key: _s.extractXmlStringValue(elem, 'S3Key'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$S3LocationToJson(this);
+}
+
+/// Describes criteria to restrict a list of results.
+///
+/// For operators that apply a single value to the attribute, the filter is
+/// evaluated as follows: <code>Attribute Operator Values[1]</code>
+///
+/// Some operators, e.g. <code>in</code>, can apply multiple values. In this
+/// case, the filter is evaluated as a logical union (OR) of applications of the
+/// operator to the attribute with each one of the values: <code>(Attribute
+/// Operator Values[1]) OR (Attribute Operator Values[2]) OR ...</code>
+///
+/// The valid values for attributes of <code>SearchFilter</code> depend on the
+/// API action. For valid values, see the reference page for the API action
+/// you're calling that takes a <code>SearchFilter</code> parameter.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
+class SearchFilter {
+  /// The result attribute to which the filter values are applied. Valid values
+  /// vary by API action.
+  @_s.JsonKey(name: 'Attribute')
+  final String attribute;
+
+  /// The operator to apply to the <code>Attribute</code> with each of the
+  /// <code>Values</code>. Valid values vary by <code>Attribute</code>.
+  @_s.JsonKey(name: 'Operator')
+  final String operator;
+
+  /// The list of values applied to the <code>Attribute</code> and
+  /// <code>Operator</code> attributes. Number of values and valid values vary by
+  /// <code>Attribute</code>.
+  @_s.JsonKey(name: 'Values')
+  final List<String> values;
+
+  SearchFilter({
+    this.attribute,
+    this.operator,
+    this.values,
+  });
+  Map<String, dynamic> toJson() => _$SearchFilterToJson(this);
 }
 
 /// Detailed health information about an Amazon EC2 instance in your Elastic
 /// Beanstalk environment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SingleInstanceHealth {
   /// Request metrics from your application.
+  @_s.JsonKey(name: 'ApplicationMetrics')
   final ApplicationMetrics applicationMetrics;
 
   /// The availability zone in which the instance runs.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// Represents the causes, which provide more information about the current
   /// health status.
+  @_s.JsonKey(name: 'Causes')
   final List<String> causes;
 
   /// Represents the color indicator that gives you information about the health
   /// of the EC2 instance. For more information, see <a
   /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html">Health
   /// Colors and Statuses</a>.
+  @_s.JsonKey(name: 'Color')
   final String color;
 
   /// Information about the most recent deployment to an instance.
+  @_s.JsonKey(name: 'Deployment')
   final Deployment deployment;
 
   /// Returns the health status of the specified instance. For more information,
   /// see <a
   /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html">Health
   /// Colors and Statuses</a>.
+  @_s.JsonKey(name: 'HealthStatus')
   final String healthStatus;
 
   /// The ID of the Amazon EC2 instance.
+  @_s.JsonKey(name: 'InstanceId')
   final String instanceId;
 
   /// The instance's type.
+  @_s.JsonKey(name: 'InstanceType')
   final String instanceType;
 
   /// The time at which the EC2 instance was launched.
+  @_s.JsonKey(name: 'LaunchedAt', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime launchedAt;
 
   /// Operating system metrics from the instance.
+  @_s.JsonKey(name: 'System')
   final SystemStatus system;
 
   SingleInstanceHealth({
@@ -5773,11 +6877,18 @@ class SingleInstanceHealth {
 }
 
 /// Describes the solution stack.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SolutionStackDescription {
   /// The permitted file types allowed for a solution stack.
+  @_s.JsonKey(name: 'PermittedFileTypes')
   final List<String> permittedFileTypes;
 
   /// The name of the solution stack.
+  @_s.JsonKey(name: 'SolutionStackName')
   final String solutionStackName;
 
   SolutionStackDescription({
@@ -5794,6 +6905,11 @@ class SolutionStackDescription {
 }
 
 /// Location of the source code for an application version.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SourceBuildInformation {
   /// The location of the source code, as a formatted string, depending on the
   /// value of <code>SourceRepository</code>
@@ -5810,6 +6926,7 @@ class SourceBuildInformation {
   /// <code>my-s3-bucket/Folders/my-source-file</code>.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'SourceLocation')
   final String sourceLocation;
 
   /// Location where the repository is stored.
@@ -5822,6 +6939,7 @@ class SourceBuildInformation {
   /// <code>S3</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'SourceRepository')
   final SourceRepository sourceRepository;
 
   /// The type of repository.
@@ -5834,6 +6952,7 @@ class SourceBuildInformation {
   /// <code>Zip</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'SourceType')
   final SourceType sourceType;
 
   SourceBuildInformation({
@@ -5850,24 +6969,36 @@ class SourceBuildInformation {
       sourceType: _s.extractXmlStringValue(elem, 'SourceType')?.toSourceType(),
     );
   }
+
+  Map<String, dynamic> toJson() => _$SourceBuildInformationToJson(this);
 }
 
-/// A specification for an environment configuration
+/// A specification for an environment configuration.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SourceConfiguration {
   /// The name of the application associated with the configuration.
+  @_s.JsonKey(name: 'ApplicationName')
   final String applicationName;
 
   /// The name of the configuration template.
+  @_s.JsonKey(name: 'TemplateName')
   final String templateName;
 
   SourceConfiguration({
     this.applicationName,
     this.templateName,
   });
+  Map<String, dynamic> toJson() => _$SourceConfigurationToJson(this);
 }
 
 enum SourceRepository {
+  @_s.JsonValue('CodeCommit')
   codeCommit,
+  @_s.JsonValue('S3')
   s3,
 }
 
@@ -5884,7 +7015,9 @@ extension on String {
 }
 
 enum SourceType {
+  @_s.JsonValue('Git')
   git,
+  @_s.JsonValue('Zip')
   zip,
 }
 
@@ -5904,21 +7037,30 @@ extension on String {
 /// in each type of status code response. For more information, see <a
 /// href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">Status Code
 /// Definitions</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class StatusCodes {
   /// The percentage of requests over the last 10 seconds that resulted in a 2xx
   /// (200, 201, etc.) status code.
+  @_s.JsonKey(name: 'Status2xx')
   final int status2xx;
 
   /// The percentage of requests over the last 10 seconds that resulted in a 3xx
   /// (300, 301, etc.) status code.
+  @_s.JsonKey(name: 'Status3xx')
   final int status3xx;
 
   /// The percentage of requests over the last 10 seconds that resulted in a 4xx
   /// (400, 401, etc.) status code.
+  @_s.JsonKey(name: 'Status4xx')
   final int status4xx;
 
   /// The percentage of requests over the last 10 seconds that resulted in a 5xx
   /// (500, 501, etc.) status code.
+  @_s.JsonKey(name: 'Status5xx')
   final int status5xx;
 
   StatusCodes({
@@ -5938,14 +7080,21 @@ class StatusCodes {
 }
 
 /// CPU utilization and load average metrics for an Amazon EC2 instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SystemStatus {
   /// CPU utilization metrics for the instance.
+  @_s.JsonKey(name: 'CPUUtilization')
   final CPUUtilization cPUUtilization;
 
   /// Load average in the last 1-minute, 5-minute, and 15-minute periods. For more
   /// information, see <a
   /// href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-metrics.html#health-enhanced-metrics-os">Operating
   /// System Metrics</a>.
+  @_s.JsonKey(name: 'LoadAverage')
   final List<double> loadAverage;
 
   SystemStatus({
@@ -5965,11 +7114,18 @@ class SystemStatus {
 }
 
 /// Describes a tag applied to a resource in an environment.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The key of the tag.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value of the tag.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -5982,11 +7138,19 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// Describes a trigger.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Trigger {
   /// The name of the trigger.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   Trigger({
@@ -6000,14 +7164,22 @@ class Trigger {
 }
 
 /// An error or warning for a desired configuration option value.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ValidationMessage {
   /// A message describing the error or warning.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   /// The namespace to which the option belongs.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   /// The name of the option.
+  @_s.JsonKey(name: 'OptionName')
   final String optionName;
 
   /// An indication of the severity of this message:
@@ -6022,6 +7194,7 @@ class ValidationMessage {
   /// into account.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Severity')
   final ValidationSeverity severity;
 
   ValidationMessage({
@@ -6042,7 +7215,9 @@ class ValidationMessage {
 }
 
 enum ValidationSeverity {
+  @_s.JsonValue('error')
   error,
+  @_s.JsonValue('warning')
   warning,
 }
 

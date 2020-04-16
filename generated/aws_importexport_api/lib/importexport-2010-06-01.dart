@@ -9,7 +9,15 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
 
@@ -285,8 +293,15 @@ class ImportExport {
 
 /// A discrete item that contains the description and URL of an artifact (such
 /// as a PDF).
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Artifact {
+  @_s.JsonKey(name: 'Description')
   final String description;
+  @_s.JsonKey(name: 'URL')
   final String url;
 
   Artifact({
@@ -302,7 +317,13 @@ class Artifact {
 }
 
 /// The account specified does not have the appropriate bucket permissions.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BucketPermissionException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   BucketPermissionException({
@@ -316,7 +337,13 @@ class BucketPermissionException implements _s.AwsException {
 }
 
 /// Output structure for the CancelJob operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CancelJobOutput {
+  @_s.JsonKey(name: 'Success')
   final bool success;
 
   CancelJobOutput({
@@ -330,7 +357,13 @@ class CancelJobOutput {
 }
 
 /// The specified job ID has been canceled and is no longer valid.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CanceledJobIdException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   CanceledJobIdException({
@@ -344,12 +377,23 @@ class CanceledJobIdException implements _s.AwsException {
 }
 
 /// Output structure for the CreateJob operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateJobOutput {
+  @_s.JsonKey(name: 'ArtifactList')
   final List<Artifact> artifactList;
+  @_s.JsonKey(name: 'JobId')
   final String jobId;
+  @_s.JsonKey(name: 'JobType')
   final JobType jobType;
+  @_s.JsonKey(name: 'Signature')
   final String signature;
+  @_s.JsonKey(name: 'SignatureFileContents')
   final String signatureFileContents;
+  @_s.JsonKey(name: 'WarningMessage')
   final String warningMessage;
 
   CreateJobOutput({
@@ -379,7 +423,13 @@ class CreateJobOutput {
 /// Each account can create only a certain number of jobs per day. If you need
 /// to create more than this, please contact awsimportexport@amazon.com to
 /// explain your particular use case.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateJobQuotaExceededException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   CreateJobQuotaExceededException({
@@ -393,7 +443,13 @@ class CreateJobQuotaExceededException implements _s.AwsException {
 }
 
 /// Indicates that the specified job has expired out of the system.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ExpiredJobIdException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   ExpiredJobIdException({
@@ -406,8 +462,15 @@ class ExpiredJobIdException implements _s.AwsException {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetShippingLabelOutput {
+  @_s.JsonKey(name: 'ShippingLabelURL')
   final String shippingLabelURL;
+  @_s.JsonKey(name: 'Warning')
   final String warning;
 
   GetShippingLabelOutput({
@@ -423,22 +486,43 @@ class GetShippingLabelOutput {
 }
 
 /// Output structure for the GetStatus operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetStatusOutput {
+  @_s.JsonKey(name: 'ArtifactList')
   final List<Artifact> artifactList;
+  @_s.JsonKey(name: 'Carrier')
   final String carrier;
+  @_s.JsonKey(name: 'CreationDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationDate;
+  @_s.JsonKey(name: 'CurrentManifest')
   final String currentManifest;
+  @_s.JsonKey(name: 'ErrorCount')
   final int errorCount;
+  @_s.JsonKey(name: 'JobId')
   final String jobId;
+  @_s.JsonKey(name: 'JobType')
   final JobType jobType;
+  @_s.JsonKey(name: 'LocationCode')
   final String locationCode;
+  @_s.JsonKey(name: 'LocationMessage')
   final String locationMessage;
+  @_s.JsonKey(name: 'LogBucket')
   final String logBucket;
+  @_s.JsonKey(name: 'LogKey')
   final String logKey;
+  @_s.JsonKey(name: 'ProgressCode')
   final String progressCode;
+  @_s.JsonKey(name: 'ProgressMessage')
   final String progressMessage;
+  @_s.JsonKey(name: 'Signature')
   final String signature;
+  @_s.JsonKey(name: 'SignatureFileContents')
   final String signatureFileContents;
+  @_s.JsonKey(name: 'TrackingNumber')
   final String trackingNumber;
 
   GetStatusOutput({
@@ -488,7 +572,13 @@ class GetStatusOutput {
 /// The AWS Access Key ID specified in the request did not match the manifest's
 /// accessKeyId value. The manifest and the request authentication must use the
 /// same AWS Access Key ID.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidAccessKeyIdException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidAccessKeyIdException({
@@ -502,7 +592,13 @@ class InvalidAccessKeyIdException implements _s.AwsException {
 }
 
 /// The address specified in the manifest is invalid.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidAddressException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidAddressException({
@@ -516,7 +612,13 @@ class InvalidAddressException implements _s.AwsException {
 }
 
 /// One or more customs parameters was invalid. Please correct and resubmit.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidCustomsException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidCustomsException({
@@ -530,7 +632,13 @@ class InvalidCustomsException implements _s.AwsException {
 }
 
 /// File system specified in export manifest is invalid.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidFileSystemException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidFileSystemException({
@@ -544,7 +652,13 @@ class InvalidFileSystemException implements _s.AwsException {
 }
 
 /// The JOBID was missing, not found, or not associated with the AWS account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidJobIdException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidJobIdException({
@@ -558,7 +672,13 @@ class InvalidJobIdException implements _s.AwsException {
 }
 
 /// One or more manifest fields was invalid. Please correct and resubmit.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidManifestFieldException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidManifestFieldException({
@@ -572,7 +692,13 @@ class InvalidManifestFieldException implements _s.AwsException {
 }
 
 /// One or more parameters had an invalid value.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidParameterException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidParameterException({
@@ -586,7 +712,13 @@ class InvalidParameterException implements _s.AwsException {
 }
 
 /// The client tool version is invalid.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InvalidVersionException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   InvalidVersionException({
@@ -600,10 +732,19 @@ class InvalidVersionException implements _s.AwsException {
 }
 
 /// Representation of a job returned by the ListJobs operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Job {
+  @_s.JsonKey(name: 'CreationDate', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime creationDate;
+  @_s.JsonKey(name: 'IsCanceled')
   final bool isCanceled;
+  @_s.JsonKey(name: 'JobId')
   final String jobId;
+  @_s.JsonKey(name: 'JobType')
   final JobType jobType;
 
   Job({
@@ -624,7 +765,9 @@ class Job {
 
 /// Specifies whether the job to initiate is an import or export job.
 enum JobType {
+  @_s.JsonValue('Import')
   import,
+  @_s.JsonValue('Export')
   export,
 }
 
@@ -641,8 +784,15 @@ extension on String {
 }
 
 /// Output structure for the ListJobs operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListJobsOutput {
+  @_s.JsonKey(name: 'IsTruncated')
   final bool isTruncated;
+  @_s.JsonKey(name: 'Jobs')
   final List<Job> jobs;
 
   ListJobsOutput({
@@ -659,7 +809,13 @@ class ListJobsOutput {
 }
 
 /// Your manifest is not well-formed.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MalformedManifestException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   MalformedManifestException({
@@ -673,7 +829,13 @@ class MalformedManifestException implements _s.AwsException {
 }
 
 /// One or more required customs parameters was missing from the manifest.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MissingCustomsException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   MissingCustomsException({
@@ -688,7 +850,13 @@ class MissingCustomsException implements _s.AwsException {
 
 /// One or more required fields were missing from the manifest file. Please
 /// correct and resubmit.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MissingManifestFieldException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   MissingManifestFieldException({
@@ -702,7 +870,13 @@ class MissingManifestFieldException implements _s.AwsException {
 }
 
 /// One or more required parameters was missing from the request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MissingParameterException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   MissingParameterException({
@@ -717,7 +891,13 @@ class MissingParameterException implements _s.AwsException {
 
 /// Your manifest file contained buckets from multiple regions. A job is
 /// restricted to buckets from one region. Please correct and resubmit.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MultipleRegionsException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   MultipleRegionsException({
@@ -734,7 +914,13 @@ class MultipleRegionsException implements _s.AwsException {
 /// the manifest's bucket, exportBucket, or logBucket field to a bucket that the
 /// account, as specified by the manifest's Access Key ID, has write permissions
 /// to.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NoSuchBucketException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   NoSuchBucketException({
@@ -748,7 +934,13 @@ class NoSuchBucketException implements _s.AwsException {
 }
 
 /// AWS Import/Export cannot cancel the job
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UnableToCancelJobIdException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   UnableToCancelJobIdException({
@@ -762,7 +954,13 @@ class UnableToCancelJobIdException implements _s.AwsException {
 }
 
 /// AWS Import/Export cannot update the job
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UnableToUpdateJobIdException implements _s.AwsException {
+  @_s.JsonKey(name: 'message')
   final String message;
 
   UnableToUpdateJobIdException({
@@ -776,9 +974,17 @@ class UnableToUpdateJobIdException implements _s.AwsException {
 }
 
 /// Output structure for the UpateJob operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UpdateJobOutput {
+  @_s.JsonKey(name: 'ArtifactList')
   final List<Artifact> artifactList;
+  @_s.JsonKey(name: 'Success')
   final bool success;
+  @_s.JsonKey(name: 'WarningMessage')
   final String warningMessage;
 
   UpdateJobOutput({

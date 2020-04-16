@@ -42,3 +42,4 @@ packages:
   - aws_route53_api
   - aws_s3_api
   - aws_s3control_api
+  - aws_polly_api

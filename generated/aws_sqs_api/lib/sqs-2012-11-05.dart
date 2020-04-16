@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'sqs-2012-11-05.g.dart';
 
 /// Welcome to the <i>Amazon Simple Queue Service API Reference</i>.
 ///
@@ -2087,17 +2097,26 @@ class SQS {
 
 /// Gives a detailed description of the result of an action on each entry in the
 /// request.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BatchResultErrorEntry {
   /// An error code representing why the action failed on this entry.
+  @_s.JsonKey(name: 'Code')
   final String code;
 
   /// The <code>Id</code> of an entry in a batch request.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// Specifies whether the error happened due to the producer.
+  @_s.JsonKey(name: 'SenderFault')
   final bool senderFault;
 
   /// A message explaining why the action failed on this entry.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   BatchResultErrorEntry({
@@ -2129,18 +2148,26 @@ class BatchResultErrorEntry {
 /// <code>&amp;ChangeMessageVisibilityBatchRequestEntry.1.ReceiptHandle=your_receipt_handle</code>
 ///
 /// <code>&amp;ChangeMessageVisibilityBatchRequestEntry.1.VisibilityTimeout=45</code>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ChangeMessageVisibilityBatchRequestEntry {
   /// An identifier for this particular receipt handle used to communicate the
   /// result.
   /// <note>
   /// The <code>Id</code>s of a batch request need to be unique within a request
   /// </note>
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// A receipt handle.
+  @_s.JsonKey(name: 'ReceiptHandle')
   final String receiptHandle;
 
   /// The new value (in seconds) for the message's visibility timeout.
+  @_s.JsonKey(name: 'VisibilityTimeout')
   final int visibilityTimeout;
 
   ChangeMessageVisibilityBatchRequestEntry({
@@ -2148,18 +2175,27 @@ class ChangeMessageVisibilityBatchRequestEntry {
     @_s.required this.receiptHandle,
     this.visibilityTimeout,
   });
+  Map<String, dynamic> toJson() =>
+      _$ChangeMessageVisibilityBatchRequestEntryToJson(this);
 }
 
 /// For each message in the batch, the response contains a <code>
 /// <a>ChangeMessageVisibilityBatchResultEntry</a> </code> tag if the message
 /// succeeds or a <code> <a>BatchResultErrorEntry</a> </code> tag if the message
 /// fails.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ChangeMessageVisibilityBatchResult {
   /// A list of <code> <a>BatchResultErrorEntry</a> </code> items.
+  @_s.JsonKey(name: 'Failed')
   final List<BatchResultErrorEntry> failed;
 
   /// A list of <code> <a>ChangeMessageVisibilityBatchResultEntry</a> </code>
   /// items.
+  @_s.JsonKey(name: 'Successful')
   final List<ChangeMessageVisibilityBatchResultEntry> successful;
 
   ChangeMessageVisibilityBatchResult({
@@ -2182,8 +2218,14 @@ class ChangeMessageVisibilityBatchResult {
 
 /// Encloses the <code>Id</code> of an entry in <code>
 /// <a>ChangeMessageVisibilityBatch</a>.</code>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ChangeMessageVisibilityBatchResultEntry {
   /// Represents a message whose visibility timeout has been changed successfully.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   ChangeMessageVisibilityBatchResultEntry({
@@ -2197,8 +2239,14 @@ class ChangeMessageVisibilityBatchResultEntry {
 }
 
 /// Returns the <code>QueueUrl</code> attribute of the created queue.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateQueueResult {
   /// The URL of the created Amazon SQS queue.
+  @_s.JsonKey(name: 'QueueUrl')
   final String queueUrl;
 
   CreateQueueResult({
@@ -2212,32 +2260,47 @@ class CreateQueueResult {
 }
 
 /// Encloses a receipt handle and an identifier for it.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DeleteMessageBatchRequestEntry {
   /// An identifier for this particular receipt handle. This is used to
   /// communicate the result.
   /// <note>
   /// The <code>Id</code>s of a batch request need to be unique within a request
   /// </note>
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// A receipt handle.
+  @_s.JsonKey(name: 'ReceiptHandle')
   final String receiptHandle;
 
   DeleteMessageBatchRequestEntry({
     @_s.required this.id,
     @_s.required this.receiptHandle,
   });
+  Map<String, dynamic> toJson() => _$DeleteMessageBatchRequestEntryToJson(this);
 }
 
 /// For each message in the batch, the response contains a <code>
 /// <a>DeleteMessageBatchResultEntry</a> </code> tag if the message is deleted
 /// or a <code> <a>BatchResultErrorEntry</a> </code> tag if the message can't be
 /// deleted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteMessageBatchResult {
   /// A list of <code> <a>BatchResultErrorEntry</a> </code> items.
+  @_s.JsonKey(name: 'Failed')
   final List<BatchResultErrorEntry> failed;
 
   /// A list of <code> <a>DeleteMessageBatchResultEntry</a> </code> items.
+  @_s.JsonKey(name: 'Successful')
   final List<DeleteMessageBatchResultEntry> successful;
 
   DeleteMessageBatchResult({
@@ -2260,8 +2323,14 @@ class DeleteMessageBatchResult {
 
 /// Encloses the <code>Id</code> of an entry in <code>
 /// <a>DeleteMessageBatch</a>.</code>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteMessageBatchResultEntry {
   /// Represents a successfully deleted message.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   DeleteMessageBatchResultEntry({
@@ -2275,8 +2344,14 @@ class DeleteMessageBatchResultEntry {
 }
 
 /// A list of returned queue attributes.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetQueueAttributesResult {
   /// A map of attributes to their respective values.
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   GetQueueAttributesResult({
@@ -2299,8 +2374,14 @@ class GetQueueAttributesResult {
 /// For more information, see <a
 /// href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-api-responses.html">Interpreting
 /// Responses</a> in the <i>Amazon Simple Queue Service Developer Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetQueueUrlResult {
   /// The URL of the queue.
+  @_s.JsonKey(name: 'QueueUrl')
   final String queueUrl;
 
   GetQueueUrlResult({
@@ -2314,9 +2395,15 @@ class GetQueueUrlResult {
 }
 
 /// A list of your dead letter source queues.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListDeadLetterSourceQueuesResult {
   /// A list of source queue URLs that have the <code>RedrivePolicy</code> queue
   /// attribute configured with a dead-letter queue.
+  @_s.JsonKey(name: 'queueUrls')
   final List<String> queueUrls;
 
   ListDeadLetterSourceQueuesResult({
@@ -2329,8 +2416,14 @@ class ListDeadLetterSourceQueuesResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListQueueTagsResult {
   /// The list of all tags added to the specified queue.
+  @_s.JsonKey(name: 'Tags')
   final Map<String, String> tags;
 
   ListQueueTagsResult({
@@ -2351,8 +2444,14 @@ class ListQueueTagsResult {
 }
 
 /// A list of your queues.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListQueuesResult {
   /// A list of queue URLs, up to 1,000 entries.
+  @_s.JsonKey(name: 'QueueUrls')
   final List<String> queueUrls;
 
   ListQueuesResult({
@@ -2366,6 +2465,11 @@ class ListQueuesResult {
 }
 
 /// An Amazon SQS message.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Message {
   /// A map of the attributes requested in <code> <a>ReceiveMessage</a> </code> to
   /// their respective values. Supported attributes:
@@ -2397,12 +2501,15 @@ class Message {
   /// are each returned as an integer representing the <a
   /// href="http://en.wikipedia.org/wiki/Unix_time">epoch time</a> in
   /// milliseconds.
+  @_s.JsonKey(name: 'Attributes')
   final Map<String, String> attributes;
 
   /// The message's contents (not URL-encoded).
+  @_s.JsonKey(name: 'Body')
   final String body;
 
   /// An MD5 digest of the non-URL-encoded message body string.
+  @_s.JsonKey(name: 'MD5OfBody')
   final String mD5OfBody;
 
   /// An MD5 digest of the non-URL-encoded message attribute string. You can use
@@ -2410,6 +2517,7 @@ class Message {
   /// Amazon SQS URL-decodes the message before creating the MD5 digest. For
   /// information about MD5, see <a
   /// href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.
+  @_s.JsonKey(name: 'MD5OfMessageAttributes')
   final String mD5OfMessageAttributes;
 
   /// Each message attribute consists of a <code>Name</code>, <code>Type</code>,
@@ -2417,15 +2525,18 @@ class Message {
   /// href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-attributes.html">Amazon
   /// SQS Message Attributes</a> in the <i>Amazon Simple Queue Service Developer
   /// Guide</i>.
+  @_s.JsonKey(name: 'MessageAttributes')
   final Map<String, MessageAttributeValue> messageAttributes;
 
   /// A unique identifier for the message. A <code>MessageId</code>is considered
   /// unique across all AWS accounts for an extended period of time.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   /// An identifier associated with the act of receiving the message. A new
   /// receipt handle is returned every time you receive a message. When deleting a
   /// message, you provide the last received receipt handle to delete the message.
+  @_s.JsonKey(name: 'ReceiptHandle')
   final String receiptHandle;
 
   Message({
@@ -2475,6 +2586,11 @@ class Message {
 /// body must not be empty or null. All parts of the message attribute,
 /// including <code>Name</code>, <code>Type</code>, and <code>Value</code>, are
 /// part of the message size restriction (256 KB or 262,144 bytes).
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MessageAttributeValue {
   /// Amazon SQS supports the following logical data types: <code>String</code>,
   /// <code>Number</code>, and <code>Binary</code>. For the <code>Number</code>
@@ -2484,22 +2600,29 @@ class MessageAttributeValue {
   /// href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-attributes.html">Amazon
   /// SQS Message Attributes</a> in the <i>Amazon Simple Queue Service Developer
   /// Guide</i>.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// Not implemented. Reserved for future use.
+  @Uint8ListListConverter()
+  @_s.JsonKey(name: 'BinaryListValues')
   final List<Uint8List> binaryListValues;
 
   /// Binary type attributes can store any binary data, such as compressed data,
   /// encrypted data, or images.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'BinaryValue')
   final Uint8List binaryValue;
 
   /// Not implemented. Reserved for future use.
+  @_s.JsonKey(name: 'StringListValues')
   final List<String> stringListValues;
 
   /// Strings are Unicode with UTF-8 binary encoding. For a list of code values,
   /// see <a
   /// href="http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters">ASCII
   /// Printable Characters</a>.
+  @_s.JsonKey(name: 'StringValue')
   final String stringValue;
 
   MessageAttributeValue({
@@ -2519,16 +2642,26 @@ class MessageAttributeValue {
       stringValue: _s.extractXmlStringValue(elem, 'StringValue'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MessageAttributeValueToJson(this);
 }
 
 enum MessageSystemAttributeName {
+  @_s.JsonValue('SenderId')
   senderId,
+  @_s.JsonValue('SentTimestamp')
   sentTimestamp,
+  @_s.JsonValue('ApproximateReceiveCount')
   approximateReceiveCount,
+  @_s.JsonValue('ApproximateFirstReceiveTimestamp')
   approximateFirstReceiveTimestamp,
+  @_s.JsonValue('SequenceNumber')
   sequenceNumber,
+  @_s.JsonValue('MessageDeduplicationId')
   messageDeduplicationId,
+  @_s.JsonValue('MessageGroupId')
   messageGroupId,
+  @_s.JsonValue('AWSTraceHeader')
   awsTraceHeader,
 }
 
@@ -2557,6 +2690,7 @@ extension on String {
 }
 
 enum MessageSystemAttributeNameForSends {
+  @_s.JsonValue('AWSTraceHeader')
   awsTraceHeader,
 }
 
@@ -2577,6 +2711,11 @@ extension on String {
 ///
 /// <code>Name</code>, <code>type</code>, <code>value</code> and the message
 /// body must not be empty or null.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MessageSystemAttributeValue {
   /// Amazon SQS supports the following logical data types: <code>String</code>,
   /// <code>Number</code>, and <code>Binary</code>. For the <code>Number</code>
@@ -2586,22 +2725,29 @@ class MessageSystemAttributeValue {
   /// href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-attributes.html">Amazon
   /// SQS Message Attributes</a> in the <i>Amazon Simple Queue Service Developer
   /// Guide</i>.
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
 
   /// Not implemented. Reserved for future use.
+  @Uint8ListListConverter()
+  @_s.JsonKey(name: 'BinaryListValues')
   final List<Uint8List> binaryListValues;
 
   /// Binary type attributes can store any binary data, such as compressed data,
   /// encrypted data, or images.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'BinaryValue')
   final Uint8List binaryValue;
 
   /// Not implemented. Reserved for future use.
+  @_s.JsonKey(name: 'StringListValues')
   final List<String> stringListValues;
 
   /// Strings are Unicode with UTF-8 binary encoding. For a list of code values,
   /// see <a
   /// href="http://en.wikipedia.org/wiki/ASCII#ASCII_printable_characters">ASCII
   /// Printable Characters</a>.
+  @_s.JsonKey(name: 'StringValue')
   final String stringValue;
 
   MessageSystemAttributeValue({
@@ -2611,26 +2757,45 @@ class MessageSystemAttributeValue {
     this.stringListValues,
     this.stringValue,
   });
+  Map<String, dynamic> toJson() => _$MessageSystemAttributeValueToJson(this);
 }
 
 enum QueueAttributeName {
+  @_s.JsonValue('All')
   all,
+  @_s.JsonValue('Policy')
   policy,
+  @_s.JsonValue('VisibilityTimeout')
   visibilityTimeout,
+  @_s.JsonValue('MaximumMessageSize')
   maximumMessageSize,
+  @_s.JsonValue('MessageRetentionPeriod')
   messageRetentionPeriod,
+  @_s.JsonValue('ApproximateNumberOfMessages')
   approximateNumberOfMessages,
+  @_s.JsonValue('ApproximateNumberOfMessagesNotVisible')
   approximateNumberOfMessagesNotVisible,
+  @_s.JsonValue('CreatedTimestamp')
   createdTimestamp,
+  @_s.JsonValue('LastModifiedTimestamp')
   lastModifiedTimestamp,
+  @_s.JsonValue('QueueArn')
   queueArn,
+  @_s.JsonValue('ApproximateNumberOfMessagesDelayed')
   approximateNumberOfMessagesDelayed,
+  @_s.JsonValue('DelaySeconds')
   delaySeconds,
+  @_s.JsonValue('ReceiveMessageWaitTimeSeconds')
   receiveMessageWaitTimeSeconds,
+  @_s.JsonValue('RedrivePolicy')
   redrivePolicy,
+  @_s.JsonValue('FifoQueue')
   fifoQueue,
+  @_s.JsonValue('ContentBasedDeduplication')
   contentBasedDeduplication,
+  @_s.JsonValue('KmsMasterKeyId')
   kmsMasterKeyId,
+  @_s.JsonValue('KmsDataKeyReusePeriodSeconds')
   kmsDataKeyReusePeriodSeconds,
 }
 
@@ -2679,8 +2844,14 @@ extension on String {
 }
 
 /// A list of received messages.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReceiveMessageResult {
   /// A list of messages.
+  @_s.JsonKey(name: 'Messages')
   final List<Message> messages;
 
   ReceiveMessageResult({
@@ -2696,6 +2867,11 @@ class ReceiveMessageResult {
 
 /// Contains the details of a single Amazon SQS message along with an
 /// <code>Id</code>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SendMessageBatchRequestEntry {
   /// An identifier for a message in this batch used to communicate the result.
   /// <note>
@@ -2704,9 +2880,11 @@ class SendMessageBatchRequestEntry {
   /// This identifier can have up to 80 characters. The following characters are
   /// accepted: alphanumeric characters, hyphens(-), and underscores (_).
   /// </note>
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// The body of the message.
+  @_s.JsonKey(name: 'MessageBody')
   final String messageBody;
 
   /// The length of time, in seconds, for which a specific message is delayed.
@@ -2718,6 +2896,7 @@ class SendMessageBatchRequestEntry {
   /// When you set <code>FifoQueue</code>, you can't set <code>DelaySeconds</code>
   /// per message. You can set this parameter only on a queue level.
   /// </note>
+  @_s.JsonKey(name: 'DelaySeconds')
   final int delaySeconds;
 
   /// Each message attribute consists of a <code>Name</code>, <code>Type</code>,
@@ -2725,6 +2904,7 @@ class SendMessageBatchRequestEntry {
   /// href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-message-attributes.html">Amazon
   /// SQS Message Attributes</a> in the <i>Amazon Simple Queue Service Developer
   /// Guide</i>.
+  @_s.JsonKey(name: 'MessageAttributes')
   final Map<String, MessageAttributeValue> messageAttributes;
 
   /// This parameter applies only to FIFO (first-in-first-out) queues.
@@ -2794,6 +2974,7 @@ class SendMessageBatchRequestEntry {
   /// href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html">Using
   /// the MessageDeduplicationId Property</a> in the <i>Amazon Simple Queue
   /// Service Developer Guide</i>.
+  @_s.JsonKey(name: 'MessageDeduplicationId')
   final String messageDeduplicationId;
 
   /// This parameter applies only to FIFO (first-in-first-out) queues.
@@ -2830,6 +3011,7 @@ class SendMessageBatchRequestEntry {
   /// <code>MessageGroupId</code> is required for FIFO queues. You can't use it
   /// for Standard queues.
   /// </important>
+  @_s.JsonKey(name: 'MessageGroupId')
   final String messageGroupId;
 
   /// The message system attribute to send Each message system attribute consists
@@ -2846,6 +3028,7 @@ class SendMessageBatchRequestEntry {
   /// of a message.
   /// </li>
   /// </ul> </important>
+  @_s.JsonKey(name: 'MessageSystemAttributes')
   final Map<String, MessageSystemAttributeValue> messageSystemAttributes;
 
   SendMessageBatchRequestEntry({
@@ -2857,17 +3040,25 @@ class SendMessageBatchRequestEntry {
     this.messageGroupId,
     this.messageSystemAttributes,
   });
+  Map<String, dynamic> toJson() => _$SendMessageBatchRequestEntryToJson(this);
 }
 
 /// For each message in the batch, the response contains a <code>
 /// <a>SendMessageBatchResultEntry</a> </code> tag if the message succeeds or a
 /// <code> <a>BatchResultErrorEntry</a> </code> tag if the message fails.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendMessageBatchResult {
   /// A list of <code> <a>BatchResultErrorEntry</a> </code> items with error
   /// details about each message that can't be enqueued.
+  @_s.JsonKey(name: 'Failed')
   final List<BatchResultErrorEntry> failed;
 
   /// A list of <code> <a>SendMessageBatchResultEntry</a> </code> items.
+  @_s.JsonKey(name: 'Successful')
   final List<SendMessageBatchResultEntry> successful;
 
   SendMessageBatchResult({
@@ -2890,8 +3081,14 @@ class SendMessageBatchResult {
 
 /// Encloses a <code>MessageId</code> for a successfully-enqueued message in a
 /// <code> <a>SendMessageBatch</a>.</code>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendMessageBatchResultEntry {
   /// An identifier for the message in this batch.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// An MD5 digest of the non-URL-encoded message attribute string. You can use
@@ -2899,9 +3096,11 @@ class SendMessageBatchResultEntry {
   /// Amazon SQS URL-decodes the message before creating the MD5 digest. For
   /// information about MD5, see <a
   /// href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.
+  @_s.JsonKey(name: 'MD5OfMessageBody')
   final String mD5OfMessageBody;
 
   /// An identifier for the message.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   /// An MD5 digest of the non-URL-encoded message attribute string. You can use
@@ -2909,6 +3108,7 @@ class SendMessageBatchResultEntry {
   /// Amazon SQS URL-decodes the message before creating the MD5 digest. For
   /// information about MD5, see <a
   /// href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.
+  @_s.JsonKey(name: 'MD5OfMessageAttributes')
   final String mD5OfMessageAttributes;
 
   /// An MD5 digest of the non-URL-encoded message system attribute string. You
@@ -2916,6 +3116,7 @@ class SendMessageBatchResultEntry {
   /// correctly. Amazon SQS URL-decodes the message before creating the MD5
   /// digest. For information about MD5, see <a
   /// href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.
+  @_s.JsonKey(name: 'MD5OfMessageSystemAttributes')
   final String mD5OfMessageSystemAttributes;
 
   /// This parameter applies only to FIFO (first-in-first-out) queues.
@@ -2925,6 +3126,7 @@ class SendMessageBatchResultEntry {
   /// The length of <code>SequenceNumber</code> is 128 bits. As
   /// <code>SequenceNumber</code> continues to increase for a particular
   /// <code>MessageGroupId</code>.
+  @_s.JsonKey(name: 'SequenceNumber')
   final String sequenceNumber;
 
   SendMessageBatchResultEntry({
@@ -2950,12 +3152,18 @@ class SendMessageBatchResultEntry {
 }
 
 /// The <code>MD5OfMessageBody</code> and <code>MessageId</code> elements.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SendMessageResult {
   /// An MD5 digest of the non-URL-encoded message attribute string. You can use
   /// this attribute to verify that Amazon SQS received the message correctly.
   /// Amazon SQS URL-decodes the message before creating the MD5 digest. For
   /// information about MD5, see <a
   /// href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.
+  @_s.JsonKey(name: 'MD5OfMessageAttributes')
   final String mD5OfMessageAttributes;
 
   /// An MD5 digest of the non-URL-encoded message attribute string. You can use
@@ -2963,12 +3171,14 @@ class SendMessageResult {
   /// Amazon SQS URL-decodes the message before creating the MD5 digest. For
   /// information about MD5, see <a
   /// href="https://www.ietf.org/rfc/rfc1321.txt">RFC1321</a>.
+  @_s.JsonKey(name: 'MD5OfMessageBody')
   final String mD5OfMessageBody;
 
   /// An MD5 digest of the non-URL-encoded message system attribute string. You
   /// can use this attribute to verify that Amazon SQS received the message
   /// correctly. Amazon SQS URL-decodes the message before creating the MD5
   /// digest.
+  @_s.JsonKey(name: 'MD5OfMessageSystemAttributes')
   final String mD5OfMessageSystemAttributes;
 
   /// An attribute containing the <code>MessageId</code> of the message sent to
@@ -2976,6 +3186,7 @@ class SendMessageResult {
   /// href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-queue-message-identifiers.html">Queue
   /// and Message Identifiers</a> in the <i>Amazon Simple Queue Service Developer
   /// Guide</i>.
+  @_s.JsonKey(name: 'MessageId')
   final String messageId;
 
   /// This parameter applies only to FIFO (first-in-first-out) queues.
@@ -2985,6 +3196,7 @@ class SendMessageResult {
   /// The length of <code>SequenceNumber</code> is 128 bits.
   /// <code>SequenceNumber</code> continues to increase for a particular
   /// <code>MessageGroupId</code>.
+  @_s.JsonKey(name: 'SequenceNumber')
   final String sequenceNumber;
 
   SendMessageResult({

@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'rds-2014-09-01.g.dart';
 
 class RDS {
   final _s.QueryProtocol _protocol;
@@ -1823,7 +1833,13 @@ class RDS {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AddSourceIdentifierToSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   AddSourceIdentifierToSubscriptionResult({
@@ -1839,7 +1855,9 @@ class AddSourceIdentifierToSubscriptionResult {
 }
 
 enum ApplyMethod {
+  @_s.JsonValue('immediate')
   immediate,
+  @_s.JsonValue('pending-reboot')
   pendingReboot,
 }
 
@@ -1855,7 +1873,13 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AuthorizeDBSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'DBSecurityGroup')
   final DBSecurityGroup dBSecurityGroup;
 
   AuthorizeDBSecurityGroupIngressResult({
@@ -1870,7 +1894,13 @@ class AuthorizeDBSecurityGroupIngressResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AvailabilityZone {
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   AvailabilityZone({
@@ -1883,8 +1913,15 @@ class AvailabilityZone {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CharacterSet {
+  @_s.JsonKey(name: 'CharacterSetDescription')
   final String characterSetDescription;
+  @_s.JsonKey(name: 'CharacterSetName')
   final String characterSetName;
 
   CharacterSet({
@@ -1900,7 +1937,13 @@ class CharacterSet {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyDBParameterGroupResult {
+  @_s.JsonKey(name: 'DBParameterGroup')
   final DBParameterGroup dBParameterGroup;
 
   CopyDBParameterGroupResult({
@@ -1915,7 +1958,13 @@ class CopyDBParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyDBSnapshotResult {
+  @_s.JsonKey(name: 'DBSnapshot')
   final DBSnapshot dBSnapshot;
 
   CopyDBSnapshotResult({
@@ -1930,7 +1979,13 @@ class CopyDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CopyOptionGroupResult {
+  @_s.JsonKey(name: 'OptionGroup')
   final OptionGroup optionGroup;
 
   CopyOptionGroupResult({
@@ -1945,7 +2000,13 @@ class CopyOptionGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBInstanceReadReplicaResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   CreateDBInstanceReadReplicaResult({
@@ -1960,7 +2021,13 @@ class CreateDBInstanceReadReplicaResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   CreateDBInstanceResult({
@@ -1975,7 +2042,13 @@ class CreateDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBParameterGroupResult {
+  @_s.JsonKey(name: 'DBParameterGroup')
   final DBParameterGroup dBParameterGroup;
 
   CreateDBParameterGroupResult({
@@ -1990,7 +2063,13 @@ class CreateDBParameterGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBSecurityGroupResult {
+  @_s.JsonKey(name: 'DBSecurityGroup')
   final DBSecurityGroup dBSecurityGroup;
 
   CreateDBSecurityGroupResult({
@@ -2005,7 +2084,13 @@ class CreateDBSecurityGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBSnapshotResult {
+  @_s.JsonKey(name: 'DBSnapshot')
   final DBSnapshot dBSnapshot;
 
   CreateDBSnapshotResult({
@@ -2020,7 +2105,13 @@ class CreateDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateDBSubnetGroupResult {
+  @_s.JsonKey(name: 'DBSubnetGroup')
   final DBSubnetGroup dBSubnetGroup;
 
   CreateDBSubnetGroupResult({
@@ -2035,7 +2126,13 @@ class CreateDBSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   CreateEventSubscriptionResult({
@@ -2050,7 +2147,13 @@ class CreateEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateOptionGroupResult {
+  @_s.JsonKey(name: 'OptionGroup')
   final OptionGroup optionGroup;
 
   CreateOptionGroupResult({
@@ -2065,13 +2168,25 @@ class CreateOptionGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBEngineVersion {
+  @_s.JsonKey(name: 'DBEngineDescription')
   final String dBEngineDescription;
+  @_s.JsonKey(name: 'DBEngineVersionDescription')
   final String dBEngineVersionDescription;
+  @_s.JsonKey(name: 'DBParameterGroupFamily')
   final String dBParameterGroupFamily;
+  @_s.JsonKey(name: 'DefaultCharacterSet')
   final CharacterSet defaultCharacterSet;
+  @_s.JsonKey(name: 'Engine')
   final String engine;
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
+  @_s.JsonKey(name: 'SupportedCharacterSets')
   final List<CharacterSet> supportedCharacterSets;
 
   DBEngineVersion({
@@ -2106,8 +2221,15 @@ class DBEngineVersion {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBEngineVersionMessage {
+  @_s.JsonKey(name: 'DBEngineVersions')
   final List<DBEngineVersion> dBEngineVersions;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBEngineVersionMessage({
@@ -2126,39 +2248,79 @@ class DBEngineVersionMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstance {
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
+  @_s.JsonKey(name: 'AutoMinorVersionUpgrade')
   final bool autoMinorVersionUpgrade;
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
+  @_s.JsonKey(name: 'BackupRetentionPeriod')
   final int backupRetentionPeriod;
+  @_s.JsonKey(name: 'CharacterSetName')
   final String characterSetName;
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
+  @_s.JsonKey(name: 'DBInstanceStatus')
   final String dBInstanceStatus;
+  @_s.JsonKey(name: 'DBName')
   final String dBName;
+  @_s.JsonKey(name: 'DBParameterGroups')
   final List<DBParameterGroupStatus> dBParameterGroups;
+  @_s.JsonKey(name: 'DBSecurityGroups')
   final List<DBSecurityGroupMembership> dBSecurityGroups;
+  @_s.JsonKey(name: 'DBSubnetGroup')
   final DBSubnetGroup dBSubnetGroup;
+  @_s.JsonKey(name: 'Endpoint')
   final Endpoint endpoint;
+  @_s.JsonKey(name: 'Engine')
   final String engine;
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
+  @_s.JsonKey(
+      name: 'InstanceCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime instanceCreateTime;
+  @_s.JsonKey(name: 'Iops')
   final int iops;
+  @_s.JsonKey(
+      name: 'LatestRestorableTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime latestRestorableTime;
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
+  @_s.JsonKey(name: 'OptionGroupMemberships')
   final List<OptionGroupMembership> optionGroupMemberships;
+  @_s.JsonKey(name: 'PendingModifiedValues')
   final PendingModifiedValues pendingModifiedValues;
+  @_s.JsonKey(name: 'PreferredBackupWindow')
   final String preferredBackupWindow;
+  @_s.JsonKey(name: 'PreferredMaintenanceWindow')
   final String preferredMaintenanceWindow;
+  @_s.JsonKey(name: 'PubliclyAccessible')
   final bool publiclyAccessible;
+  @_s.JsonKey(name: 'ReadReplicaDBInstanceIdentifiers')
   final List<String> readReplicaDBInstanceIdentifiers;
+  @_s.JsonKey(name: 'ReadReplicaSourceDBInstanceIdentifier')
   final String readReplicaSourceDBInstanceIdentifier;
+  @_s.JsonKey(name: 'SecondaryAvailabilityZone')
   final String secondaryAvailabilityZone;
+  @_s.JsonKey(name: 'StatusInfos')
   final List<DBInstanceStatusInfo> statusInfos;
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
+  @_s.JsonKey(name: 'TdeCredentialArn')
   final String tdeCredentialArn;
+  @_s.JsonKey(name: 'VpcSecurityGroups')
   final List<VpcSecurityGroupMembership> vpcSecurityGroups;
 
   DBInstance({
@@ -2272,8 +2434,15 @@ class DBInstance {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstanceMessage {
+  @_s.JsonKey(name: 'DBInstances')
   final List<DBInstance> dBInstances;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBInstanceMessage({
@@ -2291,10 +2460,19 @@ class DBInstanceMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBInstanceStatusInfo {
+  @_s.JsonKey(name: 'Message')
   final String message;
+  @_s.JsonKey(name: 'Normal')
   final bool normal;
+  @_s.JsonKey(name: 'Status')
   final String status;
+  @_s.JsonKey(name: 'StatusType')
   final String statusType;
 
   DBInstanceStatusInfo({
@@ -2313,9 +2491,17 @@ class DBInstanceStatusInfo {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroup {
+  @_s.JsonKey(name: 'DBParameterGroupFamily')
   final String dBParameterGroupFamily;
+  @_s.JsonKey(name: 'DBParameterGroupName')
   final String dBParameterGroupName;
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   DBParameterGroup({
@@ -2334,8 +2520,15 @@ class DBParameterGroup {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupDetails {
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   DBParameterGroupDetails({
@@ -2353,7 +2546,13 @@ class DBParameterGroupDetails {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupNameMessage {
+  @_s.JsonKey(name: 'DBParameterGroupName')
   final String dBParameterGroupName;
 
   DBParameterGroupNameMessage({
@@ -2367,8 +2566,15 @@ class DBParameterGroupNameMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupStatus {
+  @_s.JsonKey(name: 'DBParameterGroupName')
   final String dBParameterGroupName;
+  @_s.JsonKey(name: 'ParameterApplyStatus')
   final String parameterApplyStatus;
 
   DBParameterGroupStatus({
@@ -2385,8 +2591,15 @@ class DBParameterGroupStatus {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBParameterGroupsMessage {
+  @_s.JsonKey(name: 'DBParameterGroups')
   final List<DBParameterGroup> dBParameterGroups;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBParameterGroupsMessage({
@@ -2405,12 +2618,23 @@ class DBParameterGroupsMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSecurityGroup {
+  @_s.JsonKey(name: 'DBSecurityGroupDescription')
   final String dBSecurityGroupDescription;
+  @_s.JsonKey(name: 'DBSecurityGroupName')
   final String dBSecurityGroupName;
+  @_s.JsonKey(name: 'EC2SecurityGroups')
   final List<EC2SecurityGroup> eC2SecurityGroups;
+  @_s.JsonKey(name: 'IPRanges')
   final List<IPRange> iPRanges;
+  @_s.JsonKey(name: 'OwnerId')
   final String ownerId;
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBSecurityGroup({
@@ -2440,8 +2664,15 @@ class DBSecurityGroup {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSecurityGroupMembership {
+  @_s.JsonKey(name: 'DBSecurityGroupName')
   final String dBSecurityGroupName;
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   DBSecurityGroupMembership({
@@ -2457,8 +2688,15 @@ class DBSecurityGroupMembership {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSecurityGroupMessage {
+  @_s.JsonKey(name: 'DBSecurityGroups')
   final List<DBSecurityGroup> dBSecurityGroups;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBSecurityGroupMessage({
@@ -2477,26 +2715,53 @@ class DBSecurityGroupMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSnapshot {
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
+  @_s.JsonKey(name: 'DBSnapshotIdentifier')
   final String dBSnapshotIdentifier;
+  @_s.JsonKey(name: 'Engine')
   final String engine;
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
+  @_s.JsonKey(
+      name: 'InstanceCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime instanceCreateTime;
+  @_s.JsonKey(name: 'Iops')
   final int iops;
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
+  @_s.JsonKey(name: 'MasterUsername')
   final String masterUsername;
+  @_s.JsonKey(name: 'OptionGroupName')
   final String optionGroupName;
+  @_s.JsonKey(name: 'PercentProgress')
   final int percentProgress;
+  @_s.JsonKey(name: 'Port')
   final int port;
+  @_s.JsonKey(
+      name: 'SnapshotCreateTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime snapshotCreateTime;
+  @_s.JsonKey(name: 'SnapshotType')
   final String snapshotType;
+  @_s.JsonKey(name: 'SourceRegion')
   final String sourceRegion;
+  @_s.JsonKey(name: 'Status')
   final String status;
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
+  @_s.JsonKey(name: 'TdeCredentialArn')
   final String tdeCredentialArn;
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBSnapshot({
@@ -2551,8 +2816,15 @@ class DBSnapshot {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSnapshotMessage {
+  @_s.JsonKey(name: 'DBSnapshots')
   final List<DBSnapshot> dBSnapshots;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBSnapshotMessage({
@@ -2570,11 +2842,21 @@ class DBSnapshotMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSubnetGroup {
+  @_s.JsonKey(name: 'DBSubnetGroupDescription')
   final String dBSubnetGroupDescription;
+  @_s.JsonKey(name: 'DBSubnetGroupName')
   final String dBSubnetGroupName;
+  @_s.JsonKey(name: 'SubnetGroupStatus')
   final String subnetGroupStatus;
+  @_s.JsonKey(name: 'Subnets')
   final List<Subnet> subnets;
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   DBSubnetGroup({
@@ -2597,8 +2879,15 @@ class DBSubnetGroup {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DBSubnetGroupMessage {
+  @_s.JsonKey(name: 'DBSubnetGroups')
   final List<DBSubnetGroup> dBSubnetGroups;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DBSubnetGroupMessage({
@@ -2617,7 +2906,13 @@ class DBSubnetGroupMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   DeleteDBInstanceResult({
@@ -2632,7 +2927,13 @@ class DeleteDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDBSnapshotResult {
+  @_s.JsonKey(name: 'DBSnapshot')
   final DBSnapshot dBSnapshot;
 
   DeleteDBSnapshotResult({
@@ -2647,7 +2948,13 @@ class DeleteDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   DeleteEventSubscriptionResult({
@@ -2662,9 +2969,17 @@ class DeleteEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBLogFilesDetails {
+  @_s.JsonKey(name: 'LastWritten')
   final int lastWritten;
+  @_s.JsonKey(name: 'LogFileName')
   final String logFileName;
+  @_s.JsonKey(name: 'Size')
   final int size;
 
   DescribeDBLogFilesDetails({
@@ -2681,8 +2996,15 @@ class DescribeDBLogFilesDetails {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeDBLogFilesResponse {
+  @_s.JsonKey(name: 'DescribeDBLogFiles')
   final List<DescribeDBLogFilesDetails> describeDBLogFiles;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DescribeDBLogFilesResponse({
@@ -2701,7 +3023,13 @@ class DescribeDBLogFilesResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeEngineDefaultParametersResult {
+  @_s.JsonKey(name: 'EngineDefaults')
   final EngineDefaults engineDefaults;
 
   DescribeEngineDefaultParametersResult({
@@ -2716,9 +3044,17 @@ class DescribeEngineDefaultParametersResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DownloadDBLogFilePortionDetails {
+  @_s.JsonKey(name: 'AdditionalDataPending')
   final bool additionalDataPending;
+  @_s.JsonKey(name: 'LogFileData')
   final String logFileData;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   DownloadDBLogFilePortionDetails({
@@ -2736,10 +3072,19 @@ class DownloadDBLogFilePortionDetails {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EC2SecurityGroup {
+  @_s.JsonKey(name: 'EC2SecurityGroupId')
   final String eC2SecurityGroupId;
+  @_s.JsonKey(name: 'EC2SecurityGroupName')
   final String eC2SecurityGroupName;
+  @_s.JsonKey(name: 'EC2SecurityGroupOwnerId')
   final String eC2SecurityGroupOwnerId;
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   EC2SecurityGroup({
@@ -2760,8 +3105,15 @@ class EC2SecurityGroup {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Endpoint {
+  @_s.JsonKey(name: 'Address')
   final String address;
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   Endpoint({
@@ -2776,9 +3128,17 @@ class Endpoint {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EngineDefaults {
+  @_s.JsonKey(name: 'DBParameterGroupFamily')
   final String dBParameterGroupFamily;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'Parameters')
   final List<Parameter> parameters;
 
   EngineDefaults({
@@ -2799,11 +3159,21 @@ class EngineDefaults {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Event {
+  @_s.JsonKey(name: 'Date', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime date;
+  @_s.JsonKey(name: 'EventCategories')
   final List<String> eventCategories;
+  @_s.JsonKey(name: 'Message')
   final String message;
+  @_s.JsonKey(name: 'SourceIdentifier')
   final String sourceIdentifier;
+  @_s.JsonKey(name: 'SourceType')
   final SourceType sourceType;
 
   Event({
@@ -2826,8 +3196,15 @@ class Event {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventCategoriesMap {
+  @_s.JsonKey(name: 'EventCategories')
   final List<String> eventCategories;
+  @_s.JsonKey(name: 'SourceType')
   final String sourceType;
 
   EventCategoriesMap({
@@ -2844,7 +3221,13 @@ class EventCategoriesMap {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventCategoriesMessage {
+  @_s.JsonKey(name: 'EventCategoriesMapList')
   final List<EventCategoriesMap> eventCategoriesMapList;
 
   EventCategoriesMessage({
@@ -2862,15 +3245,29 @@ class EventCategoriesMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventSubscription {
+  @_s.JsonKey(name: 'CustSubscriptionId')
   final String custSubscriptionId;
+  @_s.JsonKey(name: 'CustomerAwsId')
   final String customerAwsId;
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
+  @_s.JsonKey(name: 'EventCategoriesList')
   final List<String> eventCategoriesList;
+  @_s.JsonKey(name: 'SnsTopicArn')
   final String snsTopicArn;
+  @_s.JsonKey(name: 'SourceIdsList')
   final List<String> sourceIdsList;
+  @_s.JsonKey(name: 'SourceType')
   final String sourceType;
+  @_s.JsonKey(name: 'Status')
   final String status;
+  @_s.JsonKey(name: 'SubscriptionCreationTime')
   final String subscriptionCreationTime;
 
   EventSubscription({
@@ -2904,8 +3301,15 @@ class EventSubscription {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventSubscriptionsMessage {
+  @_s.JsonKey(name: 'EventSubscriptionsList')
   final List<EventSubscription> eventSubscriptionsList;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   EventSubscriptionsMessage({
@@ -2925,8 +3329,15 @@ class EventSubscriptionsMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EventsMessage {
+  @_s.JsonKey(name: 'Events')
   final List<Event> events;
+  @_s.JsonKey(name: 'Marker')
   final String marker;
 
   EventsMessage({
@@ -2942,18 +3353,33 @@ class EventsMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Filter {
+  @_s.JsonKey(name: 'Name')
   final String name;
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   Filter({
     @_s.required this.name,
     @_s.required this.values,
   });
+  Map<String, dynamic> toJson() => _$FilterToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class IPRange {
+  @_s.JsonKey(name: 'CIDRIP')
   final String cidrip;
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   IPRange({
@@ -2968,7 +3394,13 @@ class IPRange {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   ModifyDBInstanceResult({
@@ -2983,7 +3415,13 @@ class ModifyDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyDBSubnetGroupResult {
+  @_s.JsonKey(name: 'DBSubnetGroup')
   final DBSubnetGroup dBSubnetGroup;
 
   ModifyDBSubnetGroupResult({
@@ -2998,7 +3436,13 @@ class ModifyDBSubnetGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyEventSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   ModifyEventSubscriptionResult({
@@ -3013,7 +3457,13 @@ class ModifyEventSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyOptionGroupResult {
+  @_s.JsonKey(name: 'OptionGroup')
   final OptionGroup optionGroup;
 
   ModifyOptionGroupResult({
@@ -3028,14 +3478,27 @@ class ModifyOptionGroupResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Option {
+  @_s.JsonKey(name: 'DBSecurityGroupMemberships')
   final List<DBSecurityGroupMembership> dBSecurityGroupMemberships;
+  @_s.JsonKey(name: 'OptionDescription')
   final String optionDescription;
+  @_s.JsonKey(name: 'OptionName')
   final String optionName;
+  @_s.JsonKey(name: 'OptionSettings')
   final List<OptionSetting> optionSettings;
+  @_s.JsonKey(name: 'Permanent')
   final bool permanent;
+  @_s.JsonKey(name: 'Persistent')
   final bool persistent;
+  @_s.JsonKey(name: 'Port')
   final int port;
+  @_s.JsonKey(name: 'VpcSecurityGroupMemberships')
   final List<VpcSecurityGroupMembership> vpcSecurityGroupMemberships;
 
   Option({
@@ -3076,11 +3539,21 @@ class Option {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class OptionConfiguration {
+  @_s.JsonKey(name: 'OptionName')
   final String optionName;
+  @_s.JsonKey(name: 'DBSecurityGroupMemberships')
   final List<String> dBSecurityGroupMemberships;
+  @_s.JsonKey(name: 'OptionSettings')
   final List<OptionSetting> optionSettings;
+  @_s.JsonKey(name: 'Port')
   final int port;
+  @_s.JsonKey(name: 'VpcSecurityGroupMemberships')
   final List<String> vpcSecurityGroupMemberships;
 
   OptionConfiguration({
@@ -3090,15 +3563,28 @@ class OptionConfiguration {
     this.port,
     this.vpcSecurityGroupMemberships,
   });
+  Map<String, dynamic> toJson() => _$OptionConfigurationToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroup {
+  @_s.JsonKey(name: 'AllowsVpcAndNonVpcInstanceMemberships')
   final bool allowsVpcAndNonVpcInstanceMemberships;
+  @_s.JsonKey(name: 'EngineName')
   final String engineName;
+  @_s.JsonKey(name: 'MajorEngineVersion')
   final String majorEngineVersion;
+  @_s.JsonKey(name: 'OptionGroupDescription')
   final String optionGroupDescription;
+  @_s.JsonKey(name: 'OptionGroupName')
   final String optionGroupName;
+  @_s.JsonKey(name: 'Options')
   final List<Option> options;
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   OptionGroup({
@@ -3126,8 +3612,15 @@ class OptionGroup {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupMembership {
+  @_s.JsonKey(name: 'OptionGroupName')
   final String optionGroupName;
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   OptionGroupMembership({
@@ -3142,17 +3635,33 @@ class OptionGroupMembership {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupOption {
+  @_s.JsonKey(name: 'DefaultPort')
   final int defaultPort;
+  @_s.JsonKey(name: 'Description')
   final String description;
+  @_s.JsonKey(name: 'EngineName')
   final String engineName;
+  @_s.JsonKey(name: 'MajorEngineVersion')
   final String majorEngineVersion;
+  @_s.JsonKey(name: 'MinimumRequiredMinorEngineVersion')
   final String minimumRequiredMinorEngineVersion;
+  @_s.JsonKey(name: 'Name')
   final String name;
+  @_s.JsonKey(name: 'OptionGroupOptionSettings')
   final List<OptionGroupOptionSetting> optionGroupOptionSettings;
+  @_s.JsonKey(name: 'OptionsDependedOn')
   final List<String> optionsDependedOn;
+  @_s.JsonKey(name: 'Permanent')
   final bool permanent;
+  @_s.JsonKey(name: 'Persistent')
   final bool persistent;
+  @_s.JsonKey(name: 'PortRequired')
   final bool portRequired;
 
   OptionGroupOption({
@@ -3193,12 +3702,23 @@ class OptionGroupOption {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupOptionSetting {
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
+  @_s.JsonKey(name: 'ApplyType')
   final String applyType;
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
+  @_s.JsonKey(name: 'SettingDescription')
   final String settingDescription;
+  @_s.JsonKey(name: 'SettingName')
   final String settingName;
 
   OptionGroupOptionSetting({
@@ -3221,8 +3741,15 @@ class OptionGroupOptionSetting {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroupOptionsMessage {
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'OptionGroupOptions')
   final List<OptionGroupOption> optionGroupOptions;
 
   OptionGroupOptionsMessage({
@@ -3241,8 +3768,15 @@ class OptionGroupOptionsMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OptionGroups {
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'OptionGroupsList')
   final List<OptionGroup> optionGroupsList;
 
   OptionGroups({
@@ -3261,15 +3795,29 @@ class OptionGroups {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class OptionSetting {
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
+  @_s.JsonKey(name: 'ApplyType')
   final String applyType;
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
+  @_s.JsonKey(name: 'DefaultValue')
   final String defaultValue;
+  @_s.JsonKey(name: 'Description')
   final String description;
+  @_s.JsonKey(name: 'IsCollection')
   final bool isCollection;
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
+  @_s.JsonKey(name: 'Name')
   final String name;
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   OptionSetting({
@@ -3296,18 +3844,35 @@ class OptionSetting {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$OptionSettingToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OrderableDBInstanceOption {
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<AvailabilityZone> availabilityZones;
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
+  @_s.JsonKey(name: 'Engine')
   final String engine;
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
+  @_s.JsonKey(name: 'LicenseModel')
   final String licenseModel;
+  @_s.JsonKey(name: 'MultiAZCapable')
   final bool multiAZCapable;
+  @_s.JsonKey(name: 'ReadReplicaCapable')
   final bool readReplicaCapable;
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
+  @_s.JsonKey(name: 'SupportsIops')
   final bool supportsIops;
+  @_s.JsonKey(name: 'Vpc')
   final bool vpc;
 
   OrderableDBInstanceOption({
@@ -3342,8 +3907,15 @@ class OrderableDBInstanceOption {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class OrderableDBInstanceOptionsMessage {
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'OrderableDBInstanceOptions')
   final List<OrderableDBInstanceOption> orderableDBInstanceOptions;
 
   OrderableDBInstanceOptionsMessage({
@@ -3363,16 +3935,31 @@ class OrderableDBInstanceOptionsMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Parameter {
+  @_s.JsonKey(name: 'AllowedValues')
   final String allowedValues;
+  @_s.JsonKey(name: 'ApplyMethod')
   final ApplyMethod applyMethod;
+  @_s.JsonKey(name: 'ApplyType')
   final String applyType;
+  @_s.JsonKey(name: 'DataType')
   final String dataType;
+  @_s.JsonKey(name: 'Description')
   final String description;
+  @_s.JsonKey(name: 'IsModifiable')
   final bool isModifiable;
+  @_s.JsonKey(name: 'MinimumEngineVersion')
   final String minimumEngineVersion;
+  @_s.JsonKey(name: 'ParameterName')
   final String parameterName;
+  @_s.JsonKey(name: 'ParameterValue')
   final String parameterValue;
+  @_s.JsonKey(name: 'Source')
   final String source;
 
   Parameter({
@@ -3403,18 +3990,35 @@ class Parameter {
       source: _s.extractXmlStringValue(elem, 'Source'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ParameterToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PendingModifiedValues {
+  @_s.JsonKey(name: 'AllocatedStorage')
   final int allocatedStorage;
+  @_s.JsonKey(name: 'BackupRetentionPeriod')
   final int backupRetentionPeriod;
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
+  @_s.JsonKey(name: 'DBInstanceIdentifier')
   final String dBInstanceIdentifier;
+  @_s.JsonKey(name: 'EngineVersion')
   final String engineVersion;
+  @_s.JsonKey(name: 'Iops')
   final int iops;
+  @_s.JsonKey(name: 'MasterUserPassword')
   final String masterUserPassword;
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
+  @_s.JsonKey(name: 'Port')
   final int port;
+  @_s.JsonKey(name: 'StorageType')
   final String storageType;
 
   PendingModifiedValues({
@@ -3447,7 +4051,13 @@ class PendingModifiedValues {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PromoteReadReplicaResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   PromoteReadReplicaResult({
@@ -3462,7 +4072,13 @@ class PromoteReadReplicaResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PurchaseReservedDBInstancesOfferingResult {
+  @_s.JsonKey(name: 'ReservedDBInstance')
   final ReservedDBInstance reservedDBInstance;
 
   PurchaseReservedDBInstancesOfferingResult({
@@ -3478,7 +4094,13 @@ class PurchaseReservedDBInstancesOfferingResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RebootDBInstanceResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   RebootDBInstanceResult({
@@ -3493,8 +4115,15 @@ class RebootDBInstanceResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RecurringCharge {
+  @_s.JsonKey(name: 'RecurringChargeAmount')
   final double recurringChargeAmount;
+  @_s.JsonKey(name: 'RecurringChargeFrequency')
   final String recurringChargeFrequency;
 
   RecurringCharge({
@@ -3511,7 +4140,13 @@ class RecurringCharge {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RemoveSourceIdentifierFromSubscriptionResult {
+  @_s.JsonKey(name: 'EventSubscription')
   final EventSubscription eventSubscription;
 
   RemoveSourceIdentifierFromSubscriptionResult({
@@ -3527,20 +4162,39 @@ class RemoveSourceIdentifierFromSubscriptionResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstance {
+  @_s.JsonKey(name: 'CurrencyCode')
   final String currencyCode;
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
+  @_s.JsonKey(name: 'DBInstanceCount')
   final int dBInstanceCount;
+  @_s.JsonKey(name: 'Duration')
   final int duration;
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
+  @_s.JsonKey(name: 'ProductDescription')
   final String productDescription;
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
+  @_s.JsonKey(name: 'ReservedDBInstanceId')
   final String reservedDBInstanceId;
+  @_s.JsonKey(name: 'ReservedDBInstancesOfferingId')
   final String reservedDBInstancesOfferingId;
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
+  @_s.JsonKey(name: 'State')
   final String state;
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedDBInstance({
@@ -3585,8 +4239,15 @@ class ReservedDBInstance {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstanceMessage {
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'ReservedDBInstances')
   final List<ReservedDBInstance> reservedDBInstances;
 
   ReservedDBInstanceMessage({
@@ -3605,16 +4266,31 @@ class ReservedDBInstanceMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstancesOffering {
+  @_s.JsonKey(name: 'CurrencyCode')
   final String currencyCode;
+  @_s.JsonKey(name: 'DBInstanceClass')
   final String dBInstanceClass;
+  @_s.JsonKey(name: 'Duration')
   final int duration;
+  @_s.JsonKey(name: 'FixedPrice')
   final double fixedPrice;
+  @_s.JsonKey(name: 'MultiAZ')
   final bool multiAZ;
+  @_s.JsonKey(name: 'OfferingType')
   final String offeringType;
+  @_s.JsonKey(name: 'ProductDescription')
   final String productDescription;
+  @_s.JsonKey(name: 'RecurringCharges')
   final List<RecurringCharge> recurringCharges;
+  @_s.JsonKey(name: 'ReservedDBInstancesOfferingId')
   final String reservedDBInstancesOfferingId;
+  @_s.JsonKey(name: 'UsagePrice')
   final double usagePrice;
 
   ReservedDBInstancesOffering({
@@ -3650,8 +4326,15 @@ class ReservedDBInstancesOffering {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ReservedDBInstancesOfferingMessage {
+  @_s.JsonKey(name: 'Marker')
   final String marker;
+  @_s.JsonKey(name: 'ReservedDBInstancesOfferings')
   final List<ReservedDBInstancesOffering> reservedDBInstancesOfferings;
 
   ReservedDBInstancesOfferingMessage({
@@ -3671,7 +4354,13 @@ class ReservedDBInstancesOfferingMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBInstanceFromDBSnapshotResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   RestoreDBInstanceFromDBSnapshotResult({
@@ -3686,7 +4375,13 @@ class RestoreDBInstanceFromDBSnapshotResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RestoreDBInstanceToPointInTimeResult {
+  @_s.JsonKey(name: 'DBInstance')
   final DBInstance dBInstance;
 
   RestoreDBInstanceToPointInTimeResult({
@@ -3701,7 +4396,13 @@ class RestoreDBInstanceToPointInTimeResult {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RevokeDBSecurityGroupIngressResult {
+  @_s.JsonKey(name: 'DBSecurityGroup')
   final DBSecurityGroup dBSecurityGroup;
 
   RevokeDBSecurityGroupIngressResult({
@@ -3717,9 +4418,13 @@ class RevokeDBSecurityGroupIngressResult {
 }
 
 enum SourceType {
+  @_s.JsonValue('db-instance')
   dbInstance,
+  @_s.JsonValue('db-parameter-group')
   dbParameterGroup,
+  @_s.JsonValue('db-security-group')
   dbSecurityGroup,
+  @_s.JsonValue('db-snapshot')
   dbSnapshot,
 }
 
@@ -3739,9 +4444,17 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Subnet {
+  @_s.JsonKey(name: 'SubnetAvailabilityZone')
   final AvailabilityZone subnetAvailabilityZone;
+  @_s.JsonKey(name: 'SubnetIdentifier')
   final String subnetIdentifier;
+  @_s.JsonKey(name: 'SubnetStatus')
   final String subnetStatus;
 
   Subnet({
@@ -3760,8 +4473,15 @@ class Subnet {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
+  @_s.JsonKey(name: 'Key')
   final String key;
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -3774,9 +4494,17 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagListMessage {
+  @_s.JsonKey(name: 'TagList')
   final List<Tag> tagList;
 
   TagListMessage({
@@ -3790,8 +4518,15 @@ class TagListMessage {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class VpcSecurityGroupMembership {
+  @_s.JsonKey(name: 'Status')
   final String status;
+  @_s.JsonKey(name: 'VpcSecurityGroupId')
   final String vpcSecurityGroupId;
 
   VpcSecurityGroupMembership({

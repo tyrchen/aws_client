@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'monitoring-2010-08-01.g.dart';
 
 /// Amazon CloudWatch monitors your Amazon Web Services (AWS) resources and the
 /// applications you run on AWS in real time. You can use CloudWatch to collect
@@ -43,8 +53,29 @@ class CloudWatch {
           credentials: credentials,
         );
 
-  /// Deletes the specified alarms. You can delete up to 50 alarms in one
-  /// operation. In the event of an error, no alarms are deleted.
+  /// Deletes the specified alarms. You can delete up to 100 alarms in one
+  /// operation. However, this total can include no more than one composite
+  /// alarm. For example, you could delete 99 metric alarms and one composite
+  /// alarms with one operation, but you can't delete two composite alarms with
+  /// one operation.
+  ///
+  /// In the event of an error, no alarms are deleted.
+  /// <note>
+  /// It is possible to create a loop or cycle of composite alarms, where
+  /// composite alarm A depends on composite alarm B, and composite alarm B also
+  /// depends on composite alarm A. In this scenario, you can't delete any
+  /// composite alarm that is part of the cycle because there is always still a
+  /// composite alarm that depends on that alarm that you want to delete.
+  ///
+  /// To get out of such a situation, you must break the cycle by changing the
+  /// rule of one of the composite alarms in the cycle to remove a dependency
+  /// that creates the cycle. The simplest change to make to break a cycle is to
+  /// change the <code>AlarmRule</code> of one of the alarms to
+  /// <code>False</code>.
+  ///
+  /// Additionally, the evaluation of composite alarms stops if CloudWatch
+  /// detects a cycle in the evaluation path.
+  /// </note>
   ///
   /// May throw [ResourceNotFound].
   ///
@@ -112,6 +143,11 @@ class CloudWatch {
       r'[^:].*',
     );
     ArgumentError.checkNotNull(stat, 'stat');
+    _s.validateStringPattern(
+      'stat',
+      stat,
+      r'(SampleCount|Average|Sum|Minimum|Maximum|p(\d{1,2}|100)(\.\d{0,2})?|[ou]\d+(\.\d*)?)(_E|_L|_H)?',
+    );
     final $request = <String, dynamic>{
       'Action': 'DeleteAnomalyDetector',
       'Version': '2010-08-01',
@@ -168,7 +204,8 @@ class CloudWatch {
   ///
   /// Parameter [ruleNames] :
   /// An array of the rule names to delete. If you need to find out the names of
-  /// your rules, use <a>DescribeInsightRules</a>.
+  /// your rules, use <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeInsightRules.html">DescribeInsightRules</a>.
   Future<DeleteInsightRulesOutput> deleteInsightRules({
     @_s.required List<String> ruleNames,
   }) async {
@@ -190,7 +227,8 @@ class CloudWatch {
 
   /// Retrieves the history for the specified alarm. You can filter the results
   /// by date range or item type. If an alarm name is not specified, the
-  /// histories for all alarms are returned.
+  /// histories for either all metric alarms or all composite alarms are
+  /// returned.
   ///
   /// CloudWatch retains the history of an alarm even if you delete the alarm.
   ///
@@ -198,6 +236,11 @@ class CloudWatch {
   ///
   /// Parameter [alarmName] :
   /// The name of the alarm.
+  ///
+  /// Parameter [alarmTypes] :
+  /// Use this parameter to specify whether you want the operation to return
+  /// metric alarms or composite alarms. If you omit this parameter, only metric
+  /// alarms are returned.
   ///
   /// Parameter [endDate] :
   /// The ending date to retrieve alarm history.
@@ -212,14 +255,22 @@ class CloudWatch {
   /// The token returned by a previous call to indicate that there is more data
   /// available.
   ///
+  /// Parameter [scanBy] :
+  /// Specified whether to return the newest or oldest alarm history first.
+  /// Specify <code>TimestampDescending</code> to have the newest event history
+  /// returned first, and specify <code>TimestampAscending</code> to have the
+  /// oldest history returned first.
+  ///
   /// Parameter [startDate] :
   /// The starting date to retrieve alarm history.
   Future<DescribeAlarmHistoryOutput> describeAlarmHistory({
     String alarmName,
+    List<String> alarmTypes,
     DateTime endDate,
     HistoryItemType historyItemType,
     int maxRecords,
     String nextToken,
+    ScanBy scanBy,
     DateTime startDate,
   }) async {
     _s.validateStringLength(
@@ -239,10 +290,12 @@ class CloudWatch {
       'Version': '2010-08-01',
     };
     alarmName?.also((arg) => $request['AlarmName'] = arg);
+    alarmTypes?.also((arg) => $request['AlarmTypes'] = arg);
     endDate?.also((arg) => $request['EndDate'] = arg);
     historyItemType?.also((arg) => $request['HistoryItemType'] = arg);
     maxRecords?.also((arg) => $request['MaxRecords'] = arg);
     nextToken?.also((arg) => $request['NextToken'] = arg);
+    scanBy?.also((arg) => $request['ScanBy'] = arg);
     startDate?.also((arg) => $request['StartDate'] = arg);
     final $result = await _protocol.send(
       $request,
@@ -254,21 +307,51 @@ class CloudWatch {
     return DescribeAlarmHistoryOutput.fromXml($result);
   }
 
-  /// Retrieves the specified alarms. If no alarms are specified, all alarms are
-  /// returned. Alarms can be retrieved by using only a prefix for the alarm
-  /// name, the alarm state, or a prefix for any action.
+  /// Retrieves the specified alarms. You can filter the results by specifying a
+  /// a prefix for the alarm name, the alarm state, or a prefix for any action.
   ///
   /// May throw [InvalidNextToken].
   ///
   /// Parameter [actionPrefix] :
-  /// The action name prefix.
+  /// Use this parameter to filter the results of the operation to only those
+  /// alarms that use a certain alarm action. For example, you could specify the
+  /// ARN of an SNS topic to find all alarms that send notifications to that
+  /// topic.
   ///
   /// Parameter [alarmNamePrefix] :
-  /// The alarm name prefix. If this parameter is specified, you cannot specify
+  /// An alarm name prefix. If you specify this parameter, you receive
+  /// information about all alarms that have names that start with this prefix.
+  ///
+  /// If this parameter is specified, you cannot specify
   /// <code>AlarmNames</code>.
   ///
   /// Parameter [alarmNames] :
-  /// The names of the alarms.
+  /// The names of the alarms to retrieve information about.
+  ///
+  /// Parameter [alarmTypes] :
+  /// Use this parameter to specify whether you want the operation to return
+  /// metric alarms or composite alarms. If you omit this parameter, only metric
+  /// alarms are returned.
+  ///
+  /// Parameter [childrenOfAlarmName] :
+  /// If you use this parameter and specify the name of a composite alarm, the
+  /// operation returns information about the "children" alarms of the alarm you
+  /// specify. These are the metric alarms and composite alarms referenced in
+  /// the <code>AlarmRule</code> field of the composite alarm that you specify
+  /// in <code>ChildrenOfAlarmName</code>. Information about the composite alarm
+  /// that you name in <code>ChildrenOfAlarmName</code> is not returned.
+  ///
+  /// If you specify <code>ChildrenOfAlarmName</code>, you cannot specify any
+  /// other parameters in the request except for <code>MaxRecords</code> and
+  /// <code>NextToken</code>. If you do so, you will receive a validation error.
+  /// <note>
+  /// Only the <code>Alarm Name</code>, <code>ARN</code>,
+  /// <code>StateValue</code> (OK/ALARM/INSUFFICIENT_DATA), and
+  /// <code>StateUpdatedTimestamp</code> information are returned by this
+  /// operation when you use this parameter. To get complete information about
+  /// these alarms, perform another <code>DescribeAlarms</code> operation and
+  /// specify the parent alarm names in the <code>AlarmNames</code> parameter.
+  /// </note>
   ///
   /// Parameter [maxRecords] :
   /// The maximum number of alarm descriptions to retrieve.
@@ -277,14 +360,36 @@ class CloudWatch {
   /// The token returned by a previous call to indicate that there is more data
   /// available.
   ///
+  /// Parameter [parentsOfAlarmName] :
+  /// If you use this parameter and specify the name of a metric or composite
+  /// alarm, the operation returns information about the "parent" alarms of the
+  /// alarm you specify. These are the composite alarms that have
+  /// <code>AlarmRule</code> parameters that reference the alarm named in
+  /// <code>ParentsOfAlarmName</code>. Information about the alarm that you
+  /// specify in <code>ParentsOfAlarmName</code> is not returned.
+  ///
+  /// If you specify <code>ParentsOfAlarmName</code>, you cannot specify any
+  /// other parameters in the request except for <code>MaxRecords</code> and
+  /// <code>NextToken</code>. If you do so, you will receive a validation error.
+  /// <note>
+  /// Only the Alarm Name and ARN are returned by this operation when you use
+  /// this parameter. To get complete information about these alarms, perform
+  /// another <code>DescribeAlarms</code> operation and specify the parent alarm
+  /// names in the <code>AlarmNames</code> parameter.
+  /// </note>
+  ///
   /// Parameter [stateValue] :
-  /// The state value to be used in matching alarms.
+  /// Specify this parameter to receive information only about alarms that are
+  /// currently in the state that you specify.
   Future<DescribeAlarmsOutput> describeAlarms({
     String actionPrefix,
     String alarmNamePrefix,
     List<String> alarmNames,
+    List<String> alarmTypes,
+    String childrenOfAlarmName,
     int maxRecords,
     String nextToken,
+    String parentsOfAlarmName,
     StateValue stateValue,
   }) async {
     _s.validateStringLength(
@@ -299,11 +404,23 @@ class CloudWatch {
       1,
       255,
     );
+    _s.validateStringLength(
+      'childrenOfAlarmName',
+      childrenOfAlarmName,
+      1,
+      255,
+    );
     _s.validateNumRange(
       'maxRecords',
       maxRecords,
       1,
       100,
+    );
+    _s.validateStringLength(
+      'parentsOfAlarmName',
+      parentsOfAlarmName,
+      1,
+      255,
     );
     final $request = <String, dynamic>{
       'Action': 'DescribeAlarms',
@@ -312,8 +429,11 @@ class CloudWatch {
     actionPrefix?.also((arg) => $request['ActionPrefix'] = arg);
     alarmNamePrefix?.also((arg) => $request['AlarmNamePrefix'] = arg);
     alarmNames?.also((arg) => $request['AlarmNames'] = arg);
+    alarmTypes?.also((arg) => $request['AlarmTypes'] = arg);
+    childrenOfAlarmName?.also((arg) => $request['ChildrenOfAlarmName'] = arg);
     maxRecords?.also((arg) => $request['MaxRecords'] = arg);
     nextToken?.also((arg) => $request['NextToken'] = arg);
+    parentsOfAlarmName?.also((arg) => $request['ParentsOfAlarmName'] = arg);
     stateValue?.also((arg) => $request['StateValue'] = arg);
     final $result = await _protocol.send(
       $request,
@@ -429,7 +549,7 @@ class CloudWatch {
   ///
   /// Parameter [maxResults] :
   /// The maximum number of results to return in one operation. The maximum
-  /// value you can specify is 10.
+  /// value that you can specify is 100.
   ///
   /// To retrieve the remaining results, make another call with the returned
   /// <code>NextToken</code> value.
@@ -567,7 +687,8 @@ class CloudWatch {
   ///
   /// Parameter [ruleNames] :
   /// An array of the rule names to disable. If you need to find out the names
-  /// of your rules, use <a>DescribeInsightRules</a>.
+  /// of your rules, use <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeInsightRules.html">DescribeInsightRules</a>.
   Future<DisableInsightRulesOutput> disableInsightRules({
     @_s.required List<String> ruleNames,
   }) async {
@@ -617,7 +738,8 @@ class CloudWatch {
   ///
   /// Parameter [ruleNames] :
   /// An array of the rule names to enable. If you need to find out the names of
-  /// your rules, use <a>DescribeInsightRules</a>.
+  /// your rules, use <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeInsightRules.html">DescribeInsightRules</a>.
   Future<EnableInsightRulesOutput> enableInsightRules({
     @_s.required List<String> ruleNames,
   }) async {
@@ -844,7 +966,7 @@ class CloudWatch {
     return GetInsightRuleReportOutput.fromXml($result);
   }
 
-  /// You can use the <code>GetMetricData</code> API to retrieve as many as 100
+  /// You can use the <code>GetMetricData</code> API to retrieve as many as 500
   /// different metrics in a single request, with a total of as many as 100,800
   /// data points. You can also optionally perform math expressions on the
   /// values of the returned statistics, to create new time series that
@@ -916,7 +1038,7 @@ class CloudWatch {
   ///
   /// Parameter [metricDataQueries] :
   /// The metric queries to be returned. A single <code>GetMetricData</code>
-  /// call can include as many as 100 <code>MetricDataQuery</code> structures.
+  /// call can include as many as 500 <code>MetricDataQuery</code> structures.
   /// Each of these structures can specify either a metric to retrieve, or a
   /// math expression to perform on retrieved data.
   ///
@@ -1277,8 +1399,9 @@ class CloudWatch {
   /// <code>MetricWidget</code> parameter in each
   /// <code>GetMetricWidgetImage</code> call.
   ///
-  /// For more information about the syntax of <code>MetricWidget</code> see
-  /// <a>CloudWatch-Metric-Widget-Structure</a>.
+  /// For more information about the syntax of <code>MetricWidget</code> see <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CloudWatch-Metric-Widget-Structure.html">GetMetricWidgetImage:
+  /// Metric Widget Structure and Syntax</a>.
   ///
   /// If any metric on the graph could not load all the requested data points,
   /// an orange triangle with an exclamation point appears next to the graph
@@ -1381,16 +1504,21 @@ class CloudWatch {
     return ListDashboardsOutput.fromXml($result);
   }
 
-  /// List the specified metrics. You can use the returned metrics with
-  /// <a>GetMetricData</a> or <a>GetMetricStatistics</a> to obtain statistical
-  /// data.
+  /// List the specified metrics. You can use the returned metrics with <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricData.html">GetMetricData</a>
+  /// or <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricStatistics.html">GetMetricStatistics</a>
+  /// to obtain statistical data.
   ///
   /// Up to 500 results are returned for any one call. To retrieve additional
   /// results, use the returned token with subsequent calls.
   ///
   /// After you create a metric, allow up to fifteen minutes before the metric
   /// appears. Statistics about the metric, however, are available sooner using
-  /// <a>GetMetricData</a> or <a>GetMetricStatistics</a>.
+  /// <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricData.html">GetMetricData</a>
+  /// or <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricStatistics.html">GetMetricStatistics</a>.
   ///
   /// May throw [InternalServiceFault].
   /// May throw [InvalidParameterValueException].
@@ -1448,18 +1576,28 @@ class CloudWatch {
     return ListMetricsOutput.fromXml($result);
   }
 
-  /// Displays the tags associated with a CloudWatch resource. Alarms support
-  /// tagging.
+  /// Displays the tags associated with a CloudWatch resource. Currently, alarms
+  /// and Contributor Insights rules support tagging.
   ///
   /// May throw [InvalidParameterValueException].
   /// May throw [ResourceNotFoundException].
   /// May throw [InternalServiceFault].
   ///
   /// Parameter [resourceARN] :
-  /// The ARN of the CloudWatch resource that you want to view tags for. For
-  /// more information on ARN format, see <a
-  /// href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-cloudwatch">Example
-  /// ARNs</a> in the <i>Amazon Web Services General Reference</i>.
+  /// The ARN of the CloudWatch resource that you want to view tags for.
+  ///
+  /// The ARN format of an alarm is
+  /// <code>arn:aws:cloudwatch:<i>Region</i>:<i>account-id</i>:alarm:<i>alarm-name</i>
+  /// </code>
+  ///
+  /// The ARN format of a Contributor Insights rule is
+  /// <code>arn:aws:cloudwatch:<i>Region</i>:<i>account-id</i>:insight-rule:<i>insight-rule-name</i>
+  /// </code>
+  ///
+  /// For more information on ARN format, see <a
+  /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncloudwatch.html#amazoncloudwatch-resources-for-iam-policies">
+  /// Resource Types Defined by Amazon CloudWatch</a> in the <i>Amazon Web
+  /// Services General Reference</i>.
   Future<ListTagsForResourceOutput> listTagsForResource({
     @_s.required String resourceARN,
   }) async {
@@ -1545,6 +1683,11 @@ class CloudWatch {
       r'[^:].*',
     );
     ArgumentError.checkNotNull(stat, 'stat');
+    _s.validateStringPattern(
+      'stat',
+      stat,
+      r'(SampleCount|Average|Sum|Minimum|Maximum|p(\d{1,2}|100)(\.\d{0,2})?|[ou]\d+(\.\d*)?)(_E|_L|_H)?',
+    );
     final $request = <String, dynamic>{
       'Action': 'PutAnomalyDetector',
       'Version': '2010-08-01',
@@ -1560,6 +1703,215 @@ class CloudWatch {
       requestUri: '/',
       exceptionFnMap: _exceptionFns,
       resultWrapper: 'PutAnomalyDetectorResult',
+    );
+  }
+
+  /// Creates or updates a <i>composite alarm</i>. When you create a composite
+  /// alarm, you specify a rule expression for the alarm that takes into account
+  /// the alarm states of other alarms that you have created. The composite
+  /// alarm goes into ALARM state only if all conditions of the rule are met.
+  ///
+  /// The alarms specified in a composite alarm's rule expression can include
+  /// metric alarms and other composite alarms.
+  ///
+  /// Using composite alarms can reduce alarm noise. You can create multiple
+  /// metric alarms, and also create a composite alarm and set up alerts only
+  /// for the composite alarm. For example, you could create a composite alarm
+  /// that goes into ALARM state only when more than one of the underlying
+  /// metric alarms are in ALARM state.
+  ///
+  /// Currently, the only alarm actions that can be taken by composite alarms
+  /// are notifying SNS topics.
+  /// <note>
+  /// It is possible to create a loop or cycle of composite alarms, where
+  /// composite alarm A depends on composite alarm B, and composite alarm B also
+  /// depends on composite alarm A. In this scenario, you can't delete any
+  /// composite alarm that is part of the cycle because there is always still a
+  /// composite alarm that depends on that alarm that you want to delete.
+  ///
+  /// To get out of such a situation, you must break the cycle by changing the
+  /// rule of one of the composite alarms in the cycle to remove a dependency
+  /// that creates the cycle. The simplest change to make to break a cycle is to
+  /// change the <code>AlarmRule</code> of one of the alarms to
+  /// <code>False</code>.
+  ///
+  /// Additionally, the evaluation of composite alarms stops if CloudWatch
+  /// detects a cycle in the evaluation path.
+  /// </note>
+  /// When this operation creates an alarm, the alarm state is immediately set
+  /// to <code>INSUFFICIENT_DATA</code>. The alarm is then evaluated and its
+  /// state is set appropriately. Any actions associated with the new state are
+  /// then executed. For a composite alarm, this initial time after creation is
+  /// the only time that the alarm can be in <code>INSUFFICIENT_DATA</code>
+  /// state.
+  ///
+  /// When you update an existing alarm, its state is left unchanged, but the
+  /// update completely overwrites the previous configuration of the alarm.
+  ///
+  /// May throw [LimitExceededFault].
+  ///
+  /// Parameter [alarmName] :
+  /// The name for the composite alarm. This name must be unique within your AWS
+  /// account.
+  ///
+  /// Parameter [alarmRule] :
+  /// An expression that specifies which other alarms are to be evaluated to
+  /// determine this composite alarm's state. For each alarm that you reference,
+  /// you designate a function that specifies whether that alarm needs to be in
+  /// ALARM state, OK state, or INSUFFICIENT_DATA state. You can use operators
+  /// (AND, OR and NOT) to combine multiple functions in a single expression.
+  /// You can use parenthesis to logically group the functions in your
+  /// expression.
+  ///
+  /// You can use either alarm names or ARNs to reference the other alarms that
+  /// are to be evaluated.
+  ///
+  /// Functions can include the following:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>ALARM("<i>alarm-name</i> or <i>alarm-ARN</i>")</code> is TRUE if the
+  /// named alarm is in ALARM state.
+  /// </li>
+  /// <li>
+  /// <code>OK("<i>alarm-name</i> or <i>alarm-ARN</i>")</code> is TRUE if the
+  /// named alarm is in OK state.
+  /// </li>
+  /// <li>
+  /// <code>INSUFFICIENT_DATA("<i>alarm-name</i> or <i>alarm-ARN</i>")</code> is
+  /// TRUE if the named alarm is in INSUFFICIENT_DATA state.
+  /// </li>
+  /// <li>
+  /// <code>TRUE</code> always evaluates to TRUE.
+  /// </li>
+  /// <li>
+  /// <code>FALSE</code> always evaluates to FALSE.
+  /// </li>
+  /// </ul>
+  /// TRUE and FALSE are useful for testing a complex <code>AlarmRule</code>
+  /// structure, and for testing your alarm actions.
+  ///
+  /// Alarm names specified in <code>AlarmRule</code> can be surrounded with
+  /// double-quotes ("), but do not have to be.
+  ///
+  /// The following are some examples of <code>AlarmRule</code>:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>ALARM(CPUUtilizationTooHigh) AND ALARM(DiskReadOpsTooHigh)</code>
+  /// specifies that the composite alarm goes into ALARM state only if both
+  /// CPUUtilizationTooHigh and DiskReadOpsTooHigh alarms are in ALARM state.
+  /// </li>
+  /// <li>
+  /// <code>ALARM(CPUUtilizationTooHigh) AND NOT
+  /// ALARM(DeploymentInProgress)</code> specifies that the alarm goes to ALARM
+  /// state if CPUUtilizationTooHigh is in ALARM state and DeploymentInProgress
+  /// is not in ALARM state. This example reduces alarm noise during a known
+  /// deployment window.
+  /// </li>
+  /// <li>
+  /// <code>(ALARM(CPUUtilizationTooHigh) OR ALARM(DiskReadOpsTooHigh)) AND
+  /// OK(NetworkOutTooHigh)</code> goes into ALARM state if
+  /// CPUUtilizationTooHigh OR DiskReadOpsTooHigh is in ALARM state, and if
+  /// NetworkOutTooHigh is in OK state. This provides another example of using a
+  /// composite alarm to prevent noise. This rule ensures that you are not
+  /// notified with an alarm action on high CPU or disk usage if a known network
+  /// problem is also occurring.
+  /// </li>
+  /// </ul>
+  /// The <code>AlarmRule</code> can specify as many as 100 "children" alarms.
+  /// The <code>AlarmRule</code> expression can have as many as 500 elements.
+  /// Elements are child alarms, TRUE or FALSE statements, and parentheses.
+  ///
+  /// Parameter [actionsEnabled] :
+  /// Indicates whether actions should be executed during any changes to the
+  /// alarm state of the composite alarm. The default is <code>TRUE</code>.
+  ///
+  /// Parameter [alarmActions] :
+  /// The actions to execute when this alarm transitions to the
+  /// <code>ALARM</code> state from any other state. Each action is specified as
+  /// an Amazon Resource Name (ARN).
+  ///
+  /// Valid Values:
+  /// <code>arn:aws:sns:<i>region</i>:<i>account-id</i>:<i>sns-topic-name</i>
+  /// </code>
+  ///
+  /// Parameter [alarmDescription] :
+  /// The description for the composite alarm.
+  ///
+  /// Parameter [insufficientDataActions] :
+  /// The actions to execute when this alarm transitions to the
+  /// <code>INSUFFICIENT_DATA</code> state from any other state. Each action is
+  /// specified as an Amazon Resource Name (ARN).
+  ///
+  /// Valid Values:
+  /// <code>arn:aws:sns:<i>region</i>:<i>account-id</i>:<i>sns-topic-name</i>
+  /// </code>
+  ///
+  /// Parameter [oKActions] :
+  /// The actions to execute when this alarm transitions to an <code>OK</code>
+  /// state from any other state. Each action is specified as an Amazon Resource
+  /// Name (ARN).
+  ///
+  /// Valid Values:
+  /// <code>arn:aws:sns:<i>region</i>:<i>account-id</i>:<i>sns-topic-name</i>
+  /// </code>
+  ///
+  /// Parameter [tags] :
+  /// A list of key-value pairs to associate with the composite alarm. You can
+  /// associate as many as 50 tags with an alarm.
+  ///
+  /// Tags can help you organize and categorize your resources. You can also use
+  /// them to scope user permissions, by granting a user permission to access or
+  /// change only resources with certain tag values.
+  Future<void> putCompositeAlarm({
+    @_s.required String alarmName,
+    @_s.required String alarmRule,
+    bool actionsEnabled,
+    List<String> alarmActions,
+    String alarmDescription,
+    List<String> insufficientDataActions,
+    List<String> oKActions,
+    List<Tag> tags,
+  }) async {
+    ArgumentError.checkNotNull(alarmName, 'alarmName');
+    _s.validateStringLength(
+      'alarmName',
+      alarmName,
+      1,
+      255,
+    );
+    ArgumentError.checkNotNull(alarmRule, 'alarmRule');
+    _s.validateStringLength(
+      'alarmRule',
+      alarmRule,
+      1,
+      10240,
+    );
+    _s.validateStringLength(
+      'alarmDescription',
+      alarmDescription,
+      0,
+      1024,
+    );
+    final $request = <String, dynamic>{
+      'Action': 'PutCompositeAlarm',
+      'Version': '2010-08-01',
+    };
+    $request['AlarmName'] = alarmName;
+    $request['AlarmRule'] = alarmRule;
+    actionsEnabled?.also((arg) => $request['ActionsEnabled'] = arg);
+    alarmActions?.also((arg) => $request['AlarmActions'] = arg);
+    alarmDescription?.also((arg) => $request['AlarmDescription'] = arg);
+    insufficientDataActions
+        ?.also((arg) => $request['InsufficientDataActions'] = arg);
+    oKActions?.also((arg) => $request['OKActions'] = arg);
+    tags?.also((arg) => $request['Tags'] = arg);
+    await _protocol.send(
+      $request,
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
     );
   }
 
@@ -1592,8 +1944,9 @@ class CloudWatch {
   /// widgets to include and their location on the dashboard. This parameter is
   /// required.
   ///
-  /// For more information about the syntax, see
-  /// <a>CloudWatch-Dashboard-Body-Structure</a>.
+  /// For more information about the syntax, see <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CloudWatch-Dashboard-Body-Structure.html">Dashboard
+  /// Body Structure and Syntax</a>.
   ///
   /// Parameter [dashboardName] :
   /// The name of the dashboard. If a dashboard with this name already exists,
@@ -1648,10 +2001,28 @@ class CloudWatch {
   ///
   /// Parameter [ruleState] :
   /// The state of the rule. Valid values are ENABLED and DISABLED.
+  ///
+  /// Parameter [tags] :
+  /// A list of key-value pairs to associate with the Contributor Insights rule.
+  /// You can associate as many as 50 tags with a rule.
+  ///
+  /// Tags can help you organize and categorize your resources. You can also use
+  /// them to scope user permissions, by granting a user permission to access or
+  /// change only the resources that have certain tag values.
+  ///
+  /// To be able to associate tags with a rule, you must have the
+  /// <code>cloudwatch:TagResource</code> permission in addition to the
+  /// <code>cloudwatch:PutInsightRule</code> permission.
+  ///
+  /// If you are using this operation to update an existing Contributor Insights
+  /// rule, any tags you specify in this parameter are ignored. To change the
+  /// tags of an existing rule, use <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_TagResource.html">TagResource</a>.
   Future<void> putInsightRule({
     @_s.required String ruleDefinition,
     @_s.required String ruleName,
     String ruleState,
+    List<Tag> tags,
   }) async {
     ArgumentError.checkNotNull(ruleDefinition, 'ruleDefinition');
     _s.validateStringLength(
@@ -1695,6 +2066,7 @@ class CloudWatch {
     $request['RuleDefinition'] = ruleDefinition;
     $request['RuleName'] = ruleName;
     ruleState?.also((arg) => $request['RuleState'] = arg);
+    tags?.also((arg) => $request['Tags'] = arg);
     await _protocol.send(
       $request,
       method: 'POST',
@@ -1800,7 +2172,7 @@ class CloudWatch {
   /// <code>arn:aws:automate:<i>region</i>:ec2:reboot</code> |
   /// <code>arn:aws:sns:<i>region</i>:<i>account-id</i>:<i>sns-topic-name</i>
   /// </code> |
-  /// <code>arn:aws:autoscaling:<i>region</i>:<i>account-id</i>:scalingPolicy:<i>policy-id</i>autoScalingGroupName/<i>group-friendly-name</i>:policyName/<i>policy-friendly-name</i>
+  /// <code>arn:aws:autoscaling:<i>region</i>:<i>account-id</i>:scalingPolicy:<i>policy-id</i>:autoScalingGroupName/<i>group-friendly-name</i>:policyName/<i>policy-friendly-name</i>
   /// </code>
   ///
   /// Valid Values (for use with IAM roles):
@@ -1853,7 +2225,7 @@ class CloudWatch {
   /// <code>arn:aws:automate:<i>region</i>:ec2:reboot</code> |
   /// <code>arn:aws:sns:<i>region</i>:<i>account-id</i>:<i>sns-topic-name</i>
   /// </code> |
-  /// <code>arn:aws:autoscaling:<i>region</i>:<i>account-id</i>:scalingPolicy:<i>policy-id</i>autoScalingGroupName/<i>group-friendly-name</i>:policyName/<i>policy-friendly-name</i>
+  /// <code>arn:aws:autoscaling:<i>region</i>:<i>account-id</i>:scalingPolicy:<i>policy-id</i>:autoScalingGroupName/<i>group-friendly-name</i>:policyName/<i>policy-friendly-name</i>
   /// </code>
   ///
   /// Valid Values (for use with IAM roles):
@@ -1886,7 +2258,8 @@ class CloudWatch {
   /// One item in the <code>Metrics</code> array is the expression that the
   /// alarm watches. You designate this expression by setting
   /// <code>ReturnValue</code> to true for this object in the array. For more
-  /// information, see <a>MetricDataQuery</a>.
+  /// information, see <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDataQuery.html">MetricDataQuery</a>.
   ///
   /// If you use the <code>Metrics</code> parameter, you cannot include the
   /// <code>MetricName</code>, <code>Dimensions</code>, <code>Period</code>,
@@ -1910,7 +2283,7 @@ class CloudWatch {
   /// <code>arn:aws:automate:<i>region</i>:ec2:reboot</code> |
   /// <code>arn:aws:sns:<i>region</i>:<i>account-id</i>:<i>sns-topic-name</i>
   /// </code> |
-  /// <code>arn:aws:autoscaling:<i>region</i>:<i>account-id</i>:scalingPolicy:<i>policy-id</i>autoScalingGroupName/<i>group-friendly-name</i>:policyName/<i>policy-friendly-name</i>
+  /// <code>arn:aws:autoscaling:<i>region</i>:<i>account-id</i>:scalingPolicy:<i>policy-id</i>:autoScalingGroupName/<i>group-friendly-name</i>:policyName/<i>policy-friendly-name</i>
   /// </code>
   ///
   /// Valid Values (for use with IAM roles):
@@ -2142,7 +2515,8 @@ class CloudWatch {
   /// the data points with the specified metric. If the specified metric does
   /// not exist, CloudWatch creates the metric. When CloudWatch creates a
   /// metric, it can take up to fifteen minutes for the metric to appear in
-  /// calls to <a>ListMetrics</a>.
+  /// calls to <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_ListMetrics.html">ListMetrics</a>.
   ///
   /// You can publish either individual data points in the <code>Value</code>
   /// field, or arrays of values and the number of times each value occurred
@@ -2168,8 +2542,16 @@ class CloudWatch {
   /// Metrics</a> in the <i>Amazon CloudWatch User Guide</i>.
   ///
   /// Data points with time stamps from 24 hours ago or longer can take at least
-  /// 48 hours to become available for <a>GetMetricData</a> or
-  /// <a>GetMetricStatistics</a> from the time they are submitted.
+  /// 48 hours to become available for <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricData.html">GetMetricData</a>
+  /// or <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricStatistics.html">GetMetricStatistics</a>
+  /// from the time they are submitted. Data points with time stamps between 3
+  /// and 24 hours ago can take as much as 2 hours to become available for for
+  /// <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricData.html">GetMetricData</a>
+  /// or <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetMetricStatistics.html">GetMetricStatistics</a>.
   ///
   /// CloudWatch needs raw data points to calculate percentile statistics. If
   /// you publish data using a statistic set instead, you can only retrieve
@@ -2236,11 +2618,22 @@ class CloudWatch {
   /// updated state differs from the previous value, the action configured for
   /// the appropriate state is invoked. For example, if your alarm is configured
   /// to send an Amazon SNS message when an alarm is triggered, temporarily
-  /// changing the alarm state to <code>ALARM</code> sends an SNS message. The
-  /// alarm returns to its actual state (often within seconds). Because the
-  /// alarm state change happens quickly, it is typically only visible in the
-  /// alarm's <b>History</b> tab in the Amazon CloudWatch console or through
-  /// <a>DescribeAlarmHistory</a>.
+  /// changing the alarm state to <code>ALARM</code> sends an SNS message.
+  ///
+  /// Metric alarms returns to their actual state quickly, often within seconds.
+  /// Because the metric alarm state change happens quickly, it is typically
+  /// only visible in the alarm's <b>History</b> tab in the Amazon CloudWatch
+  /// console or through <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_DescribeAlarmHistory.html">DescribeAlarmHistory</a>.
+  ///
+  /// If you use <code>SetAlarmState</code> on a composite alarm, the composite
+  /// alarm is not guaranteed to return to its actual state. It will return to
+  /// its actual state only once any of its children alarms change state. It is
+  /// also re-evaluated if you update its configuration.
+  ///
+  /// If an alarm triggers EC2 Auto Scaling policies or application Auto Scaling
+  /// policies, you must include information in the <code>StateReasonData</code>
+  /// parameter to enable the policy to take the correct action.
   ///
   /// May throw [ResourceNotFound].
   /// May throw [InvalidFormatFault].
@@ -2257,6 +2650,10 @@ class CloudWatch {
   ///
   /// Parameter [stateReasonData] :
   /// The reason that this alarm is set to this specific state, in JSON format.
+  ///
+  /// For SNS or EC2 alarm actions, this is just informational. But for EC2 Auto
+  /// Scaling or application Auto Scaling alarm actions, the Auto Scaling policy
+  /// uses the information in this field to take the correct action.
   Future<void> setAlarmState({
     @_s.required String alarmName,
     @_s.required String stateReason,
@@ -2302,7 +2699,7 @@ class CloudWatch {
 
   /// Assigns one or more tags (key-value pairs) to the specified CloudWatch
   /// resource. Currently, the only CloudWatch resources that can be tagged are
-  /// alarms.
+  /// alarms and Contributor Insights rules.
   ///
   /// Tags can help you organize and categorize your resources. You can also use
   /// them to scope user permissions, by granting a user permission to access or
@@ -2317,7 +2714,7 @@ class CloudWatch {
   /// that is already associated with the alarm, the new tag value that you
   /// specify replaces the previous value for that tag.
   ///
-  /// You can associate as many as 50 tags with a resource.
+  /// You can associate as many as 50 tags with a CloudWatch resource.
   ///
   /// May throw [InvalidParameterValueException].
   /// May throw [ResourceNotFoundException].
@@ -2325,10 +2722,20 @@ class CloudWatch {
   /// May throw [InternalServiceFault].
   ///
   /// Parameter [resourceARN] :
-  /// The ARN of the CloudWatch alarm that you're adding tags to. The ARN format
-  /// is
+  /// The ARN of the CloudWatch resource that you're adding tags to.
+  ///
+  /// The ARN format of an alarm is
   /// <code>arn:aws:cloudwatch:<i>Region</i>:<i>account-id</i>:alarm:<i>alarm-name</i>
   /// </code>
+  ///
+  /// The ARN format of a Contributor Insights rule is
+  /// <code>arn:aws:cloudwatch:<i>Region</i>:<i>account-id</i>:insight-rule:<i>insight-rule-name</i>
+  /// </code>
+  ///
+  /// For more information on ARN format, see <a
+  /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncloudwatch.html#amazoncloudwatch-resources-for-iam-policies">
+  /// Resource Types Defined by Amazon CloudWatch</a> in the <i>Amazon Web
+  /// Services General Reference</i>.
   ///
   /// Parameter [tags] :
   /// The list of key-value pairs to associate with the alarm.
@@ -2367,10 +2774,20 @@ class CloudWatch {
   /// May throw [InternalServiceFault].
   ///
   /// Parameter [resourceARN] :
-  /// The ARN of the CloudWatch resource that you're removing tags from. For
-  /// more information on ARN format, see <a
-  /// href="https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-cloudwatch">Example
-  /// ARNs</a> in the <i>Amazon Web Services General Reference</i>.
+  /// The ARN of the CloudWatch resource that you're removing tags from.
+  ///
+  /// The ARN format of an alarm is
+  /// <code>arn:aws:cloudwatch:<i>Region</i>:<i>account-id</i>:alarm:<i>alarm-name</i>
+  /// </code>
+  ///
+  /// The ARN format of a Contributor Insights rule is
+  /// <code>arn:aws:cloudwatch:<i>Region</i>:<i>account-id</i>:insight-rule:<i>insight-rule-name</i>
+  /// </code>
+  ///
+  /// For more information on ARN format, see <a
+  /// href="https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncloudwatch.html#amazoncloudwatch-resources-for-iam-policies">
+  /// Resource Types Defined by Amazon CloudWatch</a> in the <i>Amazon Web
+  /// Services General Reference</i>.
   ///
   /// Parameter [tagKeys] :
   /// The list of tag keys to remove from the resource.
@@ -2403,24 +2820,39 @@ class CloudWatch {
 }
 
 /// Represents the history of a specific alarm.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AlarmHistoryItem {
   /// The descriptive name for the alarm.
+  @_s.JsonKey(name: 'AlarmName')
   final String alarmName;
 
+  /// The type of alarm, either metric alarm or composite alarm.
+  @_s.JsonKey(name: 'AlarmType')
+  final AlarmType alarmType;
+
   /// Data about the alarm, in JSON format.
+  @_s.JsonKey(name: 'HistoryData')
   final String historyData;
 
   /// The type of alarm history item.
+  @_s.JsonKey(name: 'HistoryItemType')
   final HistoryItemType historyItemType;
 
   /// A summary of the alarm history, in text format.
+  @_s.JsonKey(name: 'HistorySummary')
   final String historySummary;
 
   /// The time stamp for the alarm history item.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   AlarmHistoryItem({
     this.alarmName,
+    this.alarmType,
     this.historyData,
     this.historyItemType,
     this.historySummary,
@@ -2429,6 +2861,7 @@ class AlarmHistoryItem {
   factory AlarmHistoryItem.fromXml(_s.XmlElement elem) {
     return AlarmHistoryItem(
       alarmName: _s.extractXmlStringValue(elem, 'AlarmName'),
+      alarmType: _s.extractXmlStringValue(elem, 'AlarmType')?.toAlarmType(),
       historyData: _s.extractXmlStringValue(elem, 'HistoryData'),
       historyItemType: _s
           .extractXmlStringValue(elem, 'HistoryItemType')
@@ -2439,26 +2872,60 @@ class AlarmHistoryItem {
   }
 }
 
+enum AlarmType {
+  @_s.JsonValue('CompositeAlarm')
+  compositeAlarm,
+  @_s.JsonValue('MetricAlarm')
+  metricAlarm,
+}
+
+extension on String {
+  AlarmType toAlarmType() {
+    switch (this) {
+      case 'CompositeAlarm':
+        return AlarmType.compositeAlarm;
+      case 'MetricAlarm':
+        return AlarmType.metricAlarm;
+    }
+    throw Exception('Unknown enum value: $this');
+  }
+}
+
 /// An anomaly detection model associated with a particular CloudWatch metric
 /// and statistic. You can use the model to display a band of expected normal
 /// values when the metric is graphed.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AnomalyDetector {
   /// The configuration specifies details about how the anomaly detection model is
   /// to be trained, including time ranges to exclude from use for training the
   /// model, and the time zone to use for the metric.
+  @_s.JsonKey(name: 'Configuration')
   final AnomalyDetectorConfiguration configuration;
 
   /// The metric dimensions associated with the anomaly detection model.
+  @_s.JsonKey(name: 'Dimensions')
   final List<Dimension> dimensions;
 
   /// The name of the metric associated with the anomaly detection model.
+  @_s.JsonKey(name: 'MetricName')
   final String metricName;
 
   /// The namespace of the metric associated with the anomaly detection model.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   /// The statistic associated with the anomaly detection model.
+  @_s.JsonKey(name: 'Stat')
   final String stat;
+
+  /// The current status of the anomaly detector's training. The possible values
+  /// are <code>TRAINED | PENDING_TRAINING | TRAINED_INSUFFICIENT_DATA</code>
+  @_s.JsonKey(name: 'StateValue')
+  final AnomalyDetectorStateValue stateValue;
 
   AnomalyDetector({
     this.configuration,
@@ -2466,6 +2933,7 @@ class AnomalyDetector {
     this.metricName,
     this.namespace,
     this.stat,
+    this.stateValue,
   });
   factory AnomalyDetector.fromXml(_s.XmlElement elem) {
     return AnomalyDetector(
@@ -2479,6 +2947,9 @@ class AnomalyDetector {
       metricName: _s.extractXmlStringValue(elem, 'MetricName'),
       namespace: _s.extractXmlStringValue(elem, 'Namespace'),
       stat: _s.extractXmlStringValue(elem, 'Stat'),
+      stateValue: _s
+          .extractXmlStringValue(elem, 'StateValue')
+          ?.toAnomalyDetectorStateValue(),
     );
   }
 }
@@ -2486,11 +2957,17 @@ class AnomalyDetector {
 /// The configuration specifies details about how the anomaly detection model is
 /// to be trained, including time ranges to exclude from use for training the
 /// model and the time zone to use for the metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AnomalyDetectorConfiguration {
   /// An array of time ranges to exclude from use when the anomaly detection model
   /// is trained. Use this to make sure that events that could cause unusual
   /// values for the metric, such as deployments, aren't used when CloudWatch
   /// creates the model.
+  @_s.JsonKey(name: 'ExcludedTimeRanges')
   final List<Range> excludedTimeRanges;
 
   /// The time zone to use for the metric. This is useful to enable the model to
@@ -2500,6 +2977,7 @@ class AnomalyDetectorConfiguration {
   /// To specify a time zone, use the name of the time zone as specified in the
   /// standard tz database. For more information, see <a
   /// href="https://en.wikipedia.org/wiki/Tz_database">tz database</a>.
+  @_s.JsonKey(name: 'MetricTimezone')
   final String metricTimezone;
 
   AnomalyDetectorConfiguration({
@@ -2516,15 +2994,47 @@ class AnomalyDetectorConfiguration {
       metricTimezone: _s.extractXmlStringValue(elem, 'MetricTimezone'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$AnomalyDetectorConfigurationToJson(this);
+}
+
+enum AnomalyDetectorStateValue {
+  @_s.JsonValue('PENDING_TRAINING')
+  pendingTraining,
+  @_s.JsonValue('TRAINED_INSUFFICIENT_DATA')
+  trainedInsufficientData,
+  @_s.JsonValue('TRAINED')
+  trained,
+}
+
+extension on String {
+  AnomalyDetectorStateValue toAnomalyDetectorStateValue() {
+    switch (this) {
+      case 'PENDING_TRAINING':
+        return AnomalyDetectorStateValue.pendingTraining;
+      case 'TRAINED_INSUFFICIENT_DATA':
+        return AnomalyDetectorStateValue.trainedInsufficientData;
+      case 'TRAINED':
+        return AnomalyDetectorStateValue.trained;
+    }
+    throw Exception('Unknown enum value: $this');
+  }
 }
 
 enum ComparisonOperator {
+  @_s.JsonValue('GreaterThanOrEqualToThreshold')
   greaterThanOrEqualToThreshold,
+  @_s.JsonValue('GreaterThanThreshold')
   greaterThanThreshold,
+  @_s.JsonValue('LessThanThreshold')
   lessThanThreshold,
+  @_s.JsonValue('LessThanOrEqualToThreshold')
   lessThanOrEqualToThreshold,
+  @_s.JsonValue('LessThanLowerOrGreaterThanUpperThreshold')
   lessThanLowerOrGreaterThanUpperThreshold,
+  @_s.JsonValue('LessThanLowerThreshold')
   lessThanLowerThreshold,
+  @_s.JsonValue('GreaterThanUpperThreshold')
   greaterThanUpperThreshold,
 }
 
@@ -2550,20 +3060,140 @@ extension on String {
   }
 }
 
+/// The details about a composite alarm.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
+class CompositeAlarm {
+  /// Indicates whether actions should be executed during any changes to the alarm
+  /// state.
+  @_s.JsonKey(name: 'ActionsEnabled')
+  final bool actionsEnabled;
+
+  /// The actions to execute when this alarm transitions to the ALARM state from
+  /// any other state. Each action is specified as an Amazon Resource Name (ARN).
+  @_s.JsonKey(name: 'AlarmActions')
+  final List<String> alarmActions;
+
+  /// The Amazon Resource Name (ARN) of the alarm.
+  @_s.JsonKey(name: 'AlarmArn')
+  final String alarmArn;
+
+  /// The time stamp of the last update to the alarm configuration.
+  @_s.JsonKey(
+      name: 'AlarmConfigurationUpdatedTimestamp',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
+  final DateTime alarmConfigurationUpdatedTimestamp;
+
+  /// The description of the alarm.
+  @_s.JsonKey(name: 'AlarmDescription')
+  final String alarmDescription;
+
+  /// The name of the alarm.
+  @_s.JsonKey(name: 'AlarmName')
+  final String alarmName;
+
+  /// The rule that this alarm uses to evaluate its alarm state.
+  @_s.JsonKey(name: 'AlarmRule')
+  final String alarmRule;
+
+  /// The actions to execute when this alarm transitions to the INSUFFICIENT_DATA
+  /// state from any other state. Each action is specified as an Amazon Resource
+  /// Name (ARN).
+  @_s.JsonKey(name: 'InsufficientDataActions')
+  final List<String> insufficientDataActions;
+
+  /// The actions to execute when this alarm transitions to the OK state from any
+  /// other state. Each action is specified as an Amazon Resource Name (ARN).
+  @_s.JsonKey(name: 'OKActions')
+  final List<String> oKActions;
+
+  /// An explanation for the alarm state, in text format.
+  @_s.JsonKey(name: 'StateReason')
+  final String stateReason;
+
+  /// An explanation for the alarm state, in JSON format.
+  @_s.JsonKey(name: 'StateReasonData')
+  final String stateReasonData;
+
+  /// The time stamp of the last update to the alarm state.
+  @_s.JsonKey(
+      name: 'StateUpdatedTimestamp', fromJson: unixFromJson, toJson: unixToJson)
+  final DateTime stateUpdatedTimestamp;
+
+  /// The state value for the alarm.
+  @_s.JsonKey(name: 'StateValue')
+  final StateValue stateValue;
+
+  CompositeAlarm({
+    this.actionsEnabled,
+    this.alarmActions,
+    this.alarmArn,
+    this.alarmConfigurationUpdatedTimestamp,
+    this.alarmDescription,
+    this.alarmName,
+    this.alarmRule,
+    this.insufficientDataActions,
+    this.oKActions,
+    this.stateReason,
+    this.stateReasonData,
+    this.stateUpdatedTimestamp,
+    this.stateValue,
+  });
+  factory CompositeAlarm.fromXml(_s.XmlElement elem) {
+    return CompositeAlarm(
+      actionsEnabled: _s.extractXmlBoolValue(elem, 'ActionsEnabled'),
+      alarmActions: _s
+          .extractXmlChild(elem, 'AlarmActions')
+          ?.let((elem) => _s.extractXmlStringListValues(elem, 'AlarmActions')),
+      alarmArn: _s.extractXmlStringValue(elem, 'AlarmArn'),
+      alarmConfigurationUpdatedTimestamp: _s.extractXmlDateTimeValue(
+          elem, 'AlarmConfigurationUpdatedTimestamp'),
+      alarmDescription: _s.extractXmlStringValue(elem, 'AlarmDescription'),
+      alarmName: _s.extractXmlStringValue(elem, 'AlarmName'),
+      alarmRule: _s.extractXmlStringValue(elem, 'AlarmRule'),
+      insufficientDataActions: _s
+          .extractXmlChild(elem, 'InsufficientDataActions')
+          ?.let((elem) =>
+              _s.extractXmlStringListValues(elem, 'InsufficientDataActions')),
+      oKActions: _s
+          .extractXmlChild(elem, 'OKActions')
+          ?.let((elem) => _s.extractXmlStringListValues(elem, 'OKActions')),
+      stateReason: _s.extractXmlStringValue(elem, 'StateReason'),
+      stateReasonData: _s.extractXmlStringValue(elem, 'StateReasonData'),
+      stateUpdatedTimestamp:
+          _s.extractXmlDateTimeValue(elem, 'StateUpdatedTimestamp'),
+      stateValue: _s.extractXmlStringValue(elem, 'StateValue')?.toStateValue(),
+    );
+  }
+}
+
 /// Represents a specific dashboard.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DashboardEntry {
   /// The Amazon Resource Name (ARN) of the dashboard.
+  @_s.JsonKey(name: 'DashboardArn')
   final String dashboardArn;
 
   /// The name of the dashboard.
+  @_s.JsonKey(name: 'DashboardName')
   final String dashboardName;
 
   /// The time stamp of when the dashboard was last modified, either by an API
   /// call or through the console. This number is expressed as the number of
   /// milliseconds since Jan 1, 1970 00:00:00 UTC.
+  @_s.JsonKey(name: 'LastModified', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime lastModified;
 
   /// The size of the dashboard, in bytes.
+  @_s.JsonKey(name: 'Size')
   final int size;
 
   DashboardEntry({
@@ -2583,11 +3213,18 @@ class DashboardEntry {
 }
 
 /// An error or warning for the operation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DashboardValidationMessage {
   /// The data path related to the message.
+  @_s.JsonKey(name: 'DataPath')
   final String dataPath;
 
   /// A message describing the error or warning.
+  @_s.JsonKey(name: 'Message')
   final String message;
 
   DashboardValidationMessage({
@@ -2603,30 +3240,43 @@ class DashboardValidationMessage {
 }
 
 /// Encapsulates the statistical data that CloudWatch computes from metric data.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Datapoint {
   /// The average of the metric values that correspond to the data point.
+  @_s.JsonKey(name: 'Average')
   final double average;
 
   /// The percentile statistic for the data point.
+  @_s.JsonKey(name: 'ExtendedStatistics')
   final Map<String, double> extendedStatistics;
 
   /// The maximum metric value for the data point.
+  @_s.JsonKey(name: 'Maximum')
   final double maximum;
 
   /// The minimum metric value for the data point.
+  @_s.JsonKey(name: 'Minimum')
   final double minimum;
 
   /// The number of metric values that contributed to the aggregate value of this
   /// data point.
+  @_s.JsonKey(name: 'SampleCount')
   final double sampleCount;
 
   /// The sum of the metric values for the data point.
+  @_s.JsonKey(name: 'Sum')
   final double sum;
 
   /// The time stamp used for the data point.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   /// The standard unit for the data point.
+  @_s.JsonKey(name: 'Unit')
   final StandardUnit unit;
 
   Datapoint({
@@ -2660,6 +3310,11 @@ class Datapoint {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteAnomalyDetectorOutput {
   DeleteAnomalyDetectorOutput();
   factory DeleteAnomalyDetectorOutput.fromXml(
@@ -2669,6 +3324,11 @@ class DeleteAnomalyDetectorOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteDashboardsOutput {
   DeleteDashboardsOutput();
   factory DeleteDashboardsOutput.fromXml(
@@ -2678,9 +3338,15 @@ class DeleteDashboardsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteInsightRulesOutput {
   /// An array listing the rules that could not be deleted. You cannot delete
   /// built-in rules.
+  @_s.JsonKey(name: 'Failures')
   final List<PartialFailure> failures;
 
   DeleteInsightRulesOutput({
@@ -2696,11 +3362,18 @@ class DeleteInsightRulesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAlarmHistoryOutput {
   /// The alarm histories, in JSON format.
+  @_s.JsonKey(name: 'AlarmHistoryItems')
   final List<AlarmHistoryItem> alarmHistoryItems;
 
   /// The token that marks the start of the next batch of returned results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeAlarmHistoryOutput({
@@ -2719,8 +3392,14 @@ class DescribeAlarmHistoryOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAlarmsForMetricOutput {
   /// The information for each alarm with the specified metric.
+  @_s.JsonKey(name: 'MetricAlarms')
   final List<MetricAlarm> metricAlarms;
 
   DescribeAlarmsForMetricOutput({
@@ -2736,19 +3415,36 @@ class DescribeAlarmsForMetricOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAlarmsOutput {
-  /// The information for the specified alarms.
+  /// The information about any composite alarms returned by the operation.
+  @_s.JsonKey(name: 'CompositeAlarms')
+  final List<CompositeAlarm> compositeAlarms;
+
+  /// The information about any metric alarms returned by the operation.
+  @_s.JsonKey(name: 'MetricAlarms')
   final List<MetricAlarm> metricAlarms;
 
   /// The token that marks the start of the next batch of returned results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeAlarmsOutput({
+    this.compositeAlarms,
     this.metricAlarms,
     this.nextToken,
   });
   factory DescribeAlarmsOutput.fromXml(_s.XmlElement elem) {
     return DescribeAlarmsOutput(
+      compositeAlarms: _s.extractXmlChild(elem, 'CompositeAlarms')?.let(
+          (elem) => elem
+              .findElements('CompositeAlarms')
+              .map((c) => CompositeAlarm.fromXml(c))
+              .toList()),
       metricAlarms: _s.extractXmlChild(elem, 'MetricAlarms')?.let((elem) => elem
           .findElements('MetricAlarms')
           .map((c) => MetricAlarm.fromXml(c))
@@ -2758,12 +3454,19 @@ class DescribeAlarmsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAnomalyDetectorsOutput {
   /// The list of anomaly detection models returned by the operation.
+  @_s.JsonKey(name: 'AnomalyDetectors')
   final List<AnomalyDetector> anomalyDetectors;
 
   /// A token that you can use in a subsequent operation to retrieve the next set
   /// of results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeAnomalyDetectorsOutput({
@@ -2782,11 +3485,18 @@ class DescribeAnomalyDetectorsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeInsightRulesOutput {
   /// The rules returned by the operation.
+  @_s.JsonKey(name: 'InsightRules')
   final List<InsightRule> insightRules;
 
   /// Reserved for future use.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeInsightRulesOutput({
@@ -2805,11 +3515,18 @@ class DescribeInsightRulesOutput {
 }
 
 /// Expands the identity of a metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Dimension {
   /// The name of the dimension.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value representing the dimension measurement.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Dimension({
@@ -2822,25 +3539,41 @@ class Dimension {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$DimensionToJson(this);
 }
 
 /// Represents filters for a dimension.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class DimensionFilter {
   /// The dimension name to be matched.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the dimension to be matched.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   DimensionFilter({
     @_s.required this.name,
     this.value,
   });
+  Map<String, dynamic> toJson() => _$DimensionFilterToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DisableInsightRulesOutput {
   /// An array listing the rules that could not be disabled. You cannot disable
   /// built-in rules.
+  @_s.JsonKey(name: 'Failures')
   final List<PartialFailure> failures;
 
   DisableInsightRulesOutput({
@@ -2856,9 +3589,15 @@ class DisableInsightRulesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnableInsightRulesOutput {
   /// An array listing the rules that could not be enabled. You cannot disable or
   /// enable built-in rules.
+  @_s.JsonKey(name: 'Failures')
   final List<PartialFailure> failures;
 
   EnableInsightRulesOutput({
@@ -2874,17 +3613,26 @@ class EnableInsightRulesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetDashboardOutput {
   /// The Amazon Resource Name (ARN) of the dashboard.
+  @_s.JsonKey(name: 'DashboardArn')
   final String dashboardArn;
 
   /// The detailed information about the dashboard, including what widgets are
   /// included and their location on the dashboard. For more information about the
-  /// <code>DashboardBody</code> syntax, see
-  /// <a>CloudWatch-Dashboard-Body-Structure</a>.
+  /// <code>DashboardBody</code> syntax, see <a
+  /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/CloudWatch-Dashboard-Body-Structure.html">Dashboard
+  /// Body Structure and Syntax</a>.
+  @_s.JsonKey(name: 'DashboardBody')
   final String dashboardBody;
 
   /// The name of the dashboard.
+  @_s.JsonKey(name: 'DashboardName')
   final String dashboardName;
 
   GetDashboardOutput({
@@ -2901,30 +3649,41 @@ class GetDashboardOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetInsightRuleReportOutput {
   /// The sum of the values from all individual contributors that match the rule.
+  @_s.JsonKey(name: 'AggregateValue')
   final double aggregateValue;
 
   /// Specifies whether this rule aggregates contributor data by COUNT or SUM.
+  @_s.JsonKey(name: 'AggregationStatistic')
   final String aggregationStatistic;
 
   /// An approximate count of the unique contributors found by this rule in this
   /// time period.
+  @_s.JsonKey(name: 'ApproximateUniqueCount')
   final int approximateUniqueCount;
 
   /// An array of the unique contributors found by this rule in this time period.
   /// If the rule contains multiple keys, each combination of values for the keys
   /// counts as a unique contributor.
+  @_s.JsonKey(name: 'Contributors')
   final List<InsightRuleContributor> contributors;
 
   /// An array of the strings used as the keys for this rule. The keys are the
   /// dimensions used to classify contributors. If the rule contains more than one
   /// key, then each unique combination of values for the keys is counted as a
   /// unique contributor.
+  @_s.JsonKey(name: 'KeyLabels')
   final List<String> keyLabels;
 
   /// A time series of metric data points that matches the time period in the rule
   /// request.
+  @_s.JsonKey(name: 'MetricDatapoints')
   final List<InsightRuleMetricDatapoint> metricDatapoints;
 
   GetInsightRuleReportOutput({
@@ -2958,6 +3717,11 @@ class GetInsightRuleReportOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetMetricDataOutput {
   /// Contains a message about this <code>GetMetricData</code> operation, if the
   /// operation results in such a message. An example of a message that may be
@@ -2968,13 +3732,16 @@ class GetMetricDataOutput {
   /// <code>GetMetricData</code> operation. Any message about a specific metric
   /// returned by the operation appears in the <code>MetricDataResult</code>
   /// object returned for that metric.
+  @_s.JsonKey(name: 'Messages')
   final List<MessageData> messages;
 
   /// The metrics that are returned, including the metric name, namespace, and
   /// dimensions.
+  @_s.JsonKey(name: 'MetricDataResults')
   final List<MetricDataResult> metricDataResults;
 
   /// A token that marks the next batch of returned results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   GetMetricDataOutput({
@@ -2998,11 +3765,18 @@ class GetMetricDataOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetMetricStatisticsOutput {
   /// The data points for the specified metric.
+  @_s.JsonKey(name: 'Datapoints')
   final List<Datapoint> datapoints;
 
   /// A label for the specified metric.
+  @_s.JsonKey(name: 'Label')
   final String label;
 
   GetMetricStatisticsOutput({
@@ -3020,8 +3794,15 @@ class GetMetricStatisticsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class GetMetricWidgetImageOutput {
   /// The image of the graph, in the output format specified.
+  @Uint8ListConverter()
+  @_s.JsonKey(name: 'MetricWidgetImage')
   final Uint8List metricWidgetImage;
 
   GetMetricWidgetImageOutput({
@@ -3035,8 +3816,11 @@ class GetMetricWidgetImageOutput {
 }
 
 enum HistoryItemType {
+  @_s.JsonValue('ConfigurationUpdate')
   configurationUpdate,
+  @_s.JsonValue('StateUpdate')
   stateUpdate,
+  @_s.JsonValue('Action')
   action,
 }
 
@@ -3055,6 +3839,11 @@ extension on String {
 }
 
 /// This structure contains the definition for a Contributor Insights rule.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InsightRule {
   /// The definition of the rule, as a JSON object. The definition contains the
   /// keywords used to define contributors, the value to aggregate on if this rule
@@ -3062,17 +3851,21 @@ class InsightRule {
   /// syntax, see <a
   /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/ContributorInsights-RuleSyntax.html">Contributor
   /// Insights Rule Syntax</a>.
+  @_s.JsonKey(name: 'Definition')
   final String definition;
 
   /// The name of the rule.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// For rules that you create, this is always <code>{"Name":
   /// "CloudWatchLogRule", "Version": 1}</code>. For built-in rules, this is
   /// <code>{"Name": "ServiceLogRule", "Version": 1}</code>
+  @_s.JsonKey(name: 'Schema')
   final String schema;
 
   /// Indicates whether the rule is enabled or disabled.
+  @_s.JsonKey(name: 'State')
   final String state;
 
   InsightRule({
@@ -3098,17 +3891,26 @@ class InsightRule {
 /// If the rule contains a single key, then each unique contributor is each
 /// unique value for this key.
 ///
-/// For more information, see <a>GetInsightRuleReport</a>.
+/// For more information, see <a
+/// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetInsightRuleReport.html">GetInsightRuleReport</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InsightRuleContributor {
   /// An approximation of the aggregate value that comes from this contributor.
+  @_s.JsonKey(name: 'ApproximateAggregateValue')
   final double approximateAggregateValue;
 
   /// An array of the data points where this contributor is present. Only the data
   /// points when this contributor appeared are included in the array.
+  @_s.JsonKey(name: 'Datapoints')
   final List<InsightRuleContributorDatapoint> datapoints;
 
   /// One of the log entry field keywords that is used to define contributors for
   /// this rule.
+  @_s.JsonKey(name: 'Keys')
   final List<String> keys;
 
   InsightRuleContributor({
@@ -3133,13 +3935,22 @@ class InsightRuleContributor {
 
 /// One data point related to one contributor.
 ///
-/// For more information, see <a>GetInsightRuleReport</a> and
-/// <a>InsightRuleContributor</a>.
+/// For more information, see <a
+/// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetInsightRuleReport.html">GetInsightRuleReport</a>
+/// and <a
+/// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_InsightRuleContributor.html">InsightRuleContributor</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InsightRuleContributorDatapoint {
   /// The approximate value that this contributor added during this timestamp.
+  @_s.JsonKey(name: 'ApproximateValue')
   final double approximateValue;
 
   /// The timestamp of the data point.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   InsightRuleContributorDatapoint({
@@ -3157,9 +3968,16 @@ class InsightRuleContributorDatapoint {
 /// One data point from the metric time series returned in a Contributor
 /// Insights rule report.
 ///
-/// For more information, see <a>GetInsightRuleReport</a>.
+/// For more information, see <a
+/// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_GetInsightRuleReport.html">GetInsightRuleReport</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class InsightRuleMetricDatapoint {
   /// The timestamp of the data point.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   /// The average value from all contributors during the time period represented
@@ -3167,6 +3985,7 @@ class InsightRuleMetricDatapoint {
   ///
   /// This statistic is returned only if you included it in the
   /// <code>Metrics</code> array in your request.
+  @_s.JsonKey(name: 'Average')
   final double average;
 
   /// The maximum value provided by one contributor during this timestamp. Each
@@ -3175,6 +3994,7 @@ class InsightRuleMetricDatapoint {
   ///
   /// This statistic is returned only if you included it in the
   /// <code>Metrics</code> array in your request.
+  @_s.JsonKey(name: 'MaxContributorValue')
   final double maxContributorValue;
 
   /// The maximum value from a single occurence from a single contributor during
@@ -3182,6 +4002,7 @@ class InsightRuleMetricDatapoint {
   ///
   /// This statistic is returned only if you included it in the
   /// <code>Metrics</code> array in your request.
+  @_s.JsonKey(name: 'Maximum')
   final double maximum;
 
   /// The minimum value from a single contributor during the time period
@@ -3189,12 +4010,14 @@ class InsightRuleMetricDatapoint {
   ///
   /// This statistic is returned only if you included it in the
   /// <code>Metrics</code> array in your request.
+  @_s.JsonKey(name: 'Minimum')
   final double minimum;
 
   /// The number of occurrences that matched the rule during this data point.
   ///
   /// This statistic is returned only if you included it in the
   /// <code>Metrics</code> array in your request.
+  @_s.JsonKey(name: 'SampleCount')
   final double sampleCount;
 
   /// The sum of the values from all contributors during the time period
@@ -3202,12 +4025,14 @@ class InsightRuleMetricDatapoint {
   ///
   /// This statistic is returned only if you included it in the
   /// <code>Metrics</code> array in your request.
+  @_s.JsonKey(name: 'Sum')
   final double sum;
 
   /// The number of unique contributors who published data during this timestamp.
   ///
   /// This statistic is returned only if you included it in the
   /// <code>Metrics</code> array in your request.
+  @_s.JsonKey(name: 'UniqueContributors')
   final double uniqueContributors;
 
   InsightRuleMetricDatapoint({
@@ -3235,11 +4060,18 @@ class InsightRuleMetricDatapoint {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListDashboardsOutput {
   /// The list of matching dashboards.
+  @_s.JsonKey(name: 'DashboardEntries')
   final List<DashboardEntry> dashboardEntries;
 
   /// The token that marks the start of the next batch of returned results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListDashboardsOutput({
@@ -3258,11 +4090,18 @@ class ListDashboardsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListMetricsOutput {
   /// The metrics.
+  @_s.JsonKey(name: 'Metrics')
   final List<Metric> metrics;
 
   /// The token that marks the start of the next batch of returned results.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ListMetricsOutput({
@@ -3278,8 +4117,14 @@ class ListMetricsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ListTagsForResourceOutput {
   /// The list of tag keys and values associated with the resource you specified.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   ListTagsForResourceOutput({
@@ -3295,11 +4140,18 @@ class ListTagsForResourceOutput {
 
 /// A message returned by the <code>GetMetricData</code>API, including a code
 /// and a description.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MessageData {
   /// The error code or status code associated with the message.
+  @_s.JsonKey(name: 'Code')
   final String code;
 
   /// The message text.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   MessageData({
@@ -3315,14 +4167,22 @@ class MessageData {
 }
 
 /// Represents a specific metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Metric {
   /// The dimensions for the metric.
+  @_s.JsonKey(name: 'Dimensions')
   final List<Dimension> dimensions;
 
   /// The name of the metric. This is a required field.
+  @_s.JsonKey(name: 'MetricName')
   final String metricName;
 
   /// The namespace of the metric.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   Metric({
@@ -3340,39 +4200,58 @@ class Metric {
       namespace: _s.extractXmlStringValue(elem, 'Namespace'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MetricToJson(this);
 }
 
-/// Represents an alarm.
+/// The details about a metric alarm.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MetricAlarm {
   /// Indicates whether actions should be executed during any changes to the alarm
   /// state.
+  @_s.JsonKey(name: 'ActionsEnabled')
   final bool actionsEnabled;
 
   /// The actions to execute when this alarm transitions to the <code>ALARM</code>
   /// state from any other state. Each action is specified as an Amazon Resource
   /// Name (ARN).
+  @_s.JsonKey(name: 'AlarmActions')
   final List<String> alarmActions;
 
   /// The Amazon Resource Name (ARN) of the alarm.
+  @_s.JsonKey(name: 'AlarmArn')
   final String alarmArn;
 
   /// The time stamp of the last update to the alarm configuration.
+  @_s.JsonKey(
+      name: 'AlarmConfigurationUpdatedTimestamp',
+      fromJson: unixFromJson,
+      toJson: unixToJson)
   final DateTime alarmConfigurationUpdatedTimestamp;
 
   /// The description of the alarm.
+  @_s.JsonKey(name: 'AlarmDescription')
   final String alarmDescription;
 
   /// The name of the alarm.
+  @_s.JsonKey(name: 'AlarmName')
   final String alarmName;
 
   /// The arithmetic operation to use when comparing the specified statistic and
   /// threshold. The specified statistic value is used as the first operand.
+  @_s.JsonKey(name: 'ComparisonOperator')
   final ComparisonOperator comparisonOperator;
 
   /// The number of data points that must be breaching to trigger the alarm.
+  @_s.JsonKey(name: 'DatapointsToAlarm')
   final int datapointsToAlarm;
 
   /// The dimensions for the metric associated with the alarm.
+  @_s.JsonKey(name: 'Dimensions')
   final List<Dimension> dimensions;
 
   /// Used only for alarms based on percentiles. If <code>ignore</code>, the alarm
@@ -3380,23 +4259,28 @@ class MetricAlarm {
   /// statistically significant. If <code>evaluate</code> or this parameter is not
   /// used, the alarm is always evaluated and possibly changes state no matter how
   /// many data points are available.
+  @_s.JsonKey(name: 'EvaluateLowSampleCountPercentile')
   final String evaluateLowSampleCountPercentile;
 
   /// The number of periods over which data is compared to the specified
   /// threshold.
+  @_s.JsonKey(name: 'EvaluationPeriods')
   final int evaluationPeriods;
 
   /// The percentile statistic for the metric associated with the alarm. Specify a
   /// value between p0.0 and p100.
+  @_s.JsonKey(name: 'ExtendedStatistic')
   final String extendedStatistic;
 
   /// The actions to execute when this alarm transitions to the
   /// <code>INSUFFICIENT_DATA</code> state from any other state. Each action is
   /// specified as an Amazon Resource Name (ARN).
+  @_s.JsonKey(name: 'InsufficientDataActions')
   final List<String> insufficientDataActions;
 
   /// The name of the metric associated with the alarm, if this is an alarm based
   /// on a single metric.
+  @_s.JsonKey(name: 'MetricName')
   final String metricName;
 
   /// An array of MetricDataQuery structures, used in an alarm based on a metric
@@ -3404,48 +4288,62 @@ class MetricAlarm {
   /// expression. One item in the Metrics array is the math expression that the
   /// alarm watches. This expression by designated by having
   /// <code>ReturnValue</code> set to true.
+  @_s.JsonKey(name: 'Metrics')
   final List<MetricDataQuery> metrics;
 
   /// The namespace of the metric associated with the alarm.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   /// The actions to execute when this alarm transitions to the <code>OK</code>
   /// state from any other state. Each action is specified as an Amazon Resource
   /// Name (ARN).
+  @_s.JsonKey(name: 'OKActions')
   final List<String> oKActions;
 
   /// The period, in seconds, over which the statistic is applied.
+  @_s.JsonKey(name: 'Period')
   final int period;
 
   /// An explanation for the alarm state, in text format.
+  @_s.JsonKey(name: 'StateReason')
   final String stateReason;
 
   /// An explanation for the alarm state, in JSON format.
+  @_s.JsonKey(name: 'StateReasonData')
   final String stateReasonData;
 
   /// The time stamp of the last update to the alarm state.
+  @_s.JsonKey(
+      name: 'StateUpdatedTimestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime stateUpdatedTimestamp;
 
   /// The state value for the alarm.
+  @_s.JsonKey(name: 'StateValue')
   final StateValue stateValue;
 
   /// The statistic for the metric associated with the alarm, other than
   /// percentile. For percentile statistics, use <code>ExtendedStatistic</code>.
+  @_s.JsonKey(name: 'Statistic')
   final Statistic statistic;
 
   /// The value to compare with the specified statistic.
+  @_s.JsonKey(name: 'Threshold')
   final double threshold;
 
   /// In an alarm based on an anomaly detection model, this is the ID of the
   /// <code>ANOMALY_DETECTION_BAND</code> function used as the threshold for the
   /// alarm.
+  @_s.JsonKey(name: 'ThresholdMetricId')
   final String thresholdMetricId;
 
   /// Sets how this alarm is to handle missing data points. If this parameter is
   /// omitted, the default behavior of <code>missing</code> is used.
+  @_s.JsonKey(name: 'TreatMissingData')
   final String treatMissingData;
 
   /// The unit of the metric associated with the alarm.
+  @_s.JsonKey(name: 'Unit')
   final StandardUnit unit;
 
   MetricAlarm({
@@ -3535,7 +4433,7 @@ class MetricAlarm {
 /// When used in <code>GetMetricData</code>, it indicates the metric data to
 /// return, and whether this call is just retrieving a batch set of data for one
 /// metric, or is performing a math expression on metric data. A single
-/// <code>GetMetricData</code> call can include up to 100
+/// <code>GetMetricData</code> call can include up to 500
 /// <code>MetricDataQuery</code> structures.
 ///
 /// When used in <code>PutMetricAlarm</code>, it enables you to create an alarm
@@ -3559,6 +4457,11 @@ class MetricAlarm {
 /// you are using this structure in a <code>GetMetricData</code> operation or a
 /// <code>PutMetricAlarm</code> operation. These differences are explained in
 /// the following parameter list.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MetricDataQuery {
   /// A short name used to tie this object to the results in the response. This
   /// name must be unique within a single call to <code>GetMetricData</code>. If
@@ -3566,6 +4469,7 @@ class MetricDataQuery {
   /// represents that data and can serve as a variable in the mathematical
   /// expression. The valid characters are letters, numbers, and underscore. The
   /// first character must be a lowercase letter.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// The math expression to be performed on the returned data, if this object is
@@ -3578,12 +4482,14 @@ class MetricDataQuery {
   ///
   /// Within each MetricDataQuery object, you must specify either
   /// <code>Expression</code> or <code>MetricStat</code> but not both.
+  @_s.JsonKey(name: 'Expression')
   final String expression;
 
   /// A human-readable label for this metric or expression. This is especially
   /// useful if this is an expression, so that you know what the value represents.
   /// If the metric or expression is shown in a CloudWatch dashboard widget, the
   /// label is shown. If Label is omitted, CloudWatch generates a default.
+  @_s.JsonKey(name: 'Label')
   final String label;
 
   /// The metric to be returned, along with statistics, period, and units. Use
@@ -3592,6 +4498,7 @@ class MetricDataQuery {
   ///
   /// Within one MetricDataQuery object, you must specify either
   /// <code>Expression</code> or <code>MetricStat</code> but not both.
+  @_s.JsonKey(name: 'MetricStat')
   final MetricStat metricStat;
 
   /// The granularity, in seconds, of the returned data points. For metrics with
@@ -3601,11 +4508,7 @@ class MetricDataQuery {
   /// any multiple of 60. High-resolution metrics are those metrics stored by a
   /// <code>PutMetricData</code> operation that includes a <code>StorageResolution
   /// of 1 second</code>.
-  ///
-  /// If you are performing a <code>GetMetricData</code> operation, use this field
-  /// only if you are specifying an <code>Expression</code>. Do not use this field
-  /// when you are specifying a <code>MetricStat</code> in a
-  /// <code>GetMetricData</code> operation.
+  @_s.JsonKey(name: 'Period')
   final int period;
 
   /// When used in <code>GetMetricData</code>, this option indicates whether to
@@ -3618,6 +4521,7 @@ class MetricDataQuery {
   /// one expression result to use as the alarm. For all other metrics and
   /// expressions in the same <code>PutMetricAlarm</code> operation, specify
   /// <code>ReturnData</code> as False.
+  @_s.JsonKey(name: 'ReturnData')
   final bool returnData;
 
   MetricDataQuery({
@@ -3640,20 +4544,30 @@ class MetricDataQuery {
       returnData: _s.extractXmlBoolValue(elem, 'ReturnData'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MetricDataQueryToJson(this);
 }
 
 /// A <code>GetMetricData</code> call returns an array of
 /// <code>MetricDataResult</code> structures. Each of these structures includes
 /// the data points for that metric, along with the timestamps of those data
 /// points and other identifying information.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MetricDataResult {
   /// The short name you specified to represent this metric.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// The human-readable label associated with the data.
+  @_s.JsonKey(name: 'Label')
   final String label;
 
   /// A list of messages with additional information about the data returned.
+  @_s.JsonKey(name: 'Messages')
   final List<MessageData> messages;
 
   /// The status of the returned data. <code>Complete</code> indicates that all
@@ -3664,16 +4578,19 @@ class MetricDataResult {
   /// returned if you are performing a math expression. <code>InternalError</code>
   /// indicates that an error occurred. Retry your request using
   /// <code>NextToken</code>, if present.
+  @_s.JsonKey(name: 'StatusCode')
   final StatusCode statusCode;
 
   /// The timestamps for the data points, formatted in Unix timestamp format. The
   /// number of timestamps always matches the number of values and the value for
   /// Timestamps[x] is Values[x].
+  @_s.JsonKey(name: 'Timestamps')
   final List<DateTime> timestamps;
 
   /// The data points for the metric corresponding to <code>Timestamps</code>. The
   /// number of values always matches the number of timestamps and the timestamp
   /// for Values[x] is Timestamps[x].
+  @_s.JsonKey(name: 'Values')
   final List<double> values;
 
   MetricDataResult({
@@ -3705,8 +4622,14 @@ class MetricDataResult {
 
 /// Encapsulates the information sent to either create a metric or add new
 /// values to be aggregated into an existing metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MetricDatum {
   /// The name of the metric.
+  @_s.JsonKey(name: 'MetricName')
   final String metricName;
 
   /// Array of numbers that is used along with the <code>Values</code> array. Each
@@ -3717,12 +4640,15 @@ class MetricDatum {
   /// If you omit the <code>Counts</code> array, the default of 1 is used as the
   /// value for each count. If you include a <code>Counts</code> array, it must
   /// include the same amount of values as the <code>Values</code> array.
+  @_s.JsonKey(name: 'Counts')
   final List<double> counts;
 
   /// The dimensions associated with the metric.
+  @_s.JsonKey(name: 'Dimensions')
   final List<Dimension> dimensions;
 
   /// The statistical values for the metric.
+  @_s.JsonKey(name: 'StatisticValues')
   final StatisticSet statisticValues;
 
   /// Valid values are 1 and 60. Setting this to 1 specifies this metric as a
@@ -3735,10 +4661,12 @@ class MetricDatum {
   /// Metrics</a> in the <i>Amazon CloudWatch User Guide</i>.
   ///
   /// This field is optional, if you do not specify it the default of 60 is used.
+  @_s.JsonKey(name: 'StorageResolution')
   final int storageResolution;
 
   /// The time the metric data was received, expressed as the number of
   /// milliseconds since Jan 1, 1970 00:00:00 UTC.
+  @_s.JsonKey(name: 'Timestamp', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime timestamp;
 
   /// When you are using a <code>Put</code> operation, this defines what unit you
@@ -3746,6 +4674,7 @@ class MetricDatum {
   ///
   /// In a <code>Get</code> operation, this displays the unit that is used for the
   /// metric.
+  @_s.JsonKey(name: 'Unit')
   final StandardUnit unit;
 
   /// The value for the metric.
@@ -3754,6 +4683,7 @@ class MetricDatum {
   /// values that are either too small or too large. Values must be in the range
   /// of -2^360 to 2^360. In addition, special values (for example, NaN,
   /// +Infinity, -Infinity) are not supported.
+  @_s.JsonKey(name: 'Value')
   final double value;
 
   /// Array of numbers representing the values for the metric during the period.
@@ -3767,6 +4697,7 @@ class MetricDatum {
   /// <code>Double</code>, CloudWatch rejects values that are either too small or
   /// too large. Values must be in the range of -2^360 to 2^360. In addition,
   /// special values (for example, NaN, +Infinity, -Infinity) are not supported.
+  @_s.JsonKey(name: 'Values')
   final List<double> values;
 
   MetricDatum({
@@ -3780,12 +4711,19 @@ class MetricDatum {
     this.value,
     this.values,
   });
+  Map<String, dynamic> toJson() => _$MetricDatumToJson(this);
 }
 
 /// This structure defines the metric to be returned, along with the statistics,
 /// period, and units.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MetricStat {
   /// The metric to return, including the metric name, namespace, and dimensions.
+  @_s.JsonKey(name: 'Metric')
   final Metric metric;
 
   /// The granularity, in seconds, of the returned data points. For metrics with
@@ -3814,10 +4752,12 @@ class MetricStat {
   /// hour).
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Period')
   final int period;
 
   /// The statistic to return. It can include any CloudWatch statistic or extended
   /// statistic.
+  @_s.JsonKey(name: 'Stat')
   final String stat;
 
   /// When you are using a <code>Put</code> operation, this defines what unit you
@@ -3830,6 +4770,7 @@ class MetricStat {
   /// that unit specified. If you specify a unit that does not match the data
   /// collected, the results of the operation are null. CloudWatch does not
   /// perform unit conversions.
+  @_s.JsonKey(name: 'Unit')
   final StandardUnit unit;
 
   MetricStat({
@@ -3846,22 +4787,33 @@ class MetricStat {
       unit: _s.extractXmlStringValue(elem, 'Unit')?.toStandardUnit(),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MetricStatToJson(this);
 }
 
 /// This array is empty if the API operation was successful for all the rules
 /// specified in the request. If the operation could not process one of the
 /// rules, the following data is returned for each of those rules.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PartialFailure {
   /// The type of error.
+  @_s.JsonKey(name: 'ExceptionType')
   final String exceptionType;
 
   /// The code of the error.
+  @_s.JsonKey(name: 'FailureCode')
   final String failureCode;
 
   /// A description of the error.
+  @_s.JsonKey(name: 'FailureDescription')
   final String failureDescription;
 
   /// The specified rule that could not be deleted.
+  @_s.JsonKey(name: 'FailureResource')
   final String failureResource;
 
   PartialFailure({
@@ -3880,6 +4832,11 @@ class PartialFailure {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PutAnomalyDetectorOutput {
   PutAnomalyDetectorOutput();
   factory PutAnomalyDetectorOutput.fromXml(
@@ -3889,6 +4846,11 @@ class PutAnomalyDetectorOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PutDashboardOutput {
   /// If the input for <code>PutDashboard</code> was correct and the dashboard was
   /// successfully created or modified, this result is empty.
@@ -3899,6 +4861,7 @@ class PutDashboardOutput {
   ///
   /// If this result includes error messages, the input was not valid and the
   /// operation failed.
+  @_s.JsonKey(name: 'DashboardValidationMessages')
   final List<DashboardValidationMessage> dashboardValidationMessages;
 
   PutDashboardOutput({
@@ -3916,6 +4879,11 @@ class PutDashboardOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PutInsightRuleOutput {
   PutInsightRuleOutput();
   factory PutInsightRuleOutput.fromXml(
@@ -3927,15 +4895,22 @@ class PutInsightRuleOutput {
 
 /// Specifies one range of days or times to exclude from use for training an
 /// anomaly detection model.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Range {
   /// The end time of the range to exclude. The format is
   /// <code>yyyy-MM-dd'T'HH:mm:ss</code>. For example,
   /// <code>2019-07-01T23:59:59</code>.
+  @_s.JsonKey(name: 'EndTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTime;
 
   /// The start time of the range to exclude. The format is
   /// <code>yyyy-MM-dd'T'HH:mm:ss</code>. For example,
   /// <code>2019-07-01T23:59:59</code>.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   Range({
@@ -3948,10 +4923,14 @@ class Range {
       startTime: _s.extractXmlDateTimeValue(elem, 'StartTime'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$RangeToJson(this);
 }
 
 enum ScanBy {
+  @_s.JsonValue('TimestampDescending')
   timestampDescending,
+  @_s.JsonValue('TimestampAscending')
   timestampAscending,
 }
 
@@ -3968,32 +4947,59 @@ extension on String {
 }
 
 enum StandardUnit {
+  @_s.JsonValue('Seconds')
   seconds,
+  @_s.JsonValue('Microseconds')
   microseconds,
+  @_s.JsonValue('Milliseconds')
   milliseconds,
+  @_s.JsonValue('Bytes')
   bytes,
+  @_s.JsonValue('Kilobytes')
   kilobytes,
+  @_s.JsonValue('Megabytes')
   megabytes,
+  @_s.JsonValue('Gigabytes')
   gigabytes,
+  @_s.JsonValue('Terabytes')
   terabytes,
+  @_s.JsonValue('Bits')
   bits,
+  @_s.JsonValue('Kilobits')
   kilobits,
+  @_s.JsonValue('Megabits')
   megabits,
+  @_s.JsonValue('Gigabits')
   gigabits,
+  @_s.JsonValue('Terabits')
   terabits,
+  @_s.JsonValue('Percent')
   percent,
+  @_s.JsonValue('Count')
   count,
+  @_s.JsonValue('Bytes/Second')
   bytesSecond,
+  @_s.JsonValue('Kilobytes/Second')
   kilobytesSecond,
+  @_s.JsonValue('Megabytes/Second')
   megabytesSecond,
+  @_s.JsonValue('Gigabytes/Second')
   gigabytesSecond,
+  @_s.JsonValue('Terabytes/Second')
   terabytesSecond,
+  @_s.JsonValue('Bits/Second')
   bitsSecond,
+  @_s.JsonValue('Kilobits/Second')
   kilobitsSecond,
+  @_s.JsonValue('Megabits/Second')
   megabitsSecond,
+  @_s.JsonValue('Gigabits/Second')
   gigabitsSecond,
+  @_s.JsonValue('Terabits/Second')
   terabitsSecond,
+  @_s.JsonValue('Count/Second')
   countSecond,
+  @_s.JsonValue('None')
   none,
 }
 
@@ -4060,8 +5066,11 @@ extension on String {
 }
 
 enum StateValue {
+  @_s.JsonValue('OK')
   ok,
+  @_s.JsonValue('ALARM')
   alarm,
+  @_s.JsonValue('INSUFFICIENT_DATA')
   insufficientData,
 }
 
@@ -4080,10 +5089,15 @@ extension on String {
 }
 
 enum Statistic {
+  @_s.JsonValue('SampleCount')
   sampleCount,
+  @_s.JsonValue('Average')
   average,
+  @_s.JsonValue('Sum')
   sum,
+  @_s.JsonValue('Minimum')
   minimum,
+  @_s.JsonValue('Maximum')
   maximum,
 }
 
@@ -4106,17 +5120,26 @@ extension on String {
 }
 
 /// Represents a set of statistics that describes a specific metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class StatisticSet {
   /// The maximum value of the sample set.
+  @_s.JsonKey(name: 'Maximum')
   final double maximum;
 
   /// The minimum value of the sample set.
+  @_s.JsonKey(name: 'Minimum')
   final double minimum;
 
   /// The number of samples used for the statistic set.
+  @_s.JsonKey(name: 'SampleCount')
   final double sampleCount;
 
   /// The sum of values for the sample set.
+  @_s.JsonKey(name: 'Sum')
   final double sum;
 
   StatisticSet({
@@ -4125,11 +5148,15 @@ class StatisticSet {
     @_s.required this.sampleCount,
     @_s.required this.sum,
   });
+  Map<String, dynamic> toJson() => _$StatisticSetToJson(this);
 }
 
 enum StatusCode {
+  @_s.JsonValue('Complete')
   complete,
+  @_s.JsonValue('InternalError')
   internalError,
+  @_s.JsonValue('PartialData')
   partialData,
 }
 
@@ -4148,12 +5175,19 @@ extension on String {
 }
 
 /// A key-value pair associated with a CloudWatch resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// A string that you can use to assign a value. The combination of tag keys and
   /// values can help you organize and categorize your resources.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value for the specified tag key.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -4166,8 +5200,15 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagResourceOutput {
   TagResourceOutput();
   factory TagResourceOutput.fromXml(
@@ -4177,6 +5218,11 @@ class TagResourceOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class UntagResourceOutput {
   UntagResourceOutput();
   factory UntagResourceOutput.fromXml(

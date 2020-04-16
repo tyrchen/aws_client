@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'autoscaling-2011-01-01.g.dart';
 
 /// Amazon EC2 Auto Scaling is designed to automatically launch or terminate EC2
 /// instances based on user-defined scaling policies, scheduled actions, and
@@ -416,7 +426,7 @@ class AutoScaling {
   /// <a>DescribeAccountLimits</a>. For information about updating this limit,
   /// see <a
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html">Amazon
-  /// EC2 Auto Scaling Limits</a> in the <i>Amazon EC2 Auto Scaling User
+  /// EC2 Auto Scaling Service Quotas</a> in the <i>Amazon EC2 Auto Scaling User
   /// Guide</i>.
   ///
   /// May throw [AlreadyExistsFault].
@@ -534,6 +544,11 @@ class AutoScaling {
   /// Parameter [maxInstanceLifetime] :
   /// The maximum amount of time, in seconds, that an instance can be in
   /// service.
+  ///
+  /// For more information, see <a
+  /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html">Replacing
+  /// Auto Scaling Instances Based on Maximum Instance Lifetime</a> in the
+  /// <i>Amazon EC2 Auto Scaling User Guide</i>.
   ///
   /// Valid Range: Minimum value of 604800.
   ///
@@ -771,7 +786,7 @@ class AutoScaling {
   /// <a>DescribeAccountLimits</a>. For information about updating this limit,
   /// see <a
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html">Amazon
-  /// EC2 Auto Scaling Limits</a> in the <i>Amazon EC2 Auto Scaling User
+  /// EC2 Auto Scaling Service Quotas</a> in the <i>Amazon EC2 Auto Scaling User
   /// Guide</i>.
   ///
   /// For more information, see <a
@@ -1533,12 +1548,12 @@ class AutoScaling {
     );
   }
 
-  /// Describes the current Amazon EC2 Auto Scaling resource limits for your AWS
+  /// Describes the current Amazon EC2 Auto Scaling resource quotas for your AWS
   /// account.
   ///
-  /// For information about requesting an increase in these limits, see <a
+  /// For information about requesting an increase, see <a
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-account-limits.html">Amazon
-  /// EC2 Auto Scaling Limits</a> in the <i>Amazon EC2 Auto Scaling User
+  /// EC2 Auto Scaling Service Quotas</a> in the <i>Amazon EC2 Auto Scaling User
   /// Guide</i>.
   ///
   /// May throw [ResourceContentionFault].
@@ -3065,10 +3080,7 @@ class AutoScaling {
     );
   }
 
-  /// Creates or updates a scaling policy for an Auto Scaling group. To update
-  /// an existing scaling policy, use the existing policy name and set the
-  /// parameters to change. Any existing parameter not changed in an update to
-  /// an existing policy is not changed in this update request.
+  /// Creates or updates a scaling policy for an Auto Scaling group.
   ///
   /// For more information about using scaling policies to scale your Auto
   /// Scaling group automatically, see <a
@@ -3105,6 +3117,13 @@ class AutoScaling {
   /// information, see <a
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/Cooldown.html">Scaling
   /// Cooldowns</a> in the <i>Amazon EC2 Auto Scaling User Guide</i>.
+  ///
+  /// Parameter [enabled] :
+  /// Indicates whether the scaling policy is enabled or disabled. The default
+  /// is enabled. For more information, see <a
+  /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-enable-disable-scaling-policy.html">Disabling
+  /// a Scaling Policy for an Auto Scaling Group</a> in the <i>Amazon EC2 Auto
+  /// Scaling User Guide</i>.
   ///
   /// Parameter [estimatedInstanceWarmup] :
   /// The estimated time, in seconds, until a newly launched instance can
@@ -3184,6 +3203,7 @@ class AutoScaling {
     @_s.required String policyName,
     String adjustmentType,
     int cooldown,
+    bool enabled,
     int estimatedInstanceWarmup,
     String metricAggregationType,
     int minAdjustmentMagnitude,
@@ -3258,6 +3278,7 @@ class AutoScaling {
     $request['PolicyName'] = policyName;
     adjustmentType?.also((arg) => $request['AdjustmentType'] = arg);
     cooldown?.also((arg) => $request['Cooldown'] = arg);
+    enabled?.also((arg) => $request['Enabled'] = arg);
     estimatedInstanceWarmup
         ?.also((arg) => $request['EstimatedInstanceWarmup'] = arg);
     metricAggregationType
@@ -3852,10 +3873,22 @@ class AutoScaling {
   }
 
   /// Terminates the specified instance and optionally adjusts the desired group
-  /// size.
+  /// size. This call simply makes a termination request. The instance is not
+  /// terminated immediately. When an instance is terminated, the instance
+  /// status changes to <code>terminated</code>. You can't connect to or start
+  /// an instance after you've terminated it.
   ///
-  /// This call simply makes a termination request. The instance is not
-  /// terminated immediately.
+  /// If you do not specify the option to decrement the desired capacity, Amazon
+  /// EC2 Auto Scaling launches instances to replace the ones that are
+  /// terminated.
+  ///
+  /// By default, Amazon EC2 Auto Scaling balances instances across all
+  /// Availability Zones. If you decrement the desired capacity, your Auto
+  /// Scaling group can become unbalanced between Availability Zones. Amazon EC2
+  /// Auto Scaling tries to rebalance the group, and rebalancing might terminate
+  /// instances in other zones. For more information, see <a
+  /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-benefits.html#AutoScalingBehavior.InstanceUsage">Rebalancing
+  /// Activities</a> in the <i>Amazon EC2 Auto Scaling User Guide</i>.
   ///
   /// May throw [ScalingActivityInProgressFault].
   /// May throw [ResourceContentionFault].
@@ -4010,6 +4043,11 @@ class AutoScaling {
   /// Parameter [maxInstanceLifetime] :
   /// The maximum amount of time, in seconds, that an instance can be in
   /// service.
+  ///
+  /// For more information, see <a
+  /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-max-instance-lifetime.html">Replacing
+  /// Auto Scaling Instances Based on Maximum Instance Lifetime</a> in the
+  /// <i>Amazon EC2 Auto Scaling User Guide</i>.
   ///
   /// Valid Range: Minimum value of 604800.
   ///
@@ -4192,15 +4230,22 @@ class AutoScaling {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ActivitiesType {
   /// The scaling activities. Activities are sorted by start time. Activities
   /// still in progress are described first.
+  @_s.JsonKey(name: 'Activities')
   final List<Activity> activities;
 
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   ActivitiesType({
@@ -4221,35 +4266,50 @@ class ActivitiesType {
 /// Describes scaling activity, which is a long-running process that represents
 /// a change to your Auto Scaling group, such as changing its size or replacing
 /// an instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Activity {
   /// The ID of the activity.
+  @_s.JsonKey(name: 'ActivityId')
   final String activityId;
 
   /// The name of the Auto Scaling group.
+  @_s.JsonKey(name: 'AutoScalingGroupName')
   final String autoScalingGroupName;
 
   /// The reason the activity began.
+  @_s.JsonKey(name: 'Cause')
   final String cause;
 
   /// The start time of the activity.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   /// The current status of the activity.
+  @_s.JsonKey(name: 'StatusCode')
   final ScalingActivityStatusCode statusCode;
 
   /// A friendly, more verbose description of the activity.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The details about the activity.
+  @_s.JsonKey(name: 'Details')
   final String details;
 
   /// The end time of the activity.
+  @_s.JsonKey(name: 'EndTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTime;
 
   /// A value between 0 and 100 that indicates the progress of the activity.
+  @_s.JsonKey(name: 'Progress')
   final int progress;
 
   /// A friendly, more verbose description of the activity status.
+  @_s.JsonKey(name: 'StatusMessage')
   final String statusMessage;
 
   Activity({
@@ -4283,8 +4343,14 @@ class Activity {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ActivityType {
   /// A scaling activity.
+  @_s.JsonKey(name: 'Activity')
   final Activity activity;
 
   ActivityType({
@@ -4299,10 +4365,16 @@ class ActivityType {
 }
 
 /// Describes a policy adjustment type.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AdjustmentType {
   /// The policy adjustment type. The valid values are
   /// <code>ChangeInCapacity</code>, <code>ExactCapacity</code>, and
   /// <code>PercentChangeInCapacity</code>.
+  @_s.JsonKey(name: 'AdjustmentType')
   final String adjustmentType;
 
   AdjustmentType({
@@ -4316,11 +4388,18 @@ class AdjustmentType {
 }
 
 /// Describes an alarm.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Alarm {
   /// The Amazon Resource Name (ARN) of the alarm.
+  @_s.JsonKey(name: 'AlarmARN')
   final String alarmARN;
 
   /// The name of the alarm.
+  @_s.JsonKey(name: 'AlarmName')
   final String alarmName;
 
   Alarm({
@@ -4335,6 +4414,11 @@ class Alarm {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AttachLoadBalancerTargetGroupsResultType {
   AttachLoadBalancerTargetGroupsResultType();
   factory AttachLoadBalancerTargetGroupsResultType.fromXml(
@@ -4344,6 +4428,11 @@ class AttachLoadBalancerTargetGroupsResultType {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AttachLoadBalancersResultType {
   AttachLoadBalancersResultType();
   factory AttachLoadBalancersResultType.fromXml(
@@ -4354,93 +4443,124 @@ class AttachLoadBalancersResultType {
 }
 
 /// Describes an Auto Scaling group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AutoScalingGroup {
   /// The name of the Auto Scaling group.
+  @_s.JsonKey(name: 'AutoScalingGroupName')
   final String autoScalingGroupName;
 
   /// One or more Availability Zones for the group.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<String> availabilityZones;
 
   /// The date and time the group was created.
+  @_s.JsonKey(name: 'CreatedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdTime;
 
   /// The amount of time, in seconds, after a scaling activity completes before
   /// another scaling activity can start.
+  @_s.JsonKey(name: 'DefaultCooldown')
   final int defaultCooldown;
 
   /// The desired size of the group.
+  @_s.JsonKey(name: 'DesiredCapacity')
   final int desiredCapacity;
 
   /// The service to use for the health checks. The valid values are
   /// <code>EC2</code> and <code>ELB</code>. If you configure an Auto Scaling
   /// group to use ELB health checks, it considers the instance unhealthy if it
   /// fails either the EC2 status checks or the load balancer health checks.
+  @_s.JsonKey(name: 'HealthCheckType')
   final String healthCheckType;
 
   /// The maximum size of the group.
+  @_s.JsonKey(name: 'MaxSize')
   final int maxSize;
 
   /// The minimum size of the group.
+  @_s.JsonKey(name: 'MinSize')
   final int minSize;
 
   /// The Amazon Resource Name (ARN) of the Auto Scaling group.
+  @_s.JsonKey(name: 'AutoScalingGroupARN')
   final String autoScalingGroupARN;
 
   /// The metrics enabled for the group.
+  @_s.JsonKey(name: 'EnabledMetrics')
   final List<EnabledMetric> enabledMetrics;
 
   /// The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before
   /// checking the health status of an EC2 instance that has come into service.
+  @_s.JsonKey(name: 'HealthCheckGracePeriod')
   final int healthCheckGracePeriod;
 
   /// The EC2 instances associated with the group.
+  @_s.JsonKey(name: 'Instances')
   final List<Instance> instances;
 
   /// The name of the associated launch configuration.
+  @_s.JsonKey(name: 'LaunchConfigurationName')
   final String launchConfigurationName;
 
   /// The launch template for the group.
+  @_s.JsonKey(name: 'LaunchTemplate')
   final LaunchTemplateSpecification launchTemplate;
 
   /// One or more load balancers associated with the group.
+  @_s.JsonKey(name: 'LoadBalancerNames')
   final List<String> loadBalancerNames;
 
   /// The maximum amount of time, in seconds, that an instance can be in service.
   ///
   /// Valid Range: Minimum value of 604800.
+  @_s.JsonKey(name: 'MaxInstanceLifetime')
   final int maxInstanceLifetime;
 
   /// The mixed instances policy for the group.
+  @_s.JsonKey(name: 'MixedInstancesPolicy')
   final MixedInstancesPolicy mixedInstancesPolicy;
 
   /// Indicates whether newly launched instances are protected from termination by
   /// Amazon EC2 Auto Scaling when scaling in.
+  @_s.JsonKey(name: 'NewInstancesProtectedFromScaleIn')
   final bool newInstancesProtectedFromScaleIn;
 
   /// The name of the placement group into which to launch your instances, if any.
+  @_s.JsonKey(name: 'PlacementGroup')
   final String placementGroup;
 
   /// The Amazon Resource Name (ARN) of the service-linked role that the Auto
   /// Scaling group uses to call other AWS services on your behalf.
+  @_s.JsonKey(name: 'ServiceLinkedRoleARN')
   final String serviceLinkedRoleARN;
 
   /// The current state of the group when <a>DeleteAutoScalingGroup</a> is in
   /// progress.
+  @_s.JsonKey(name: 'Status')
   final String status;
 
   /// The suspended processes associated with the group.
+  @_s.JsonKey(name: 'SuspendedProcesses')
   final List<SuspendedProcess> suspendedProcesses;
 
   /// The tags for the group.
+  @_s.JsonKey(name: 'Tags')
   final List<TagDescription> tags;
 
   /// The Amazon Resource Names (ARN) of the target groups for your load balancer.
+  @_s.JsonKey(name: 'TargetGroupARNs')
   final List<String> targetGroupARNs;
 
   /// The termination policies for the group.
+  @_s.JsonKey(name: 'TerminationPolicies')
   final List<String> terminationPolicies;
 
   /// One or more subnet IDs, if applicable, separated by commas.
+  @_s.JsonKey(name: 'VPCZoneIdentifier')
   final String vPCZoneIdentifier;
 
   AutoScalingGroup({
@@ -4531,14 +4651,21 @@ class AutoScalingGroup {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AutoScalingGroupsType {
   /// The groups.
+  @_s.JsonKey(name: 'AutoScalingGroups')
   final List<AutoScalingGroup> autoScalingGroups;
 
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   AutoScalingGroupsType({
@@ -4558,43 +4685,58 @@ class AutoScalingGroupsType {
 }
 
 /// Describes an EC2 instance associated with an Auto Scaling group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AutoScalingInstanceDetails {
   /// The name of the Auto Scaling group for the instance.
+  @_s.JsonKey(name: 'AutoScalingGroupName')
   final String autoScalingGroupName;
 
   /// The Availability Zone for the instance.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// The last reported health status of this instance. "Healthy" means that the
   /// instance is healthy and should remain in service. "Unhealthy" means that the
   /// instance is unhealthy and Amazon EC2 Auto Scaling should terminate and
   /// replace it.
+  @_s.JsonKey(name: 'HealthStatus')
   final String healthStatus;
 
   /// The ID of the instance.
+  @_s.JsonKey(name: 'InstanceId')
   final String instanceId;
 
   /// The lifecycle state for the instance.
+  @_s.JsonKey(name: 'LifecycleState')
   final String lifecycleState;
 
   /// Indicates whether the instance is protected from termination by Amazon EC2
   /// Auto Scaling when scaling in.
+  @_s.JsonKey(name: 'ProtectedFromScaleIn')
   final bool protectedFromScaleIn;
 
   /// The instance type of the EC2 instance.
+  @_s.JsonKey(name: 'InstanceType')
   final String instanceType;
 
   /// The launch configuration used to launch the instance. This value is not
   /// available if you attached the instance to the Auto Scaling group.
+  @_s.JsonKey(name: 'LaunchConfigurationName')
   final String launchConfigurationName;
 
   /// The launch template for the instance.
+  @_s.JsonKey(name: 'LaunchTemplate')
   final LaunchTemplateSpecification launchTemplate;
 
   /// The number of capacity units contributed by the instance based on its
   /// instance type.
   ///
   /// Valid Range: Minimum value of 1. Maximum value of 999.
+  @_s.JsonKey(name: 'WeightedCapacity')
   final String weightedCapacity;
 
   AutoScalingInstanceDetails({
@@ -4630,14 +4772,21 @@ class AutoScalingInstanceDetails {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AutoScalingInstancesType {
   /// The instances.
+  @_s.JsonKey(name: 'AutoScalingInstances')
   final List<AutoScalingInstanceDetails> autoScalingInstances;
 
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   AutoScalingInstancesType({
@@ -4657,9 +4806,15 @@ class AutoScalingInstancesType {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BatchDeleteScheduledActionAnswer {
   /// The names of the scheduled actions that could not be deleted, including an
   /// error message.
+  @_s.JsonKey(name: 'FailedScheduledActions')
   final List<FailedScheduledUpdateGroupActionRequest> failedScheduledActions;
 
   BatchDeleteScheduledActionAnswer({
@@ -4677,9 +4832,15 @@ class BatchDeleteScheduledActionAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class BatchPutScheduledUpdateGroupActionAnswer {
   /// The names of the scheduled actions that could not be created or updated,
   /// including an error message.
+  @_s.JsonKey(name: 'FailedScheduledUpdateGroupActions')
   final List<FailedScheduledUpdateGroupActionRequest>
       failedScheduledUpdateGroupActions;
 
@@ -4699,15 +4860,22 @@ class BatchPutScheduledUpdateGroupActionAnswer {
 }
 
 /// Describes a block device mapping.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class BlockDeviceMapping {
   /// The device name exposed to the EC2 instance (for example,
   /// <code>/dev/sdh</code> or <code>xvdh</code>). For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html">Device
   /// Naming on Linux Instances</a> in the <i>Amazon EC2 User Guide for Linux
   /// Instances</i>.
+  @_s.JsonKey(name: 'DeviceName')
   final String deviceName;
 
   /// The information about the Amazon EBS volume.
+  @_s.JsonKey(name: 'Ebs')
   final Ebs ebs;
 
   /// Suppresses a device mapping.
@@ -4715,9 +4883,11 @@ class BlockDeviceMapping {
   /// If this parameter is true for the root device, the instance might fail the
   /// EC2 health check. In that case, Amazon EC2 Auto Scaling launches a
   /// replacement instance.
+  @_s.JsonKey(name: 'NoDevice')
   final bool noDevice;
 
   /// The name of the virtual device (for example, <code>ephemeral0</code>).
+  @_s.JsonKey(name: 'VirtualName')
   final String virtualName;
 
   BlockDeviceMapping({
@@ -4734,8 +4904,15 @@ class BlockDeviceMapping {
       virtualName: _s.extractXmlStringValue(elem, 'VirtualName'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$BlockDeviceMappingToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CompleteLifecycleActionAnswer {
   CompleteLifecycleActionAnswer();
   factory CompleteLifecycleActionAnswer.fromXml(
@@ -4769,23 +4946,33 @@ class CompleteLifecycleActionAnswer {
 /// For more information about CloudWatch, see <a
 /// href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html">Amazon
 /// CloudWatch Concepts</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class CustomizedMetricSpecification {
   /// The name of the metric.
+  @_s.JsonKey(name: 'MetricName')
   final String metricName;
 
   /// The namespace of the metric.
+  @_s.JsonKey(name: 'Namespace')
   final String namespace;
 
   /// The statistic of the metric.
+  @_s.JsonKey(name: 'Statistic')
   final MetricStatistic statistic;
 
   /// The dimensions of the metric.
   ///
   /// Conditional: If you published your metric with dimensions, you must specify
   /// the same dimensions in your scaling policy.
+  @_s.JsonKey(name: 'Dimensions')
   final List<MetricDimension> dimensions;
 
   /// The unit of the metric.
+  @_s.JsonKey(name: 'Unit')
   final String unit;
 
   CustomizedMetricSpecification({
@@ -4808,8 +4995,15 @@ class CustomizedMetricSpecification {
       unit: _s.extractXmlStringValue(elem, 'Unit'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$CustomizedMetricSpecificationToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteLifecycleHookAnswer {
   DeleteLifecycleHookAnswer();
   factory DeleteLifecycleHookAnswer.fromXml(
@@ -4819,19 +5013,28 @@ class DeleteLifecycleHookAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAccountLimitsAnswer {
-  /// The maximum number of groups allowed for your AWS account. The default limit
-  /// is 200 per AWS Region.
+  /// The maximum number of groups allowed for your AWS account. The default is
+  /// 200 groups per AWS Region.
+  @_s.JsonKey(name: 'MaxNumberOfAutoScalingGroups')
   final int maxNumberOfAutoScalingGroups;
 
   /// The maximum number of launch configurations allowed for your AWS account.
-  /// The default limit is 200 per AWS Region.
+  /// The default is 200 launch configurations per AWS Region.
+  @_s.JsonKey(name: 'MaxNumberOfLaunchConfigurations')
   final int maxNumberOfLaunchConfigurations;
 
   /// The current number of groups for your AWS account.
+  @_s.JsonKey(name: 'NumberOfAutoScalingGroups')
   final int numberOfAutoScalingGroups;
 
   /// The current number of launch configurations for your AWS account.
+  @_s.JsonKey(name: 'NumberOfLaunchConfigurations')
   final int numberOfLaunchConfigurations;
 
   DescribeAccountLimitsAnswer({
@@ -4854,8 +5057,14 @@ class DescribeAccountLimitsAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAdjustmentTypesAnswer {
   /// The policy adjustment types.
+  @_s.JsonKey(name: 'AdjustmentTypes')
   final List<AdjustmentType> adjustmentTypes;
 
   DescribeAdjustmentTypesAnswer({
@@ -4872,8 +5081,14 @@ class DescribeAdjustmentTypesAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAutoScalingNotificationTypesAnswer {
   /// The notification types.
+  @_s.JsonKey(name: 'AutoScalingNotificationTypes')
   final List<String> autoScalingNotificationTypes;
 
   DescribeAutoScalingNotificationTypesAnswer({
@@ -4890,8 +5105,14 @@ class DescribeAutoScalingNotificationTypesAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLifecycleHookTypesAnswer {
   /// The lifecycle hook types.
+  @_s.JsonKey(name: 'LifecycleHookTypes')
   final List<String> lifecycleHookTypes;
 
   DescribeLifecycleHookTypesAnswer({
@@ -4905,8 +5126,14 @@ class DescribeLifecycleHookTypesAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLifecycleHooksAnswer {
   /// The lifecycle hooks for the specified group.
+  @_s.JsonKey(name: 'LifecycleHooks')
   final List<LifecycleHook> lifecycleHooks;
 
   DescribeLifecycleHooksAnswer({
@@ -4923,14 +5150,21 @@ class DescribeLifecycleHooksAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLoadBalancerTargetGroupsResponse {
   /// Information about the target groups.
+  @_s.JsonKey(name: 'LoadBalancerTargetGroups')
   final List<LoadBalancerTargetGroupState> loadBalancerTargetGroups;
 
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeLoadBalancerTargetGroupsResponse({
@@ -4950,14 +5184,21 @@ class DescribeLoadBalancerTargetGroupsResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLoadBalancersResponse {
   /// The load balancers.
+  @_s.JsonKey(name: 'LoadBalancers')
   final List<LoadBalancerState> loadBalancers;
 
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeLoadBalancersResponse({
@@ -4976,11 +5217,18 @@ class DescribeLoadBalancersResponse {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeMetricCollectionTypesAnswer {
   /// The granularities for the metrics.
+  @_s.JsonKey(name: 'Granularities')
   final List<MetricGranularityType> granularities;
 
   /// One or more metrics.
+  @_s.JsonKey(name: 'Metrics')
   final List<MetricCollectionType> metrics;
 
   DescribeMetricCollectionTypesAnswer({
@@ -5002,14 +5250,21 @@ class DescribeMetricCollectionTypesAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeNotificationConfigurationsAnswer {
   /// The notification configurations.
+  @_s.JsonKey(name: 'NotificationConfigurations')
   final List<NotificationConfiguration> notificationConfigurations;
 
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   DescribeNotificationConfigurationsAnswer({
@@ -5029,12 +5284,18 @@ class DescribeNotificationConfigurationsAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTerminationPolicyTypesAnswer {
   /// The termination policies supported by Amazon EC2 Auto Scaling:
   /// <code>OldestInstance</code>, <code>OldestLaunchConfiguration</code>,
   /// <code>NewestInstance</code>, <code>ClosestToNextInstanceHour</code>,
   /// <code>Default</code>, <code>OldestLaunchTemplate</code>, and
   /// <code>AllocationStrategy</code>.
+  @_s.JsonKey(name: 'TerminationPolicyTypes')
   final List<String> terminationPolicyTypes;
 
   DescribeTerminationPolicyTypesAnswer({
@@ -5050,9 +5311,15 @@ class DescribeTerminationPolicyTypesAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DetachInstancesAnswer {
   /// The activities related to detaching the instances from the Auto Scaling
   /// group.
+  @_s.JsonKey(name: 'Activities')
   final List<Activity> activities;
 
   DetachInstancesAnswer({
@@ -5068,6 +5335,11 @@ class DetachInstancesAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DetachLoadBalancerTargetGroupsResultType {
   DetachLoadBalancerTargetGroupsResultType();
   factory DetachLoadBalancerTargetGroupsResultType.fromXml(
@@ -5077,6 +5349,11 @@ class DetachLoadBalancerTargetGroupsResultType {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DetachLoadBalancersResultType {
   DetachLoadBalancersResultType();
   factory DetachLoadBalancersResultType.fromXml(
@@ -5088,9 +5365,15 @@ class DetachLoadBalancersResultType {
 
 /// Describes an Amazon EBS volume. Used in combination with
 /// <a>BlockDeviceMapping</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Ebs {
   /// Indicates whether the volume is deleted on instance termination. For Amazon
   /// EC2 Auto Scaling, the default value is <code>true</code>.
+  @_s.JsonKey(name: 'DeleteOnTermination')
   final bool deleteOnTermination;
 
   /// Specifies whether the volume should be encrypted. Encrypted EBS volumes can
@@ -5123,6 +5406,7 @@ class Ebs {
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/key-policy-requirements-EBS-encryption.html">Required
   /// CMK Key Policy for Use with Encrypted Volumes</a> in the <i>Amazon EC2 Auto
   /// Scaling User Guide</i>.
+  @_s.JsonKey(name: 'Encrypted')
   final bool encrypted;
 
   /// The number of I/O operations per second (IOPS) to provision for the volume.
@@ -5135,6 +5419,7 @@ class Ebs {
   /// Conditional: This parameter is required when the volume type is
   /// <code>io1</code>. (Not used with <code>standard</code>, <code>gp2</code>,
   /// <code>st1</code>, or <code>sc1</code> volumes.)
+  @_s.JsonKey(name: 'Iops')
   final int iops;
 
   /// The snapshot ID of the volume to use.
@@ -5143,6 +5428,7 @@ class Ebs {
   /// specify both <code>SnapshotId</code> and <code>VolumeSize</code>,
   /// <code>VolumeSize</code> must be equal or greater than the size of the
   /// snapshot.
+  @_s.JsonKey(name: 'SnapshotId')
   final String snapshotId;
 
   /// The volume size, in Gibibytes (GiB).
@@ -5157,6 +5443,7 @@ class Ebs {
   /// <note>
   /// At least one of VolumeSize or SnapshotId is required.
   /// </note>
+  @_s.JsonKey(name: 'VolumeSize')
   final int volumeSize;
 
   /// The volume type, which can be <code>standard</code> for Magnetic,
@@ -5169,6 +5456,7 @@ class Ebs {
   ///
   /// Valid Values: <code>standard</code> | <code>io1</code> | <code>gp2</code> |
   /// <code>st1</code> | <code>sc1</code>
+  @_s.JsonKey(name: 'VolumeType')
   final String volumeType;
 
   Ebs({
@@ -5189,11 +5477,19 @@ class Ebs {
       volumeType: _s.extractXmlStringValue(elem, 'VolumeType'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$EbsToJson(this);
 }
 
 /// Describes an enabled metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnabledMetric {
   /// The granularity of the metric. The only valid value is <code>1Minute</code>.
+  @_s.JsonKey(name: 'Granularity')
   final String granularity;
 
   /// One of the following metrics:
@@ -5224,6 +5520,7 @@ class EnabledMetric {
   /// <code>GroupTotalInstances</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Metric')
   final String metric;
 
   EnabledMetric({
@@ -5238,8 +5535,14 @@ class EnabledMetric {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class EnterStandbyAnswer {
   /// The activities related to moving instances into <code>Standby</code> mode.
+  @_s.JsonKey(name: 'Activities')
   final List<Activity> activities;
 
   EnterStandbyAnswer({
@@ -5255,8 +5558,14 @@ class EnterStandbyAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ExitStandbyAnswer {
   /// The activities related to moving instances out of <code>Standby</code> mode.
+  @_s.JsonKey(name: 'Activities')
   final List<Activity> activities;
 
   ExitStandbyAnswer({
@@ -5273,14 +5582,22 @@ class ExitStandbyAnswer {
 }
 
 /// Describes a scheduled action that could not be created, updated, or deleted.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class FailedScheduledUpdateGroupActionRequest {
   /// The name of the scheduled action.
+  @_s.JsonKey(name: 'ScheduledActionName')
   final String scheduledActionName;
 
   /// The error code.
+  @_s.JsonKey(name: 'ErrorCode')
   final String errorCode;
 
   /// The error message accompanying the error code.
+  @_s.JsonKey(name: 'ErrorMessage')
   final String errorMessage;
 
   FailedScheduledUpdateGroupActionRequest({
@@ -5299,56 +5616,78 @@ class FailedScheduledUpdateGroupActionRequest {
 }
 
 /// Describes a filter.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Filter {
   /// The name of the filter. The valid values are:
   /// <code>"auto-scaling-group"</code>, <code>"key"</code>, <code>"value"</code>,
   /// and <code>"propagate-at-launch"</code>.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the filter.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   Filter({
     this.name,
     this.values,
   });
+  Map<String, dynamic> toJson() => _$FilterToJson(this);
 }
 
 /// Describes an EC2 instance.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Instance {
   /// The Availability Zone in which the instance is running.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// The last reported health status of the instance. "Healthy" means that the
   /// instance is healthy and should remain in service. "Unhealthy" means that the
   /// instance is unhealthy and that Amazon EC2 Auto Scaling should terminate and
   /// replace it.
+  @_s.JsonKey(name: 'HealthStatus')
   final String healthStatus;
 
   /// The ID of the instance.
+  @_s.JsonKey(name: 'InstanceId')
   final String instanceId;
 
   /// A description of the current lifecycle state. The <code>Quarantined</code>
   /// state is not used.
+  @_s.JsonKey(name: 'LifecycleState')
   final LifecycleState lifecycleState;
 
   /// Indicates whether the instance is protected from termination by Amazon EC2
   /// Auto Scaling when scaling in.
+  @_s.JsonKey(name: 'ProtectedFromScaleIn')
   final bool protectedFromScaleIn;
 
   /// The instance type of the EC2 instance.
+  @_s.JsonKey(name: 'InstanceType')
   final String instanceType;
 
   /// The launch configuration associated with the instance.
+  @_s.JsonKey(name: 'LaunchConfigurationName')
   final String launchConfigurationName;
 
   /// The launch template for the instance.
+  @_s.JsonKey(name: 'LaunchTemplate')
   final LaunchTemplateSpecification launchTemplate;
 
   /// The number of capacity units contributed by the instance based on its
   /// instance type.
   ///
   /// Valid Range: Minimum value of 1. Maximum value of 999.
+  @_s.JsonKey(name: 'WeightedCapacity')
   final String weightedCapacity;
 
   Instance({
@@ -5384,9 +5723,15 @@ class Instance {
 
 /// Describes whether detailed monitoring is enabled for the Auto Scaling
 /// instances.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class InstanceMonitoring {
   /// If <code>true</code>, detailed monitoring is enabled. Otherwise, basic
   /// monitoring is enabled.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   InstanceMonitoring({
@@ -5397,6 +5742,8 @@ class InstanceMonitoring {
       enabled: _s.extractXmlBoolValue(elem, 'Enabled'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$InstanceMonitoringToJson(this);
 }
 
 /// Describes an instances distribution for an Auto Scaling group with
@@ -5415,6 +5762,11 @@ class InstanceMonitoring {
 /// When scale out occurs, Amazon EC2 Auto Scaling launches instances based on
 /// the new settings. When scale in occurs, Amazon EC2 Auto Scaling terminates
 /// instances according to the group's termination policies.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class InstancesDistribution {
   /// Indicates how to allocate instance types to fulfill On-Demand capacity.
   ///
@@ -5425,6 +5777,7 @@ class InstancesDistribution {
   /// all your On-Demand capacity cannot be fulfilled using your highest priority
   /// instance, then the Auto Scaling groups launches the remaining capacity using
   /// the second priority instance type, and so on.
+  @_s.JsonKey(name: 'OnDemandAllocationStrategy')
   final String onDemandAllocationStrategy;
 
   /// The minimum amount of the Auto Scaling group's capacity that must be
@@ -5440,6 +5793,7 @@ class InstancesDistribution {
   /// When replacing instances, Amazon EC2 Auto Scaling launches new instances
   /// before terminating the old ones.
   /// </note>
+  @_s.JsonKey(name: 'OnDemandBaseCapacity')
   final int onDemandBaseCapacity;
 
   /// Controls the percentages of On-Demand Instances and Spot Instances for your
@@ -5454,6 +5808,7 @@ class InstancesDistribution {
   /// launches new instances before terminating the old ones.
   /// </note>
   /// Valid Range: Minimum value of 0. Maximum value of 100.
+  @_s.JsonKey(name: 'OnDemandPercentageAboveBaseCapacity')
   final int onDemandPercentageAboveBaseCapacity;
 
   /// Indicates how to allocate instances across Spot Instance pools.
@@ -5471,6 +5826,7 @@ class InstancesDistribution {
   /// <code>capacity-optimized</code>.
   ///
   /// Valid values: <code>lowest-price</code> | <code>capacity-optimized</code>
+  @_s.JsonKey(name: 'SpotAllocationStrategy')
   final String spotAllocationStrategy;
 
   /// The number of Spot Instance pools across which to allocate your Spot
@@ -5480,6 +5836,7 @@ class InstancesDistribution {
   /// Used only when the Spot allocation strategy is <code>lowest-price</code>.
   ///
   /// Valid Range: Minimum value of 1. Maximum value of 20.
+  @_s.JsonKey(name: 'SpotInstancePools')
   final int spotInstancePools;
 
   /// The maximum price per unit hour that you are willing to pay for a Spot
@@ -5488,6 +5845,7 @@ class InstancesDistribution {
   ///
   /// To remove a value that you previously set, include the parameter but leave
   /// the value blank.
+  @_s.JsonKey(name: 'SpotMaxPrice')
   final String spotMaxPrice;
 
   InstancesDistribution({
@@ -5511,11 +5869,19 @@ class InstancesDistribution {
       spotMaxPrice: _s.extractXmlStringValue(elem, 'SpotMaxPrice'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$InstancesDistributionToJson(this);
 }
 
 /// Describes a launch configuration.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LaunchConfiguration {
   /// The creation date and time for the launch configuration.
+  @_s.JsonKey(name: 'CreatedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdTime;
 
   /// The ID of the Amazon Machine Image (AMI) to use to launch your EC2
@@ -5524,6 +5890,7 @@ class LaunchConfiguration {
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html">Finding
   /// an AMI</a> in the <i>Amazon EC2 User Guide for Linux Instances</i>.
+  @_s.JsonKey(name: 'ImageId')
   final String imageId;
 
   /// The instance type for the instances.
@@ -5531,9 +5898,11 @@ class LaunchConfiguration {
   /// For information about available instance types, see <a
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes">Available
   /// Instance Types</a> in the <i>Amazon EC2 User Guide for Linux Instances.</i>
+  @_s.JsonKey(name: 'InstanceType')
   final String instanceType;
 
   /// The name of the launch configuration.
+  @_s.JsonKey(name: 'LaunchConfigurationName')
   final String launchConfigurationName;
 
   /// For Auto Scaling groups that are running in a VPC, specifies whether to
@@ -5543,6 +5912,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html">Launching
   /// Auto Scaling Instances in a VPC</a> in the <i>Amazon EC2 Auto Scaling User
   /// Guide</i>.
+  @_s.JsonKey(name: 'AssociatePublicIpAddress')
   final bool associatePublicIpAddress;
 
   /// A block device mapping, which specifies the block devices for the instance.
@@ -5550,6 +5920,7 @@ class LaunchConfiguration {
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html">Block
   /// Device Mapping</a> in the <i>Amazon EC2 User Guide for Linux Instances</i>.
+  @_s.JsonKey(name: 'BlockDeviceMappings')
   final List<BlockDeviceMapping> blockDeviceMappings;
 
   /// The ID of a ClassicLink-enabled VPC to link your EC2-Classic instances to.
@@ -5560,6 +5931,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html#as-ClassicLink">Linking
   /// EC2-Classic Instances to a VPC</a> in the <i>Amazon EC2 Auto Scaling User
   /// Guide</i>.
+  @_s.JsonKey(name: 'ClassicLinkVPCId')
   final String classicLinkVPCId;
 
   /// The IDs of one or more security groups for the VPC specified in
@@ -5571,6 +5943,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html#as-ClassicLink">Linking
   /// EC2-Classic Instances to a VPC</a> in the <i>Amazon EC2 Auto Scaling User
   /// Guide</i>.
+  @_s.JsonKey(name: 'ClassicLinkVPCSecurityGroups')
   final List<String> classicLinkVPCSecurityGroups;
 
   /// Specifies whether the launch configuration is optimized for EBS I/O
@@ -5580,6 +5953,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSOptimized.html">Amazon
   /// EBS-Optimized Instances</a> in the <i>Amazon EC2 User Guide for Linux
   /// Instances</i>.
+  @_s.JsonKey(name: 'EbsOptimized')
   final bool ebsOptimized;
 
   /// The name or the Amazon Resource Name (ARN) of the instance profile
@@ -5590,6 +5964,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/us-iam-role.html">IAM
   /// Role for Applications That Run on Amazon EC2 Instances</a> in the <i>Amazon
   /// EC2 Auto Scaling User Guide</i>.
+  @_s.JsonKey(name: 'IamInstanceProfile')
   final String iamInstanceProfile;
 
   /// Controls whether instances in this group are launched with detailed
@@ -5599,9 +5974,11 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/autoscaling/latest/userguide/as-instance-monitoring.html#enable-as-instance-metrics">Configure
   /// Monitoring for Auto Scaling Instances</a> in the <i>Amazon EC2 Auto Scaling
   /// User Guide</i>.
+  @_s.JsonKey(name: 'InstanceMonitoring')
   final InstanceMonitoring instanceMonitoring;
 
   /// The ID of the kernel associated with the AMI.
+  @_s.JsonKey(name: 'KernelId')
   final String kernelId;
 
   /// The name of the key pair.
@@ -5609,9 +5986,11 @@ class LaunchConfiguration {
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html">Amazon
   /// EC2 Key Pairs</a> in the <i>Amazon EC2 User Guide for Linux Instances</i>.
+  @_s.JsonKey(name: 'KeyName')
   final String keyName;
 
   /// The Amazon Resource Name (ARN) of the launch configuration.
+  @_s.JsonKey(name: 'LaunchConfigurationARN')
   final String launchConfigurationARN;
 
   /// The tenancy of the instance, either <code>default</code> or
@@ -5621,9 +6000,11 @@ class LaunchConfiguration {
   /// For more information, see <a
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-in-vpc.html#as-vpc-tenancy">Instance
   /// Placement Tenancy</a> in the <i>Amazon EC2 Auto Scaling User Guide</i>.
+  @_s.JsonKey(name: 'PlacementTenancy')
   final String placementTenancy;
 
   /// The ID of the RAM disk associated with the AMI.
+  @_s.JsonKey(name: 'RamdiskId')
   final String ramdiskId;
 
   /// A list that contains the security groups to assign to the instances in the
@@ -5633,6 +6014,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_SecurityGroups.html">Security
   /// Groups for Your VPC</a> in the <i>Amazon Virtual Private Cloud User
   /// Guide</i>.
+  @_s.JsonKey(name: 'SecurityGroups')
   final List<String> securityGroups;
 
   /// The maximum hourly price to be paid for any Spot Instance launched to
@@ -5643,6 +6025,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-launch-spot-instances.html">Launching
   /// Spot Instances in Your Auto Scaling Group</a> in the <i>Amazon EC2 Auto
   /// Scaling User Guide</i>.
+  @_s.JsonKey(name: 'SpotPrice')
   final String spotPrice;
 
   /// The Base64-encoded user data to make available to the launched EC2
@@ -5652,6 +6035,7 @@ class LaunchConfiguration {
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html">Instance
   /// Metadata and User Data</a> in the <i>Amazon EC2 User Guide for Linux
   /// Instances</i>.
+  @_s.JsonKey(name: 'UserData')
   final String userData;
 
   LaunchConfiguration({
@@ -5713,14 +6097,21 @@ class LaunchConfiguration {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LaunchConfigurationsType {
   /// The launch configurations.
+  @_s.JsonKey(name: 'LaunchConfigurations')
   final List<LaunchConfiguration> launchConfigurations;
 
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   LaunchConfigurationsType({
@@ -5751,14 +6142,21 @@ class LaunchConfigurationsType {
 /// launches instances to match the new settings. When scale in occurs, Amazon
 /// EC2 Auto Scaling terminates instances according to the group's termination
 /// policies.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LaunchTemplate {
   /// The launch template to use. You must specify either the launch template ID
   /// or launch template name in the request.
+  @_s.JsonKey(name: 'LaunchTemplateSpecification')
   final LaunchTemplateSpecification launchTemplateSpecification;
 
   /// An optional setting. Any parameters that you specify override the same
   /// parameters in the launch template. Currently, the only supported override is
   /// instance type. You can specify between 1 and 20 instance types.
+  @_s.JsonKey(name: 'Overrides')
   final List<LaunchTemplateOverrides> overrides;
 
   LaunchTemplate({
@@ -5776,15 +6174,23 @@ class LaunchTemplate {
           .toList()),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LaunchTemplateToJson(this);
 }
 
 /// Describes an override for a launch template.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LaunchTemplateOverrides {
   /// The instance type.
   ///
   /// For information about available instance types, see <a
   /// href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#AvailableInstanceTypes">Available
   /// Instance Types</a> in the <i>Amazon Elastic Compute Cloud User Guide.</i>
+  @_s.JsonKey(name: 'InstanceType')
   final String instanceType;
 
   /// The number of capacity units, which gives the instance type a proportional
@@ -5793,7 +6199,13 @@ class LaunchTemplateOverrides {
   /// units that you chose to set the desired capacity in terms of instances, or a
   /// performance attribute such as vCPUs, memory, or I/O.
   ///
+  /// For more information, see <a
+  /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-instance-weighting.html">Instance
+  /// Weighting for Amazon EC2 Auto Scaling</a> in the <i>Amazon EC2 Auto Scaling
+  /// User Guide</i>.
+  ///
   /// Valid Range: Minimum value of 1. Maximum value of 999.
+  @_s.JsonKey(name: 'WeightedCapacity')
   final String weightedCapacity;
 
   LaunchTemplateOverrides({
@@ -5806,6 +6218,8 @@ class LaunchTemplateOverrides {
       weightedCapacity: _s.extractXmlStringValue(elem, 'WeightedCapacity'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LaunchTemplateOverridesToJson(this);
 }
 
 /// Describes a launch template and the launch template version.
@@ -5815,13 +6229,20 @@ class LaunchTemplateOverrides {
 /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-launch-template.html">Creating
 /// a Launch Template for an Auto Scaling Group</a> in the <i>Amazon EC2 Auto
 /// Scaling User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LaunchTemplateSpecification {
   /// The ID of the launch template. You must specify either a template ID or a
   /// template name.
+  @_s.JsonKey(name: 'LaunchTemplateId')
   final String launchTemplateId;
 
   /// The name of the launch template. You must specify either a template name or
   /// a template ID.
+  @_s.JsonKey(name: 'LaunchTemplateName')
   final String launchTemplateName;
 
   /// The version number, <code>$Latest</code>, or <code>$Default</code>. If the
@@ -5830,6 +6251,7 @@ class LaunchTemplateSpecification {
   /// <code>$Default</code>, Amazon EC2 Auto Scaling selects the default version
   /// of the launch template when launching instances. The default value is
   /// <code>$Default</code>.
+  @_s.JsonKey(name: 'Version')
   final String version;
 
   LaunchTemplateSpecification({
@@ -5844,32 +6266,44 @@ class LaunchTemplateSpecification {
       version: _s.extractXmlStringValue(elem, 'Version'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LaunchTemplateSpecificationToJson(this);
 }
 
 /// Describes a lifecycle hook, which tells Amazon EC2 Auto Scaling that you
 /// want to perform an action whenever it launches instances or terminates
 /// instances. Used in response to <a>DescribeLifecycleHooks</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LifecycleHook {
   /// The name of the Auto Scaling group for the lifecycle hook.
+  @_s.JsonKey(name: 'AutoScalingGroupName')
   final String autoScalingGroupName;
 
   /// Defines the action the Auto Scaling group should take when the lifecycle
   /// hook timeout elapses or if an unexpected failure occurs. The possible values
   /// are <code>CONTINUE</code> and <code>ABANDON</code>.
+  @_s.JsonKey(name: 'DefaultResult')
   final String defaultResult;
 
   /// The maximum time, in seconds, that an instance can remain in a
   /// <code>Pending:Wait</code> or <code>Terminating:Wait</code> state. The
   /// maximum is 172800 seconds (48 hours) or 100 times
   /// <code>HeartbeatTimeout</code>, whichever is smaller.
+  @_s.JsonKey(name: 'GlobalTimeout')
   final int globalTimeout;
 
   /// The maximum time, in seconds, that can elapse before the lifecycle hook
   /// times out. If the lifecycle hook times out, Amazon EC2 Auto Scaling performs
   /// the action that you specified in the <code>DefaultResult</code> parameter.
+  @_s.JsonKey(name: 'HeartbeatTimeout')
   final int heartbeatTimeout;
 
   /// The name of the lifecycle hook.
+  @_s.JsonKey(name: 'LifecycleHookName')
   final String lifecycleHookName;
 
   /// The state of the EC2 instance to which to attach the lifecycle hook. The
@@ -5883,19 +6317,23 @@ class LifecycleHook {
   /// autoscaling:EC2_INSTANCE_TERMINATING
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'LifecycleTransition')
   final String lifecycleTransition;
 
   /// Additional information that is included any time Amazon EC2 Auto Scaling
   /// sends a message to the notification target.
+  @_s.JsonKey(name: 'NotificationMetadata')
   final String notificationMetadata;
 
   /// The ARN of the target that Amazon EC2 Auto Scaling sends notifications to
   /// when an instance is in the transition state for the lifecycle hook. The
   /// notification target can be either an SQS queue or an SNS topic.
+  @_s.JsonKey(name: 'NotificationTargetARN')
   final String notificationTargetARN;
 
   /// The ARN of the IAM role that allows the Auto Scaling group to publish to the
   /// specified notification target.
+  @_s.JsonKey(name: 'RoleARN')
   final String roleARN;
 
   LifecycleHook({
@@ -5970,8 +6408,14 @@ class LifecycleHook {
 /// create new lifecycle hooks using <a>PutLifecycleHook</a>. If you are no
 /// longer using a lifecycle hook, you can delete it using
 /// <a>DeleteLifecycleHook</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LifecycleHookSpecification {
   /// The name of the lifecycle hook.
+  @_s.JsonKey(name: 'LifecycleHookName')
   final String lifecycleHookName;
 
   /// The state of the EC2 instance to which you want to attach the lifecycle
@@ -5985,12 +6429,14 @@ class LifecycleHookSpecification {
   /// autoscaling:EC2_INSTANCE_TERMINATING
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'LifecycleTransition')
   final String lifecycleTransition;
 
   /// Defines the action the Auto Scaling group should take when the lifecycle
   /// hook timeout elapses or if an unexpected failure occurs. The valid values
   /// are <code>CONTINUE</code> and <code>ABANDON</code>. The default value is
   /// <code>ABANDON</code>.
+  @_s.JsonKey(name: 'DefaultResult')
   final String defaultResult;
 
   /// The maximum time, in seconds, that can elapse before the lifecycle hook
@@ -6000,20 +6446,24 @@ class LifecycleHookSpecification {
   /// that you specified in the <code>DefaultResult</code> parameter. You can
   /// prevent the lifecycle hook from timing out by calling
   /// <a>RecordLifecycleActionHeartbeat</a>.
+  @_s.JsonKey(name: 'HeartbeatTimeout')
   final int heartbeatTimeout;
 
   /// Additional information that you want to include any time Amazon EC2 Auto
   /// Scaling sends a message to the notification target.
+  @_s.JsonKey(name: 'NotificationMetadata')
   final String notificationMetadata;
 
   /// The ARN of the target that Amazon EC2 Auto Scaling sends notifications to
   /// when an instance is in the transition state for the lifecycle hook. The
   /// notification target can be either an SQS queue or an SNS topic.
+  @_s.JsonKey(name: 'NotificationTargetARN')
   final String notificationTargetARN;
 
   /// The ARN of the IAM role that allows the Auto Scaling group to publish to the
   /// specified notification target, for example, an Amazon SNS topic or an Amazon
   /// SQS queue.
+  @_s.JsonKey(name: 'RoleARN')
   final String roleARN;
 
   LifecycleHookSpecification({
@@ -6025,21 +6475,35 @@ class LifecycleHookSpecification {
     this.notificationTargetARN,
     this.roleARN,
   });
+  Map<String, dynamic> toJson() => _$LifecycleHookSpecificationToJson(this);
 }
 
 enum LifecycleState {
+  @_s.JsonValue('Pending')
   pending,
+  @_s.JsonValue('Pending:Wait')
   pendingWait,
+  @_s.JsonValue('Pending:Proceed')
   pendingProceed,
+  @_s.JsonValue('Quarantined')
   quarantined,
+  @_s.JsonValue('InService')
   inService,
+  @_s.JsonValue('Terminating')
   terminating,
+  @_s.JsonValue('Terminating:Wait')
   terminatingWait,
+  @_s.JsonValue('Terminating:Proceed')
   terminatingProceed,
+  @_s.JsonValue('Terminated')
   terminated,
+  @_s.JsonValue('Detaching')
   detaching,
+  @_s.JsonValue('Detached')
   detached,
+  @_s.JsonValue('EnteringStandby')
   enteringStandby,
+  @_s.JsonValue('Standby')
   standby,
 }
 
@@ -6089,8 +6553,14 @@ extension on String {
 /// state transitions to <code>InService</code> after at least one instance in
 /// the group passes the health check. If EC2 health checks are enabled instead,
 /// the load balancer remains in the <code>Added</code> state.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancerState {
   /// The name of the load balancer.
+  @_s.JsonKey(name: 'LoadBalancerName')
   final String loadBalancerName;
 
   /// One of the following load balancer states:
@@ -6119,6 +6589,7 @@ class LoadBalancerState {
   /// load balancer.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'State')
   final String state;
 
   LoadBalancerState({
@@ -6142,8 +6613,14 @@ class LoadBalancerState {
 /// <code>InService</code> after at least one Auto Scaling instance passes the
 /// health check. If EC2 health checks are enabled instead, the target group
 /// remains in the <code>Added</code> state.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancerTargetGroupState {
   /// The Amazon Resource Name (ARN) of the target group.
+  @_s.JsonKey(name: 'LoadBalancerTargetGroupARN')
   final String loadBalancerTargetGroupARN;
 
   /// The state of the target group.
@@ -6172,6 +6649,7 @@ class LoadBalancerTargetGroupState {
   /// target group.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'State')
   final String state;
 
   LoadBalancerTargetGroupState({
@@ -6188,6 +6666,11 @@ class LoadBalancerTargetGroupState {
 }
 
 /// Describes a metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MetricCollectionType {
   /// One of the following metrics:
   ///
@@ -6217,6 +6700,7 @@ class MetricCollectionType {
   /// <code>GroupTotalInstances</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Metric')
   final String metric;
 
   MetricCollectionType({
@@ -6230,11 +6714,18 @@ class MetricCollectionType {
 }
 
 /// Describes the dimension of a metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MetricDimension {
   /// The name of the dimension.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The value of the dimension.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   MetricDimension({
@@ -6247,11 +6738,19 @@ class MetricDimension {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MetricDimensionToJson(this);
 }
 
 /// Describes a granularity of a metric.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class MetricGranularityType {
   /// The granularity. The only valid value is <code>1Minute</code>.
+  @_s.JsonKey(name: 'Granularity')
   final String granularity;
 
   MetricGranularityType({
@@ -6265,10 +6764,15 @@ class MetricGranularityType {
 }
 
 enum MetricStatistic {
+  @_s.JsonValue('Average')
   average,
+  @_s.JsonValue('Minimum')
   minimum,
+  @_s.JsonValue('Maximum')
   maximum,
+  @_s.JsonValue('SampleCount')
   sampleCount,
+  @_s.JsonValue('Sum')
   sum,
 }
 
@@ -6291,9 +6795,13 @@ extension on String {
 }
 
 enum MetricType {
+  @_s.JsonValue('ASGAverageCPUUtilization')
   aSGAverageCPUUtilization,
+  @_s.JsonValue('ASGAverageNetworkIn')
   aSGAverageNetworkIn,
+  @_s.JsonValue('ASGAverageNetworkOut')
   aSGAverageNetworkOut,
+  @_s.JsonValue('ALBRequestCountPerTarget')
   aLBRequestCountPerTarget,
 }
 
@@ -6326,16 +6834,23 @@ extension on String {
 /// <code>MixedInstancesPolicy</code> as the top-level parameter instead of a
 /// launch configuration or template. For more information, see
 /// <a>CreateAutoScalingGroup</a> and <a>UpdateAutoScalingGroup</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class MixedInstancesPolicy {
   /// The instances distribution to use.
   ///
   /// If you leave this parameter unspecified, the value for each parameter in
   /// <code>InstancesDistribution</code> uses a default value.
+  @_s.JsonKey(name: 'InstancesDistribution')
   final InstancesDistribution instancesDistribution;
 
   /// The launch template and instance types (overrides).
   ///
   /// This parameter must be specified when creating a mixed instances policy.
+  @_s.JsonKey(name: 'LaunchTemplate')
   final LaunchTemplate launchTemplate;
 
   MixedInstancesPolicy({
@@ -6352,11 +6867,19 @@ class MixedInstancesPolicy {
           ?.let((e) => LaunchTemplate.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MixedInstancesPolicyToJson(this);
 }
 
 /// Describes a notification.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class NotificationConfiguration {
   /// The name of the Auto Scaling group.
+  @_s.JsonKey(name: 'AutoScalingGroupName')
   final String autoScalingGroupName;
 
   /// One of the following event notification types:
@@ -6378,10 +6901,12 @@ class NotificationConfiguration {
   /// <code>autoscaling:TEST_NOTIFICATION</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'NotificationType')
   final String notificationType;
 
   /// The Amazon Resource Name (ARN) of the Amazon Simple Notification Service
   /// (Amazon SNS) topic.
+  @_s.JsonKey(name: 'TopicARN')
   final String topicARN;
 
   NotificationConfiguration({
@@ -6399,14 +6924,21 @@ class NotificationConfiguration {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PoliciesType {
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// The scaling policies.
+  @_s.JsonKey(name: 'ScalingPolicies')
   final List<ScalingPolicy> scalingPolicies;
 
   PoliciesType({
@@ -6426,11 +6958,18 @@ class PoliciesType {
 }
 
 /// Contains the output of PutScalingPolicy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PolicyARNType {
   /// The CloudWatch alarms created for the target tracking scaling policy.
+  @_s.JsonKey(name: 'Alarms')
   final List<Alarm> alarms;
 
   /// The Amazon Resource Name (ARN) of the policy.
+  @_s.JsonKey(name: 'PolicyARN')
   final String policyARN;
 
   PolicyARNType({
@@ -6448,6 +6987,11 @@ class PolicyARNType {
 
 /// Represents a predefined metric for a target tracking scaling policy to use
 /// with Amazon EC2 Auto Scaling.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class PredefinedMetricSpecification {
   /// The metric type. The following predefined metrics are available:
   ///
@@ -6469,6 +7013,7 @@ class PredefinedMetricSpecification {
   /// target in an Application Load Balancer target group.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'PredefinedMetricType')
   final MetricType predefinedMetricType;
 
   /// Identifies the resource associated with the metric type. You can't specify a
@@ -6490,6 +7035,7 @@ class PredefinedMetricSpecification {
   /// the final portion of the target group ARN.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ResourceLabel')
   final String resourceLabel;
 
   PredefinedMetricSpecification({
@@ -6504,6 +7050,8 @@ class PredefinedMetricSpecification {
       resourceLabel: _s.extractXmlStringValue(elem, 'ResourceLabel'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$PredefinedMetricSpecificationToJson(this);
 }
 
 /// Describes a process type.
@@ -6511,6 +7059,11 @@ class PredefinedMetricSpecification {
 /// For more information, see <a
 /// href="https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-suspend-resume-processes.html#process-types">Scaling
 /// Processes</a> in the <i>Amazon EC2 Auto Scaling User Guide</i>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ProcessType {
   /// One of the following processes:
   ///
@@ -6540,6 +7093,7 @@ class ProcessType {
   /// <code>ScheduledActions</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'ProcessName')
   final String processName;
 
   ProcessType({
@@ -6552,8 +7106,14 @@ class ProcessType {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ProcessesType {
   /// The names of the process types.
+  @_s.JsonKey(name: 'Processes')
   final List<ProcessType> processes;
 
   ProcessesType({
@@ -6569,6 +7129,11 @@ class ProcessesType {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class PutLifecycleHookAnswer {
   PutLifecycleHookAnswer();
   factory PutLifecycleHookAnswer.fromXml(
@@ -6578,6 +7143,11 @@ class PutLifecycleHookAnswer {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RecordLifecycleActionHeartbeatAnswer {
   RecordLifecycleActionHeartbeatAnswer();
   factory RecordLifecycleActionHeartbeatAnswer.fromXml(
@@ -6588,17 +7158,29 @@ class RecordLifecycleActionHeartbeatAnswer {
 }
 
 enum ScalingActivityStatusCode {
+  @_s.JsonValue('PendingSpotBidPlacement')
   pendingSpotBidPlacement,
+  @_s.JsonValue('WaitingForSpotInstanceRequestId')
   waitingForSpotInstanceRequestId,
+  @_s.JsonValue('WaitingForSpotInstanceId')
   waitingForSpotInstanceId,
+  @_s.JsonValue('WaitingForInstanceId')
   waitingForInstanceId,
+  @_s.JsonValue('PreInService')
   preInService,
+  @_s.JsonValue('InProgress')
   inProgress,
+  @_s.JsonValue('WaitingForELBConnectionDraining')
   waitingForELBConnectionDraining,
+  @_s.JsonValue('MidLifecycleAction')
   midLifecycleAction,
+  @_s.JsonValue('WaitingForInstanceWarmup')
   waitingForInstanceWarmup,
+  @_s.JsonValue('Successful')
   successful,
+  @_s.JsonValue('Failed')
   failed,
+  @_s.JsonValue('Cancelled')
   cancelled,
 }
 
@@ -6635,28 +7217,44 @@ extension on String {
 }
 
 /// Describes a scaling policy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ScalingPolicy {
   /// The adjustment type, which specifies how <code>ScalingAdjustment</code> is
   /// interpreted. The valid values are <code>ChangeInCapacity</code>,
   /// <code>ExactCapacity</code>, and <code>PercentChangeInCapacity</code>.
+  @_s.JsonKey(name: 'AdjustmentType')
   final String adjustmentType;
 
   /// The CloudWatch alarms related to the policy.
+  @_s.JsonKey(name: 'Alarms')
   final List<Alarm> alarms;
 
   /// The name of the Auto Scaling group.
+  @_s.JsonKey(name: 'AutoScalingGroupName')
   final String autoScalingGroupName;
 
   /// The amount of time, in seconds, after a scaling activity completes before
   /// any further dynamic scaling activities can start.
+  @_s.JsonKey(name: 'Cooldown')
   final int cooldown;
+
+  /// Indicates whether the policy is enabled (<code>true</code>) or disabled
+  /// (<code>false</code>).
+  @_s.JsonKey(name: 'Enabled')
+  final bool enabled;
 
   /// The estimated time, in seconds, until a newly launched instance can
   /// contribute to the CloudWatch metrics.
+  @_s.JsonKey(name: 'EstimatedInstanceWarmup')
   final int estimatedInstanceWarmup;
 
   /// The aggregation type for the CloudWatch metrics. The valid values are
   /// <code>Minimum</code>, <code>Maximum</code>, and <code>Average</code>.
+  @_s.JsonKey(name: 'MetricAggregationType')
   final String metricAggregationType;
 
   /// The minimum number of instances to scale. If the value of
@@ -6664,32 +7262,40 @@ class ScalingPolicy {
   /// scaling policy changes the <code>DesiredCapacity</code> of the Auto Scaling
   /// group by at least this many instances. Otherwise, the error is
   /// <code>ValidationError</code>.
+  @_s.JsonKey(name: 'MinAdjustmentMagnitude')
   final int minAdjustmentMagnitude;
 
   /// Available for backward compatibility. Use
   /// <code>MinAdjustmentMagnitude</code> instead.
+  @_s.JsonKey(name: 'MinAdjustmentStep')
   final int minAdjustmentStep;
 
   /// The Amazon Resource Name (ARN) of the policy.
+  @_s.JsonKey(name: 'PolicyARN')
   final String policyARN;
 
   /// The name of the scaling policy.
+  @_s.JsonKey(name: 'PolicyName')
   final String policyName;
 
   /// The policy type. The valid values are <code>SimpleScaling</code>,
   /// <code>StepScaling</code>, and <code>TargetTrackingScaling</code>.
+  @_s.JsonKey(name: 'PolicyType')
   final String policyType;
 
   /// The amount by which to scale, based on the specified adjustment type. A
   /// positive value adds to the current capacity while a negative number removes
   /// from the current capacity.
+  @_s.JsonKey(name: 'ScalingAdjustment')
   final int scalingAdjustment;
 
   /// A set of adjustments that enable you to scale based on the size of the alarm
   /// breach.
+  @_s.JsonKey(name: 'StepAdjustments')
   final List<StepAdjustment> stepAdjustments;
 
   /// A target tracking scaling policy.
+  @_s.JsonKey(name: 'TargetTrackingConfiguration')
   final TargetTrackingConfiguration targetTrackingConfiguration;
 
   ScalingPolicy({
@@ -6697,6 +7303,7 @@ class ScalingPolicy {
     this.alarms,
     this.autoScalingGroupName,
     this.cooldown,
+    this.enabled,
     this.estimatedInstanceWarmup,
     this.metricAggregationType,
     this.minAdjustmentMagnitude,
@@ -6716,6 +7323,7 @@ class ScalingPolicy {
       autoScalingGroupName:
           _s.extractXmlStringValue(elem, 'AutoScalingGroupName'),
       cooldown: _s.extractXmlIntValue(elem, 'Cooldown'),
+      enabled: _s.extractXmlBoolValue(elem, 'Enabled'),
       estimatedInstanceWarmup:
           _s.extractXmlIntValue(elem, 'EstimatedInstanceWarmup'),
       metricAggregationType:
@@ -6739,14 +7347,21 @@ class ScalingPolicy {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ScheduledActionsType {
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// The scheduled actions.
+  @_s.JsonKey(name: 'ScheduledUpdateGroupActions')
   final List<ScheduledUpdateGroupAction> scheduledUpdateGroupActions;
 
   ScheduledActionsType({
@@ -6768,21 +7383,31 @@ class ScheduledActionsType {
 
 /// Describes a scheduled scaling action. Used in response to
 /// <a>DescribeScheduledActions</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ScheduledUpdateGroupAction {
   /// The name of the Auto Scaling group.
+  @_s.JsonKey(name: 'AutoScalingGroupName')
   final String autoScalingGroupName;
 
   /// The number of instances you prefer to maintain in the group.
+  @_s.JsonKey(name: 'DesiredCapacity')
   final int desiredCapacity;
 
   /// The date and time in UTC for the recurring schedule to end. For example,
   /// <code>"2019-06-01T00:00:00Z"</code>.
+  @_s.JsonKey(name: 'EndTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTime;
 
   /// The maximum number of instances in the Auto Scaling group.
+  @_s.JsonKey(name: 'MaxSize')
   final int maxSize;
 
   /// The minimum number of instances in the Auto Scaling group.
+  @_s.JsonKey(name: 'MinSize')
   final int minSize;
 
   /// The recurring schedule for the action, in Unix cron syntax format.
@@ -6790,19 +7415,24 @@ class ScheduledUpdateGroupAction {
   /// When <code>StartTime</code> and <code>EndTime</code> are specified with
   /// <code>Recurrence</code>, they form the boundaries of when the recurring
   /// action starts and stops.
+  @_s.JsonKey(name: 'Recurrence')
   final String recurrence;
 
   /// The Amazon Resource Name (ARN) of the scheduled action.
+  @_s.JsonKey(name: 'ScheduledActionARN')
   final String scheduledActionARN;
 
   /// The name of the scheduled action.
+  @_s.JsonKey(name: 'ScheduledActionName')
   final String scheduledActionName;
 
   /// The date and time in UTC for this action to start. For example,
   /// <code>"2019-06-01T00:00:00Z"</code>.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   /// This parameter is no longer used.
+  @_s.JsonKey(name: 'Time', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime time;
 
   ScheduledUpdateGroupAction({
@@ -6841,21 +7471,31 @@ class ScheduledUpdateGroupAction {
 ///
 /// When updating a scheduled scaling action, all optional parameters are left
 /// unchanged if not specified.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ScheduledUpdateGroupActionRequest {
   /// The name of the scaling action.
+  @_s.JsonKey(name: 'ScheduledActionName')
   final String scheduledActionName;
 
   /// The number of EC2 instances that should be running in the group.
+  @_s.JsonKey(name: 'DesiredCapacity')
   final int desiredCapacity;
 
   /// The date and time for the recurring schedule to end. Amazon EC2 Auto Scaling
   /// does not perform the action after this time.
+  @_s.JsonKey(name: 'EndTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime endTime;
 
   /// The maximum number of instances in the Auto Scaling group.
+  @_s.JsonKey(name: 'MaxSize')
   final int maxSize;
 
   /// The minimum number of instances in the Auto Scaling group.
+  @_s.JsonKey(name: 'MinSize')
   final int minSize;
 
   /// The recurring schedule for the action, in Unix cron syntax format. This
@@ -6867,6 +7507,7 @@ class ScheduledUpdateGroupActionRequest {
   /// When <code>StartTime</code> and <code>EndTime</code> are specified with
   /// <code>Recurrence</code>, they form the boundaries of when the recurring
   /// action starts and stops.
+  @_s.JsonKey(name: 'Recurrence')
   final String recurrence;
 
   /// The date and time for the action to start, in YYYY-MM-DDThh:mm:ssZ format in
@@ -6879,6 +7520,7 @@ class ScheduledUpdateGroupActionRequest {
   ///
   /// If you try to schedule the action in the past, Amazon EC2 Auto Scaling
   /// returns an error message.
+  @_s.JsonKey(name: 'StartTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime startTime;
 
   ScheduledUpdateGroupActionRequest({
@@ -6890,8 +7532,15 @@ class ScheduledUpdateGroupActionRequest {
     this.recurrence,
     this.startTime,
   });
+  Map<String, dynamic> toJson() =>
+      _$ScheduledUpdateGroupActionRequestToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetInstanceProtectionAnswer {
   SetInstanceProtectionAnswer();
   factory SetInstanceProtectionAnswer.fromXml(
@@ -6938,10 +7587,16 @@ class SetInstanceProtectionAnswer {
 /// The upper and lower bound can't be null in the same step adjustment.
 /// </li>
 /// </ul>
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class StepAdjustment {
   /// The amount by which to scale, based on the specified adjustment type. A
   /// positive value adds to the current capacity while a negative number removes
   /// from the current capacity.
+  @_s.JsonKey(name: 'ScalingAdjustment')
   final int scalingAdjustment;
 
   /// The lower bound for the difference between the alarm threshold and the
@@ -6950,6 +7605,7 @@ class StepAdjustment {
   /// threshold plus the lower bound). Otherwise, it is exclusive (the metric must
   /// be greater than the threshold plus the lower bound). A null value indicates
   /// negative infinity.
+  @_s.JsonKey(name: 'MetricIntervalLowerBound')
   final double metricIntervalLowerBound;
 
   /// The upper bound for the difference between the alarm threshold and the
@@ -6960,6 +7616,7 @@ class StepAdjustment {
   /// positive infinity.
   ///
   /// The upper bound must be greater than the lower bound.
+  @_s.JsonKey(name: 'MetricIntervalUpperBound')
   final double metricIntervalUpperBound;
 
   StepAdjustment({
@@ -6976,15 +7633,24 @@ class StepAdjustment {
           _s.extractXmlDoubleValue(elem, 'MetricIntervalUpperBound'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$StepAdjustmentToJson(this);
 }
 
 /// Describes an automatic scaling process that has been suspended. For more
 /// information, see <a>ProcessType</a>.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SuspendedProcess {
   /// The name of the suspended process.
+  @_s.JsonKey(name: 'ProcessName')
   final String processName;
 
   /// The reason that the process was suspended.
+  @_s.JsonKey(name: 'SuspensionReason')
   final String suspensionReason;
 
   SuspendedProcess({
@@ -7000,22 +7666,32 @@ class SuspendedProcess {
 }
 
 /// Describes a tag for an Auto Scaling group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The tag key.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// Determines whether the tag is added to new instances as they are launched in
   /// the group.
+  @_s.JsonKey(name: 'PropagateAtLaunch')
   final bool propagateAtLaunch;
 
   /// The name of the group.
+  @_s.JsonKey(name: 'ResourceId')
   final String resourceId;
 
   /// The type of resource. The only supported value is
   /// <code>auto-scaling-group</code>.
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// The tag value.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -7025,25 +7701,36 @@ class Tag {
     this.resourceType,
     this.value,
   });
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// Describes a tag for an Auto Scaling group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagDescription {
   /// The tag key.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// Determines whether the tag is added to new instances as they are launched in
   /// the group.
+  @_s.JsonKey(name: 'PropagateAtLaunch')
   final bool propagateAtLaunch;
 
   /// The name of the group.
+  @_s.JsonKey(name: 'ResourceId')
   final String resourceId;
 
   /// The type of resource. The only supported value is
   /// <code>auto-scaling-group</code>.
+  @_s.JsonKey(name: 'ResourceType')
   final String resourceType;
 
   /// The tag value.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   TagDescription({
@@ -7064,14 +7751,21 @@ class TagDescription {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagsType {
   /// A string that indicates that the response contains more items than can be
   /// returned in a single response. To receive additional items, specify this
   /// string for the <code>NextToken</code> value when requesting the next set of
   /// items. This value is null when there are no more items to return.
+  @_s.JsonKey(name: 'NextToken')
   final String nextToken;
 
   /// One or more tags.
+  @_s.JsonKey(name: 'Tags')
   final List<TagDescription> tags;
 
   TagsType({
@@ -7091,12 +7785,19 @@ class TagsType {
 
 /// Represents a target tracking scaling policy configuration to use with Amazon
 /// EC2 Auto Scaling.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TargetTrackingConfiguration {
   /// The target value for the metric.
+  @_s.JsonKey(name: 'TargetValue')
   final double targetValue;
 
   /// A customized metric. You must specify either a predefined metric or a
   /// customized metric.
+  @_s.JsonKey(name: 'CustomizedMetricSpecification')
   final CustomizedMetricSpecification customizedMetricSpecification;
 
   /// Indicates whether scaling in by the target tracking scaling policy is
@@ -7104,10 +7805,12 @@ class TargetTrackingConfiguration {
   /// doesn't remove instances from the Auto Scaling group. Otherwise, the target
   /// tracking scaling policy can remove instances from the Auto Scaling group.
   /// The default is <code>false</code>.
+  @_s.JsonKey(name: 'DisableScaleIn')
   final bool disableScaleIn;
 
   /// A predefined metric. You must specify either a predefined metric or a
   /// customized metric.
+  @_s.JsonKey(name: 'PredefinedMetricSpecification')
   final PredefinedMetricSpecification predefinedMetricSpecification;
 
   TargetTrackingConfiguration({
@@ -7128,6 +7831,8 @@ class TargetTrackingConfiguration {
           ?.let((e) => PredefinedMetricSpecification.fromXml(e)),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TargetTrackingConfigurationToJson(this);
 }
 
 class AlreadyExistsFault extends _s.GenericAwsException {

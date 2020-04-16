@@ -9,9 +9,19 @@ import 'dart:typed_data';
 
 import 'package:shared_aws_api/shared.dart' as _s;
 import 'package:shared_aws_api/shared.dart'
-    show Uint8ListConverter, Uint8ListListConverter;
+    show
+        Uint8ListConverter,
+        Uint8ListListConverter,
+        rfc822fromJson,
+        rfc822toJson,
+        iso8601fromJson,
+        iso8601toJson,
+        unixFromJson,
+        unixToJson;
 
 export 'package:shared_aws_api/shared.dart' show AwsClientCredentials;
+
+part 'elasticloadbalancingv2-2015-12-01.g.dart';
 
 /// A load balancer distributes incoming traffic across targets, such as your
 /// EC2 instances. This enables you to increase the availability of your
@@ -104,7 +114,7 @@ class ElasticLoadBalancingv2 {
   /// The Amazon Resource Name (ARN) of the resource.
   ///
   /// Parameter [tags] :
-  /// The tags. Each resource can have a maximum of 10 tags.
+  /// The tags.
   Future<void> addTags({
     @_s.required List<String> resourceArns,
     @_s.required List<Tag> tags,
@@ -207,9 +217,43 @@ class ElasticLoadBalancingv2 {
   /// <a>AddListenerCertificates</a>.
   ///
   /// Parameter [sslPolicy] :
-  /// [HTTPS and TLS listeners] The security policy that defines which ciphers
-  /// and protocols are supported. The default is the current predefined
-  /// security policy.
+  /// [HTTPS and TLS listeners] The security policy that defines which protocols
+  /// and ciphers are supported. The following are the possible values:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>ELBSecurityPolicy-2016-08</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-0-2015-04</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-1-2017-01</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-2-2017-01</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-2-Ext-2018-06</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-2018-06</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-1-1-2019-08</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-1-2-2019-08</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-1-2-Res-2019-08</code>
+  /// </li>
+  /// </ul>
+  /// For more information, see <a
+  /// href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies">Security
+  /// Policies</a> in the <i>Application Load Balancers Guide</i> and <a
+  /// href="https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies">Security
+  /// Policies</a> in the <i>Network Load Balancers Guide</i>.
   Future<CreateListenerOutput> createListener({
     @_s.required List<Action> defaultActions,
     @_s.required String loadBalancerArn,
@@ -1187,7 +1231,8 @@ class ElasticLoadBalancingv2 {
   /// May throw [RuleNotFoundException].
   ///
   /// Parameter [resourceArns] :
-  /// The Amazon Resource Names (ARN) of the resources.
+  /// The Amazon Resource Names (ARN) of the resources. You can specify up to 20
+  /// resources in a single call.
   Future<DescribeTagsOutput> describeTags({
     @_s.required List<String> resourceArns,
   }) async {
@@ -1402,9 +1447,42 @@ class ElasticLoadBalancingv2 {
   ///
   /// Parameter [sslPolicy] :
   /// [HTTPS and TLS listeners] The security policy that defines which protocols
-  /// and ciphers are supported. For more information, see <a
+  /// and ciphers are supported. The following are the possible values:
+  ///
+  /// <ul>
+  /// <li>
+  /// <code>ELBSecurityPolicy-2016-08</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-0-2015-04</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-1-2017-01</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-2-2017-01</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-TLS-1-2-Ext-2018-06</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-2018-06</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-1-1-2019-08</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-1-2-2019-08</code>
+  /// </li>
+  /// <li>
+  /// <code>ELBSecurityPolicy-FS-1-2-Res-2019-08</code>
+  /// </li>
+  /// </ul>
+  /// For more information, see <a
   /// href="https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies">Security
-  /// Policies</a> in the <i>Application Load Balancers Guide</i>.
+  /// Policies</a> in the <i>Application Load Balancers Guide</i> and <a
+  /// href="https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies">Security
+  /// Policies</a> in the <i>Network Load Balancers Guide</i>.
   Future<ModifyListenerOutput> modifyListener({
     @_s.required String listenerArn,
     List<Certificate> certificates,
@@ -2010,23 +2088,32 @@ class ElasticLoadBalancingv2 {
 }
 
 /// Information about an action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Action {
   /// The type of action.
+  @_s.JsonKey(name: 'Type')
   final ActionTypeEnum type;
 
   /// [HTTPS listeners] Information for using Amazon Cognito to authenticate
   /// users. Specify only when <code>Type</code> is
   /// <code>authenticate-cognito</code>.
+  @_s.JsonKey(name: 'AuthenticateCognitoConfig')
   final AuthenticateCognitoActionConfig authenticateCognitoConfig;
 
   /// [HTTPS listeners] Information about an identity provider that is compliant
   /// with OpenID Connect (OIDC). Specify only when <code>Type</code> is
   /// <code>authenticate-oidc</code>.
+  @_s.JsonKey(name: 'AuthenticateOidcConfig')
   final AuthenticateOidcActionConfig authenticateOidcConfig;
 
   /// [Application Load Balancer] Information for creating an action that returns
   /// a custom HTTP response. Specify only when <code>Type</code> is
   /// <code>fixed-response</code>.
+  @_s.JsonKey(name: 'FixedResponseConfig')
   final FixedResponseActionConfig fixedResponseConfig;
 
   /// Information for creating an action that distributes requests among one or
@@ -2036,22 +2123,26 @@ class Action {
   /// <code>TargetGroupArn</code>, you can specify only one target group using
   /// <code>ForwardConfig</code> and it must be the same target group specified in
   /// <code>TargetGroupArn</code>.
+  @_s.JsonKey(name: 'ForwardConfig')
   final ForwardActionConfig forwardConfig;
 
   /// The order for the action. This value is required for rules with multiple
   /// actions. The action with the lowest value for order is performed first. The
   /// last action to be performed must be one of the following types of actions: a
   /// <code>forward</code>, <code>fixed-response</code>, or <code>redirect</code>.
+  @_s.JsonKey(name: 'Order')
   final int order;
 
   /// [Application Load Balancer] Information for creating a redirect action.
   /// Specify only when <code>Type</code> is <code>redirect</code>.
+  @_s.JsonKey(name: 'RedirectConfig')
   final RedirectActionConfig redirectConfig;
 
   /// The Amazon Resource Name (ARN) of the target group. Specify only when
   /// <code>Type</code> is <code>forward</code> and you want to route to a single
   /// target group. To route to one or more target groups, use
   /// <code>ForwardConfig</code> instead.
+  @_s.JsonKey(name: 'TargetGroupArn')
   final String targetGroupArn;
 
   Action({
@@ -2086,13 +2177,20 @@ class Action {
       targetGroupArn: _s.extractXmlStringValue(elem, 'TargetGroupArn'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ActionToJson(this);
 }
 
 enum ActionTypeEnum {
+  @_s.JsonValue('forward')
   forward,
+  @_s.JsonValue('authenticate-oidc')
   authenticateOidc,
+  @_s.JsonValue('authenticate-cognito')
   authenticateCognito,
+  @_s.JsonValue('redirect')
   redirect,
+  @_s.JsonValue('fixed-response')
   fixedResponse,
 }
 
@@ -2114,8 +2212,14 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AddListenerCertificatesOutput {
   /// Information about the certificates in the certificate list.
+  @_s.JsonKey(name: 'Certificates')
   final List<Certificate> certificates;
 
   AddListenerCertificatesOutput({
@@ -2131,6 +2235,11 @@ class AddListenerCertificatesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AddTagsOutput {
   AddTagsOutput();
   factory AddTagsOutput.fromXml(
@@ -2141,8 +2250,11 @@ class AddTagsOutput {
 }
 
 enum AuthenticateCognitoActionConditionalBehaviorEnum {
+  @_s.JsonValue('deny')
   deny,
+  @_s.JsonValue('allow')
   allow,
+  @_s.JsonValue('authenticate')
   authenticate,
 }
 
@@ -2163,19 +2275,28 @@ extension on String {
 
 /// Request parameters to use when integrating with Amazon Cognito to
 /// authenticate users.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AuthenticateCognitoActionConfig {
   /// The Amazon Resource Name (ARN) of the Amazon Cognito user pool.
+  @_s.JsonKey(name: 'UserPoolArn')
   final String userPoolArn;
 
   /// The ID of the Amazon Cognito user pool client.
+  @_s.JsonKey(name: 'UserPoolClientId')
   final String userPoolClientId;
 
   /// The domain prefix or fully-qualified domain name of the Amazon Cognito user
   /// pool.
+  @_s.JsonKey(name: 'UserPoolDomain')
   final String userPoolDomain;
 
   /// The query parameters (up to 10) to include in the redirect request to the
   /// authorization endpoint.
+  @_s.JsonKey(name: 'AuthenticationRequestExtraParams')
   final Map<String, String> authenticationRequestExtraParams;
 
   /// The behavior if the user is not authenticated. The following are possible
@@ -2193,6 +2314,7 @@ class AuthenticateCognitoActionConfig {
   /// endpoint. This is the default value.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'OnUnauthenticatedRequest')
   final AuthenticateCognitoActionConditionalBehaviorEnum
       onUnauthenticatedRequest;
 
@@ -2201,14 +2323,17 @@ class AuthenticateCognitoActionConfig {
   ///
   /// To verify which scope values your IdP supports and how to separate multiple
   /// values, see the documentation for your IdP.
+  @_s.JsonKey(name: 'Scope')
   final String scope;
 
   /// The name of the cookie used to maintain session information. The default is
   /// AWSELBAuthSessionCookie.
+  @_s.JsonKey(name: 'SessionCookieName')
   final String sessionCookieName;
 
   /// The maximum duration of the authentication session, in seconds. The default
   /// is 604800 seconds (7 days).
+  @_s.JsonKey(name: 'SessionTimeout')
   final int sessionTimeout;
 
   AuthenticateCognitoActionConfig({
@@ -2242,11 +2367,17 @@ class AuthenticateCognitoActionConfig {
       sessionTimeout: _s.extractXmlIntValue(elem, 'SessionTimeout'),
     );
   }
+
+  Map<String, dynamic> toJson() =>
+      _$AuthenticateCognitoActionConfigToJson(this);
 }
 
 enum AuthenticateOidcActionConditionalBehaviorEnum {
+  @_s.JsonValue('deny')
   deny,
+  @_s.JsonValue('allow')
   allow,
+  @_s.JsonValue('authenticate')
   authenticate,
 }
 
@@ -2267,33 +2398,45 @@ extension on String {
 
 /// Request parameters when using an identity provider (IdP) that is compliant
 /// with OpenID Connect (OIDC) to authenticate users.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class AuthenticateOidcActionConfig {
   /// The authorization endpoint of the IdP. This must be a full URL, including
   /// the HTTPS protocol, the domain, and the path.
+  @_s.JsonKey(name: 'AuthorizationEndpoint')
   final String authorizationEndpoint;
 
   /// The OAuth 2.0 client identifier.
+  @_s.JsonKey(name: 'ClientId')
   final String clientId;
 
   /// The OIDC issuer identifier of the IdP. This must be a full URL, including
   /// the HTTPS protocol, the domain, and the path.
+  @_s.JsonKey(name: 'Issuer')
   final String issuer;
 
   /// The token endpoint of the IdP. This must be a full URL, including the HTTPS
   /// protocol, the domain, and the path.
+  @_s.JsonKey(name: 'TokenEndpoint')
   final String tokenEndpoint;
 
   /// The user info endpoint of the IdP. This must be a full URL, including the
   /// HTTPS protocol, the domain, and the path.
+  @_s.JsonKey(name: 'UserInfoEndpoint')
   final String userInfoEndpoint;
 
   /// The query parameters (up to 10) to include in the redirect request to the
   /// authorization endpoint.
+  @_s.JsonKey(name: 'AuthenticationRequestExtraParams')
   final Map<String, String> authenticationRequestExtraParams;
 
   /// The OAuth 2.0 client secret. This parameter is required if you are creating
   /// a rule. If you are modifying a rule, you can omit this parameter if you set
   /// <code>UseExistingClientSecret</code> to true.
+  @_s.JsonKey(name: 'ClientSecret')
   final String clientSecret;
 
   /// The behavior if the user is not authenticated. The following are possible
@@ -2311,6 +2454,7 @@ class AuthenticateOidcActionConfig {
   /// endpoint. This is the default value.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'OnUnauthenticatedRequest')
   final AuthenticateOidcActionConditionalBehaviorEnum onUnauthenticatedRequest;
 
   /// The set of user claims to be requested from the IdP. The default is
@@ -2318,18 +2462,22 @@ class AuthenticateOidcActionConfig {
   ///
   /// To verify which scope values your IdP supports and how to separate multiple
   /// values, see the documentation for your IdP.
+  @_s.JsonKey(name: 'Scope')
   final String scope;
 
   /// The name of the cookie used to maintain session information. The default is
   /// AWSELBAuthSessionCookie.
+  @_s.JsonKey(name: 'SessionCookieName')
   final String sessionCookieName;
 
   /// The maximum duration of the authentication session, in seconds. The default
   /// is 604800 seconds (7 days).
+  @_s.JsonKey(name: 'SessionTimeout')
   final int sessionTimeout;
 
   /// Indicates whether to use the existing client secret when modifying a rule.
   /// If you are creating a rule, you can omit this parameter or set it to false.
+  @_s.JsonKey(name: 'UseExistingClientSecret')
   final bool useExistingClientSecret;
 
   AuthenticateOidcActionConfig({
@@ -2373,20 +2521,30 @@ class AuthenticateOidcActionConfig {
           _s.extractXmlBoolValue(elem, 'UseExistingClientSecret'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$AuthenticateOidcActionConfigToJson(this);
 }
 
 /// Information about an Availability Zone.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class AvailabilityZone {
   /// [Network Load Balancers] If you need static IP addresses for your load
   /// balancer, you can specify one Elastic IP address per Availability Zone when
   /// you create an internal-facing load balancer. For internal load balancers,
   /// you can specify a private IP address from the IPv4 range of the subnet.
+  @_s.JsonKey(name: 'LoadBalancerAddresses')
   final List<LoadBalancerAddress> loadBalancerAddresses;
 
   /// The ID of the subnet. You can specify one subnet per Availability Zone.
+  @_s.JsonKey(name: 'SubnetId')
   final String subnetId;
 
   /// The name of the Availability Zone.
+  @_s.JsonKey(name: 'ZoneName')
   final String zoneName;
 
   AvailabilityZone({
@@ -2409,14 +2567,21 @@ class AvailabilityZone {
 }
 
 /// Information about an SSL server certificate.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Certificate {
   /// The Amazon Resource Name (ARN) of the certificate.
+  @_s.JsonKey(name: 'CertificateArn')
   final String certificateArn;
 
   /// Indicates whether the certificate is the default certificate. Do not set
   /// this value when specifying a certificate as an input. This value is not
   /// included in the output when describing a listener, but is included when
   /// describing listener certificates.
+  @_s.JsonKey(name: 'IsDefault')
   final bool isDefault;
 
   Certificate({
@@ -2429,14 +2594,23 @@ class Certificate {
       isDefault: _s.extractXmlBoolValue(elem, 'IsDefault'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$CertificateToJson(this);
 }
 
 /// Information about a cipher used in a policy.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Cipher {
   /// The name of the cipher.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The priority of the cipher.
+  @_s.JsonKey(name: 'Priority')
   final int priority;
 
   Cipher({
@@ -2451,8 +2625,14 @@ class Cipher {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateListenerOutput {
   /// Information about the listener.
+  @_s.JsonKey(name: 'Listeners')
   final List<Listener> listeners;
 
   CreateListenerOutput({
@@ -2468,8 +2648,14 @@ class CreateListenerOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateLoadBalancerOutput {
   /// Information about the load balancer.
+  @_s.JsonKey(name: 'LoadBalancers')
   final List<LoadBalancer> loadBalancers;
 
   CreateLoadBalancerOutput({
@@ -2486,8 +2672,14 @@ class CreateLoadBalancerOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateRuleOutput {
   /// Information about the rule.
+  @_s.JsonKey(name: 'Rules')
   final List<Rule> rules;
 
   CreateRuleOutput({
@@ -2501,8 +2693,14 @@ class CreateRuleOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class CreateTargetGroupOutput {
   /// Information about the target group.
+  @_s.JsonKey(name: 'TargetGroups')
   final List<TargetGroup> targetGroups;
 
   CreateTargetGroupOutput({
@@ -2518,6 +2716,11 @@ class CreateTargetGroupOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteListenerOutput {
   DeleteListenerOutput();
   factory DeleteListenerOutput.fromXml(
@@ -2527,6 +2730,11 @@ class DeleteListenerOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteLoadBalancerOutput {
   DeleteLoadBalancerOutput();
   factory DeleteLoadBalancerOutput.fromXml(
@@ -2536,6 +2744,11 @@ class DeleteLoadBalancerOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteRuleOutput {
   DeleteRuleOutput();
   factory DeleteRuleOutput.fromXml(
@@ -2545,6 +2758,11 @@ class DeleteRuleOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeleteTargetGroupOutput {
   DeleteTargetGroupOutput();
   factory DeleteTargetGroupOutput.fromXml(
@@ -2554,6 +2772,11 @@ class DeleteTargetGroupOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DeregisterTargetsOutput {
   DeregisterTargetsOutput();
   factory DeregisterTargetsOutput.fromXml(
@@ -2563,12 +2786,19 @@ class DeregisterTargetsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeAccountLimitsOutput {
   /// Information about the limits.
+  @_s.JsonKey(name: 'Limits')
   final List<Limit> limits;
 
   /// If there are additional results, this is the marker for the next set of
   /// results. Otherwise, this is null.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   DescribeAccountLimitsOutput({
@@ -2584,12 +2814,19 @@ class DescribeAccountLimitsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeListenerCertificatesOutput {
   /// Information about the certificates.
+  @_s.JsonKey(name: 'Certificates')
   final List<Certificate> certificates;
 
   /// If there are additional results, this is the marker for the next set of
   /// results. Otherwise, this is null.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   DescribeListenerCertificatesOutput({
@@ -2607,12 +2844,19 @@ class DescribeListenerCertificatesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeListenersOutput {
   /// Information about the listeners.
+  @_s.JsonKey(name: 'Listeners')
   final List<Listener> listeners;
 
   /// If there are additional results, this is the marker for the next set of
   /// results. Otherwise, this is null.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   DescribeListenersOutput({
@@ -2630,8 +2874,14 @@ class DescribeListenersOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLoadBalancerAttributesOutput {
   /// Information about the load balancer attributes.
+  @_s.JsonKey(name: 'Attributes')
   final List<LoadBalancerAttribute> attributes;
 
   DescribeLoadBalancerAttributesOutput({
@@ -2647,12 +2897,19 @@ class DescribeLoadBalancerAttributesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeLoadBalancersOutput {
   /// Information about the load balancers.
+  @_s.JsonKey(name: 'LoadBalancers')
   final List<LoadBalancer> loadBalancers;
 
   /// If there are additional results, this is the marker for the next set of
   /// results. Otherwise, this is null.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   DescribeLoadBalancersOutput({
@@ -2671,12 +2928,19 @@ class DescribeLoadBalancersOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeRulesOutput {
   /// If there are additional results, this is the marker for the next set of
   /// results. Otherwise, this is null.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   /// Information about the rules.
+  @_s.JsonKey(name: 'Rules')
   final List<Rule> rules;
 
   DescribeRulesOutput({
@@ -2692,12 +2956,19 @@ class DescribeRulesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeSSLPoliciesOutput {
   /// If there are additional results, this is the marker for the next set of
   /// results. Otherwise, this is null.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
-  /// Information about the policies.
+  /// Information about the security policies.
+  @_s.JsonKey(name: 'SslPolicies')
   final List<SslPolicy> sslPolicies;
 
   DescribeSSLPoliciesOutput({
@@ -2715,8 +2986,14 @@ class DescribeSSLPoliciesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTagsOutput {
   /// Information about the tags.
+  @_s.JsonKey(name: 'TagDescriptions')
   final List<TagDescription> tagDescriptions;
 
   DescribeTagsOutput({
@@ -2733,8 +3010,14 @@ class DescribeTagsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTargetGroupAttributesOutput {
   /// Information about the target group attributes
+  @_s.JsonKey(name: 'Attributes')
   final List<TargetGroupAttribute> attributes;
 
   DescribeTargetGroupAttributesOutput({
@@ -2750,12 +3033,19 @@ class DescribeTargetGroupAttributesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTargetGroupsOutput {
   /// If there are additional results, this is the marker for the next set of
   /// results. Otherwise, this is null.
+  @_s.JsonKey(name: 'NextMarker')
   final String nextMarker;
 
   /// Information about the target groups.
+  @_s.JsonKey(name: 'TargetGroups')
   final List<TargetGroup> targetGroups;
 
   DescribeTargetGroupsOutput({
@@ -2773,8 +3063,14 @@ class DescribeTargetGroupsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class DescribeTargetHealthOutput {
   /// Information about the health of the targets.
+  @_s.JsonKey(name: 'TargetHealthDescriptions')
   final List<TargetHealthDescription> targetHealthDescriptions;
 
   DescribeTargetHealthOutput({
@@ -2793,17 +3089,25 @@ class DescribeTargetHealthOutput {
 }
 
 /// Information about an action that returns a custom HTTP response.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class FixedResponseActionConfig {
   /// The HTTP response code (2XX, 4XX, or 5XX).
+  @_s.JsonKey(name: 'StatusCode')
   final String statusCode;
 
   /// The content type.
   ///
   /// Valid Values: text/plain | text/css | text/html | application/javascript |
   /// application/json
+  @_s.JsonKey(name: 'ContentType')
   final String contentType;
 
   /// The message.
+  @_s.JsonKey(name: 'MessageBody')
   final String messageBody;
 
   FixedResponseActionConfig({
@@ -2818,15 +3122,24 @@ class FixedResponseActionConfig {
       messageBody: _s.extractXmlStringValue(elem, 'MessageBody'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$FixedResponseActionConfigToJson(this);
 }
 
 /// Information about a forward action.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class ForwardActionConfig {
   /// The target group stickiness for the rule.
+  @_s.JsonKey(name: 'TargetGroupStickinessConfig')
   final TargetGroupStickinessConfig targetGroupStickinessConfig;
 
   /// One or more target groups. For Network Load Balancers, you can specify a
   /// single target group.
+  @_s.JsonKey(name: 'TargetGroups')
   final List<TargetGroupTuple> targetGroups;
 
   ForwardActionConfig({
@@ -2844,9 +3157,16 @@ class ForwardActionConfig {
           .toList()),
     );
   }
+
+  Map<String, dynamic> toJson() => _$ForwardActionConfigToJson(this);
 }
 
 /// Information about a host header condition.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class HostHeaderConditionConfig {
   /// One or more host names. The maximum size of each name is 128 characters. The
   /// comparison is case insensitive. The following wildcard characters are
@@ -2855,6 +3175,7 @@ class HostHeaderConditionConfig {
   ///
   /// If you specify multiple strings, the condition is satisfied if one of the
   /// strings matches the host name.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   HostHeaderConditionConfig({
@@ -2867,12 +3188,19 @@ class HostHeaderConditionConfig {
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'Values')),
     );
   }
+
+  Map<String, dynamic> toJson() => _$HostHeaderConditionConfigToJson(this);
 }
 
 /// Information about an HTTP header condition.
 ///
 /// There is a set of standard HTTP header fields. You can also define custom
 /// HTTP header fields.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class HttpHeaderConditionConfig {
   /// The name of the HTTP header field. The maximum size is 40 characters. The
   /// header name is case insensitive. The allowed characters are specified by RFC
@@ -2880,6 +3208,7 @@ class HttpHeaderConditionConfig {
   ///
   /// You can't use an HTTP header condition to specify the host header. Use
   /// <a>HostHeaderConditionConfig</a> to specify a host header condition.
+  @_s.JsonKey(name: 'HttpHeaderName')
   final String httpHeaderName;
 
   /// One or more strings to compare against the value of the HTTP header. The
@@ -2893,6 +3222,7 @@ class HttpHeaderConditionConfig {
   /// If you specify multiple strings, the condition is satisfied if one of the
   /// strings matches the value of the HTTP header. To require that all of the
   /// strings are a match, create one condition per string.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   HttpHeaderConditionConfig({
@@ -2907,6 +3237,8 @@ class HttpHeaderConditionConfig {
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'Values')),
     );
   }
+
+  Map<String, dynamic> toJson() => _$HttpHeaderConditionConfigToJson(this);
 }
 
 /// Information about an HTTP method condition.
@@ -2915,6 +3247,11 @@ class HttpHeaderConditionConfig {
 /// more information, see the <a
 /// href="https://www.iana.org/assignments/http-methods/http-methods.xhtml">HTTP
 /// Method Registry</a>. You can also define custom HTTP methods.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class HttpRequestMethodConditionConfig {
   /// The name of the request method. The maximum size is 40 characters. The
   /// allowed characters are A-Z, hyphen (-), and underscore (_). The comparison
@@ -2925,6 +3262,7 @@ class HttpRequestMethodConditionConfig {
   /// strings matches the HTTP request method. We recommend that you route GET and
   /// HEAD requests in the same way, because the response to a HEAD request may be
   /// cached.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   HttpRequestMethodConditionConfig({
@@ -2937,10 +3275,15 @@ class HttpRequestMethodConditionConfig {
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'Values')),
     );
   }
+
+  Map<String, dynamic> toJson() =>
+      _$HttpRequestMethodConditionConfigToJson(this);
 }
 
 enum IpAddressType {
+  @_s.JsonValue('ipv4')
   ipv4,
+  @_s.JsonValue('dualstack')
   dualstack,
 }
 
@@ -2958,8 +3301,14 @@ extension on String {
 
 /// Information about an Elastic Load Balancing resource limit for your AWS
 /// account.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Limit {
   /// The maximum value of the limit.
+  @_s.JsonKey(name: 'Max')
   final String max;
 
   /// The name of the limit. The possible values are:
@@ -3002,6 +3351,7 @@ class Limit {
   /// targets-per-network-load-balancer
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   Limit({
@@ -3017,28 +3367,39 @@ class Limit {
 }
 
 /// Information about a listener.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Listener {
   /// [HTTPS or TLS listener] The default certificate for the listener.
+  @_s.JsonKey(name: 'Certificates')
   final List<Certificate> certificates;
 
   /// The default actions for the listener.
+  @_s.JsonKey(name: 'DefaultActions')
   final List<Action> defaultActions;
 
   /// The Amazon Resource Name (ARN) of the listener.
+  @_s.JsonKey(name: 'ListenerArn')
   final String listenerArn;
 
   /// The Amazon Resource Name (ARN) of the load balancer.
+  @_s.JsonKey(name: 'LoadBalancerArn')
   final String loadBalancerArn;
 
   /// The port on which the load balancer is listening.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The protocol for connections from clients to the load balancer.
+  @_s.JsonKey(name: 'Protocol')
   final ProtocolEnum protocol;
 
-  /// [HTTPS or TLS listener] The security policy that defines which ciphers and
-  /// protocols are supported. The default is the current predefined security
-  /// policy.
+  /// [HTTPS or TLS listener] The security policy that defines which protocols and
+  /// ciphers are supported.
+  @_s.JsonKey(name: 'SslPolicy')
   final String sslPolicy;
 
   Listener({
@@ -3071,28 +3432,40 @@ class Listener {
 }
 
 /// Information about a load balancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancer {
   /// The Availability Zones for the load balancer.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<AvailabilityZone> availabilityZones;
 
   /// The ID of the Amazon Route 53 hosted zone associated with the load balancer.
+  @_s.JsonKey(name: 'CanonicalHostedZoneId')
   final String canonicalHostedZoneId;
 
   /// The date and time the load balancer was created.
+  @_s.JsonKey(name: 'CreatedTime', fromJson: unixFromJson, toJson: unixToJson)
   final DateTime createdTime;
 
   /// The public DNS name of the load balancer.
+  @_s.JsonKey(name: 'DNSName')
   final String dNSName;
 
   /// The type of IP addresses used by the subnets for your load balancer. The
   /// possible values are <code>ipv4</code> (for IPv4 addresses) and
   /// <code>dualstack</code> (for IPv4 and IPv6 addresses).
+  @_s.JsonKey(name: 'IpAddressType')
   final IpAddressType ipAddressType;
 
   /// The Amazon Resource Name (ARN) of the load balancer.
+  @_s.JsonKey(name: 'LoadBalancerArn')
   final String loadBalancerArn;
 
   /// The name of the load balancer.
+  @_s.JsonKey(name: 'LoadBalancerName')
   final String loadBalancerName;
 
   /// The nodes of an Internet-facing load balancer have public IP addresses. The
@@ -3104,18 +3477,23 @@ class LoadBalancer {
   /// DNS name of an internal load balancer is publicly resolvable to the private
   /// IP addresses of the nodes. Therefore, internal load balancers can route
   /// requests only from clients with access to the VPC for the load balancer.
+  @_s.JsonKey(name: 'Scheme')
   final LoadBalancerSchemeEnum scheme;
 
   /// The IDs of the security groups for the load balancer.
+  @_s.JsonKey(name: 'SecurityGroups')
   final List<String> securityGroups;
 
   /// The state of the load balancer.
+  @_s.JsonKey(name: 'State')
   final LoadBalancerState state;
 
   /// The type of load balancer.
+  @_s.JsonKey(name: 'Type')
   final LoadBalancerTypeEnum type;
 
   /// The ID of the VPC for the load balancer.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   LoadBalancer({
@@ -3161,16 +3539,24 @@ class LoadBalancer {
 }
 
 /// Information about a static IP address for a load balancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancerAddress {
   /// [Network Load Balancers] The allocation ID of the Elastic IP address for an
   /// internal-facing load balancer.
+  @_s.JsonKey(name: 'AllocationId')
   final String allocationId;
 
   /// The static IP address.
+  @_s.JsonKey(name: 'IpAddress')
   final String ipAddress;
 
   /// [Network Load Balancers] The private IPv4 address for an internal load
   /// balancer.
+  @_s.JsonKey(name: 'PrivateIPv4Address')
   final String privateIPv4Address;
 
   LoadBalancerAddress({
@@ -3188,6 +3574,11 @@ class LoadBalancerAddress {
 }
 
 /// Information about a load balancer attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class LoadBalancerAttribute {
   /// The name of the attribute.
   ///
@@ -3233,7 +3624,8 @@ class LoadBalancerAttribute {
   /// <li>
   /// <code>routing.http2.enabled</code> - Indicates whether HTTP/2 is enabled.
   /// The value is <code>true</code> or <code>false</code>. The default is
-  /// <code>true</code>.
+  /// <code>true</code>. Elastic Load Balancing requires that message header names
+  /// contain only alphanumeric characters and hyphens.
   /// </li>
   /// </ul>
   /// The following attributes are supported by only Network Load Balancers:
@@ -3245,9 +3637,11 @@ class LoadBalancerAttribute {
   /// <code>false</code>. The default is <code>false</code>.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value of the attribute.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   LoadBalancerAttribute({
@@ -3260,10 +3654,14 @@ class LoadBalancerAttribute {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$LoadBalancerAttributeToJson(this);
 }
 
 enum LoadBalancerSchemeEnum {
+  @_s.JsonValue('internet-facing')
   internetFacing,
+  @_s.JsonValue('internal')
   internal,
 }
 
@@ -3280,14 +3678,21 @@ extension on String {
 }
 
 /// Information about the state of the load balancer.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class LoadBalancerState {
   /// The state code. The initial state of the load balancer is
   /// <code>provisioning</code>. After the load balancer is fully set up and ready
   /// to route traffic, its state is <code>active</code>. If the load balancer
   /// could not be set up, its state is <code>failed</code>.
+  @_s.JsonKey(name: 'Code')
   final LoadBalancerStateEnum code;
 
   /// A description of the state.
+  @_s.JsonKey(name: 'Reason')
   final String reason;
 
   LoadBalancerState({
@@ -3303,9 +3708,13 @@ class LoadBalancerState {
 }
 
 enum LoadBalancerStateEnum {
+  @_s.JsonValue('active')
   active,
+  @_s.JsonValue('provisioning')
   provisioning,
+  @_s.JsonValue('active_impaired')
   activeImpaired,
+  @_s.JsonValue('failed')
   failed,
 }
 
@@ -3326,7 +3735,9 @@ extension on String {
 }
 
 enum LoadBalancerTypeEnum {
+  @_s.JsonValue('application')
   application,
+  @_s.JsonValue('network')
   network,
 }
 
@@ -3343,6 +3754,11 @@ extension on String {
 }
 
 /// Information to use when checking for a successful response from a target.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Matcher {
   /// The HTTP codes.
   ///
@@ -3351,6 +3767,7 @@ class Matcher {
   /// "200,202") or a range of values (for example, "200-299").
   ///
   /// For Network Load Balancers, this is 200–399.
+  @_s.JsonKey(name: 'HttpCode')
   final String httpCode;
 
   Matcher({
@@ -3361,10 +3778,18 @@ class Matcher {
       httpCode: _s.extractXmlStringValue(elem, 'HttpCode'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$MatcherToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyListenerOutput {
   /// Information about the modified listener.
+  @_s.JsonKey(name: 'Listeners')
   final List<Listener> listeners;
 
   ModifyListenerOutput({
@@ -3380,8 +3805,14 @@ class ModifyListenerOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyLoadBalancerAttributesOutput {
   /// Information about the load balancer attributes.
+  @_s.JsonKey(name: 'Attributes')
   final List<LoadBalancerAttribute> attributes;
 
   ModifyLoadBalancerAttributesOutput({
@@ -3397,8 +3828,14 @@ class ModifyLoadBalancerAttributesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyRuleOutput {
   /// Information about the modified rule.
+  @_s.JsonKey(name: 'Rules')
   final List<Rule> rules;
 
   ModifyRuleOutput({
@@ -3412,8 +3849,14 @@ class ModifyRuleOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyTargetGroupAttributesOutput {
   /// Information about the attributes.
+  @_s.JsonKey(name: 'Attributes')
   final List<TargetGroupAttribute> attributes;
 
   ModifyTargetGroupAttributesOutput({
@@ -3429,8 +3872,14 @@ class ModifyTargetGroupAttributesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class ModifyTargetGroupOutput {
   /// Information about the modified target group.
+  @_s.JsonKey(name: 'TargetGroups')
   final List<TargetGroup> targetGroups;
 
   ModifyTargetGroupOutput({
@@ -3447,6 +3896,11 @@ class ModifyTargetGroupOutput {
 }
 
 /// Information about a path pattern condition.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class PathPatternConditionConfig {
   /// One or more path patterns to compare against the request URL. The maximum
   /// size of each string is 128 characters. The comparison is case sensitive. The
@@ -3457,6 +3911,7 @@ class PathPatternConditionConfig {
   /// matches the request URL. The path pattern is compared only to the path of
   /// the URL, not to its query string. To compare against the query string, use
   /// <a>QueryStringConditionConfig</a>.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   PathPatternConditionConfig({
@@ -3469,14 +3924,22 @@ class PathPatternConditionConfig {
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'Values')),
     );
   }
+
+  Map<String, dynamic> toJson() => _$PathPatternConditionConfigToJson(this);
 }
 
 enum ProtocolEnum {
+  @_s.JsonValue('HTTP')
   http,
+  @_s.JsonValue('HTTPS')
   https,
+  @_s.JsonValue('TCP')
   tcp,
+  @_s.JsonValue('TLS')
   tls,
+  @_s.JsonValue('UDP')
   udp,
+  @_s.JsonValue('TCP_UDP')
   tcpUdp,
 }
 
@@ -3507,6 +3970,11 @@ extension on String {
 /// query string contains key/value pairs separated by '&amp;' characters. The
 /// allowed characters are specified by RFC 3986. Any character can be
 /// percentage encoded.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class QueryStringConditionConfig {
   /// One or more key/value pairs or values to find in the query string. The
   /// maximum size of each string is 128 characters. The comparison is case
@@ -3517,6 +3985,7 @@ class QueryStringConditionConfig {
   ///
   /// If you specify multiple key/value pairs or values, the condition is
   /// satisfied if one of them is found in the query string.
+  @_s.JsonKey(name: 'Values')
   final List<QueryStringKeyValuePair> values;
 
   QueryStringConditionConfig({
@@ -3530,14 +3999,23 @@ class QueryStringConditionConfig {
           .toList()),
     );
   }
+
+  Map<String, dynamic> toJson() => _$QueryStringConditionConfigToJson(this);
 }
 
 /// Information about a key/value pair.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class QueryStringKeyValuePair {
   /// The key. You can omit the key.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   QueryStringKeyValuePair({
@@ -3550,6 +4028,8 @@ class QueryStringKeyValuePair {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$QueryStringKeyValuePairToJson(this);
 }
 
 /// Information about a redirect action.
@@ -3580,30 +4060,41 @@ class QueryStringKeyValuePair {
 /// </ul>
 /// For example, you can change the path to "/new/#{path}", the hostname to
 /// "example.#{host}", or the query to "#{query}&amp;value=xyz".
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class RedirectActionConfig {
   /// The HTTP redirect code. The redirect is either permanent (HTTP 301) or
   /// temporary (HTTP 302).
+  @_s.JsonKey(name: 'StatusCode')
   final RedirectActionStatusCodeEnum statusCode;
 
   /// The hostname. This component is not percent-encoded. The hostname can
   /// contain #{host}.
+  @_s.JsonKey(name: 'Host')
   final String host;
 
   /// The absolute path, starting with the leading "/". This component is not
   /// percent-encoded. The path can contain #{host}, #{path}, and #{port}.
+  @_s.JsonKey(name: 'Path')
   final String path;
 
   /// The port. You can specify a value from 1 to 65535 or #{port}.
+  @_s.JsonKey(name: 'Port')
   final String port;
 
   /// The protocol. You can specify HTTP, HTTPS, or #{protocol}. You can redirect
   /// HTTP to HTTP, HTTP to HTTPS, and HTTPS to HTTPS. You cannot redirect HTTPS
   /// to HTTP.
+  @_s.JsonKey(name: 'Protocol')
   final String protocol;
 
   /// The query parameters, URL-encoded when necessary, but not percent-encoded.
   /// Do not include the leading "?", as it is automatically added. You can
   /// specify any of the reserved keywords.
+  @_s.JsonKey(name: 'Query')
   final String query;
 
   RedirectActionConfig({
@@ -3626,10 +4117,14 @@ class RedirectActionConfig {
       query: _s.extractXmlStringValue(elem, 'Query'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$RedirectActionConfigToJson(this);
 }
 
 enum RedirectActionStatusCodeEnum {
+  @_s.JsonValue('HTTP_301')
   http_301,
+  @_s.JsonValue('HTTP_302')
   http_302,
 }
 
@@ -3645,6 +4140,11 @@ extension on String {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RegisterTargetsOutput {
   RegisterTargetsOutput();
   factory RegisterTargetsOutput.fromXml(
@@ -3654,6 +4154,11 @@ class RegisterTargetsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RemoveListenerCertificatesOutput {
   RemoveListenerCertificatesOutput();
   factory RemoveListenerCertificatesOutput.fromXml(
@@ -3663,6 +4168,11 @@ class RemoveListenerCertificatesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class RemoveTagsOutput {
   RemoveTagsOutput();
   factory RemoveTagsOutput.fromXml(
@@ -3673,10 +4183,16 @@ class RemoveTagsOutput {
 }
 
 /// Information about a rule.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class Rule {
   /// The actions. Each rule must include exactly one of the following types of
   /// actions: <code>forward</code>, <code>redirect</code>, or
   /// <code>fixed-response</code>, and it must be the last action to be performed.
+  @_s.JsonKey(name: 'Actions')
   final List<Action> actions;
 
   /// The conditions. Each rule can include zero or one of the following
@@ -3684,15 +4200,19 @@ class Rule {
   /// <code>path-pattern</code>, and <code>source-ip</code>, and zero or more of
   /// the following conditions: <code>http-header</code> and
   /// <code>query-string</code>.
+  @_s.JsonKey(name: 'Conditions')
   final List<RuleCondition> conditions;
 
   /// Indicates whether this is the default rule.
+  @_s.JsonKey(name: 'IsDefault')
   final bool isDefault;
 
   /// The priority.
+  @_s.JsonKey(name: 'Priority')
   final String priority;
 
   /// The Amazon Resource Name (ARN) of the rule.
+  @_s.JsonKey(name: 'RuleArn')
   final String ruleArn;
 
   Rule({
@@ -3718,6 +4238,11 @@ class Rule {
 }
 
 /// Information about a condition for a rule.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class RuleCondition {
   /// The field in the HTTP request. The following are the possible values:
   ///
@@ -3741,30 +4266,37 @@ class RuleCondition {
   /// <code>source-ip</code>
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Field')
   final String field;
 
   /// Information for a host header condition. Specify only when
   /// <code>Field</code> is <code>host-header</code>.
+  @_s.JsonKey(name: 'HostHeaderConfig')
   final HostHeaderConditionConfig hostHeaderConfig;
 
   /// Information for an HTTP header condition. Specify only when
   /// <code>Field</code> is <code>http-header</code>.
+  @_s.JsonKey(name: 'HttpHeaderConfig')
   final HttpHeaderConditionConfig httpHeaderConfig;
 
   /// Information for an HTTP method condition. Specify only when
   /// <code>Field</code> is <code>http-request-method</code>.
+  @_s.JsonKey(name: 'HttpRequestMethodConfig')
   final HttpRequestMethodConditionConfig httpRequestMethodConfig;
 
   /// Information for a path pattern condition. Specify only when
   /// <code>Field</code> is <code>path-pattern</code>.
+  @_s.JsonKey(name: 'PathPatternConfig')
   final PathPatternConditionConfig pathPatternConfig;
 
   /// Information for a query string condition. Specify only when
   /// <code>Field</code> is <code>query-string</code>.
+  @_s.JsonKey(name: 'QueryStringConfig')
   final QueryStringConditionConfig queryStringConfig;
 
   /// Information for a source IP condition. Specify only when <code>Field</code>
   /// is <code>source-ip</code>.
+  @_s.JsonKey(name: 'SourceIpConfig')
   final SourceIpConditionConfig sourceIpConfig;
 
   /// The condition value. You can use <code>Values</code> if the rule contains
@@ -3814,6 +4346,7 @@ class RuleCondition {
   /// ? (matches exactly 1 character)
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   RuleCondition({
@@ -3852,24 +4385,40 @@ class RuleCondition {
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'Values')),
     );
   }
+
+  Map<String, dynamic> toJson() => _$RuleConditionToJson(this);
 }
 
 /// Information about the priorities for the rules for a listener.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class RulePriorityPair {
   /// The rule priority.
+  @_s.JsonKey(name: 'Priority')
   final int priority;
 
   /// The Amazon Resource Name (ARN) of the rule.
+  @_s.JsonKey(name: 'RuleArn')
   final String ruleArn;
 
   RulePriorityPair({
     this.priority,
     this.ruleArn,
   });
+  Map<String, dynamic> toJson() => _$RulePriorityPairToJson(this);
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetIpAddressTypeOutput {
   /// The IP address type.
+  @_s.JsonKey(name: 'IpAddressType')
   final IpAddressType ipAddressType;
 
   SetIpAddressTypeOutput({
@@ -3883,8 +4432,14 @@ class SetIpAddressTypeOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetRulePrioritiesOutput {
   /// Information about the rules.
+  @_s.JsonKey(name: 'Rules')
   final List<Rule> rules;
 
   SetRulePrioritiesOutput({
@@ -3898,8 +4453,14 @@ class SetRulePrioritiesOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetSecurityGroupsOutput {
   /// The IDs of the security groups associated with the load balancer.
+  @_s.JsonKey(name: 'SecurityGroupIds')
   final List<String> securityGroupIds;
 
   SetSecurityGroupsOutput({
@@ -3913,8 +4474,14 @@ class SetSecurityGroupsOutput {
   }
 }
 
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SetSubnetsOutput {
   /// Information about the subnet and Availability Zone.
+  @_s.JsonKey(name: 'AvailabilityZones')
   final List<AvailabilityZone> availabilityZones;
 
   SetSubnetsOutput({
@@ -3936,6 +4503,11 @@ class SetSubnetsOutput {
 /// You can use this condition to route based on the IP address of the source
 /// that connects to the load balancer. If a client is behind a proxy, this is
 /// the IP address of the proxy not the IP address of the client.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SourceIpConditionConfig {
   /// One or more source IP addresses, in CIDR format. You can use both IPv4 and
   /// IPv6 addresses. Wildcards are not supported.
@@ -3945,6 +4517,7 @@ class SourceIpConditionConfig {
   /// not satisfied by the addresses in the X-Forwarded-For header. To search for
   /// addresses in the X-Forwarded-For header, use
   /// <a>HttpHeaderConditionConfig</a>.
+  @_s.JsonKey(name: 'Values')
   final List<String> values;
 
   SourceIpConditionConfig({
@@ -3957,17 +4530,27 @@ class SourceIpConditionConfig {
           ?.let((elem) => _s.extractXmlStringListValues(elem, 'Values')),
     );
   }
+
+  Map<String, dynamic> toJson() => _$SourceIpConditionConfigToJson(this);
 }
 
 /// Information about a policy used for SSL negotiation.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class SslPolicy {
   /// The ciphers.
+  @_s.JsonKey(name: 'Ciphers')
   final List<Cipher> ciphers;
 
   /// The name of the policy.
+  @_s.JsonKey(name: 'Name')
   final String name;
 
   /// The protocols.
+  @_s.JsonKey(name: 'SslProtocols')
   final List<String> sslProtocols;
 
   SslPolicy({
@@ -3988,16 +4571,24 @@ class SslPolicy {
 }
 
 /// Information about a subnet mapping.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class SubnetMapping {
   /// [Network Load Balancers] The allocation ID of the Elastic IP address for an
   /// internet-facing load balancer.
+  @_s.JsonKey(name: 'AllocationId')
   final String allocationId;
 
   /// [Network Load Balancers] The private IPv4 address for an internal load
   /// balancer.
+  @_s.JsonKey(name: 'PrivateIPv4Address')
   final String privateIPv4Address;
 
   /// The ID of the subnet.
+  @_s.JsonKey(name: 'SubnetId')
   final String subnetId;
 
   SubnetMapping({
@@ -4005,14 +4596,22 @@ class SubnetMapping {
     this.privateIPv4Address,
     this.subnetId,
   });
+  Map<String, dynamic> toJson() => _$SubnetMappingToJson(this);
 }
 
 /// Information about a tag.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class Tag {
   /// The key of the tag.
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value of the tag.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   Tag({
@@ -4025,14 +4624,23 @@ class Tag {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TagToJson(this);
 }
 
 /// The tags associated with a resource.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TagDescription {
   /// The Amazon Resource Name (ARN) of the resource.
+  @_s.JsonKey(name: 'ResourceArn')
   final String resourceArn;
 
   /// Information about the tags.
+  @_s.JsonKey(name: 'Tags')
   final List<Tag> tags;
 
   TagDescription({
@@ -4049,11 +4657,17 @@ class TagDescription {
 }
 
 /// Information about a target.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TargetDescription {
   /// The ID of the target. If the target type of the target group is
   /// <code>instance</code>, specify an instance ID. If the target type is
   /// <code>ip</code>, specify an IP address. If the target type is
   /// <code>lambda</code>, specify the ARN of the Lambda function.
+  @_s.JsonKey(name: 'Id')
   final String id;
 
   /// An Availability Zone or <code>all</code>. This determines whether the target
@@ -4074,10 +4688,12 @@ class TargetDescription {
   ///
   /// If the target type is <code>lambda</code>, this parameter is optional and
   /// the only supported value is <code>all</code>.
+  @_s.JsonKey(name: 'AvailabilityZone')
   final String availabilityZone;
 
   /// The port on which the target is listening. Not used if the target is a
   /// Lambda function.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   TargetDescription({
@@ -4092,65 +4708,88 @@ class TargetDescription {
       port: _s.extractXmlIntValue(elem, 'Port'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TargetDescriptionToJson(this);
 }
 
 /// Information about a target group.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TargetGroup {
   /// Indicates whether health checks are enabled.
+  @_s.JsonKey(name: 'HealthCheckEnabled')
   final bool healthCheckEnabled;
 
   /// The approximate amount of time, in seconds, between health checks of an
   /// individual target.
+  @_s.JsonKey(name: 'HealthCheckIntervalSeconds')
   final int healthCheckIntervalSeconds;
 
   /// The destination for the health check request.
+  @_s.JsonKey(name: 'HealthCheckPath')
   final String healthCheckPath;
 
   /// The port to use to connect with the target.
+  @_s.JsonKey(name: 'HealthCheckPort')
   final String healthCheckPort;
 
   /// The protocol to use to connect with the target.
+  @_s.JsonKey(name: 'HealthCheckProtocol')
   final ProtocolEnum healthCheckProtocol;
 
   /// The amount of time, in seconds, during which no response means a failed
   /// health check.
+  @_s.JsonKey(name: 'HealthCheckTimeoutSeconds')
   final int healthCheckTimeoutSeconds;
 
   /// The number of consecutive health checks successes required before
   /// considering an unhealthy target healthy.
+  @_s.JsonKey(name: 'HealthyThresholdCount')
   final int healthyThresholdCount;
 
   /// The Amazon Resource Names (ARN) of the load balancers that route traffic to
   /// this target group.
+  @_s.JsonKey(name: 'LoadBalancerArns')
   final List<String> loadBalancerArns;
 
   /// The HTTP codes to use when checking for a successful response from a target.
+  @_s.JsonKey(name: 'Matcher')
   final Matcher matcher;
 
   /// The port on which the targets are listening. Not used if the target is a
   /// Lambda function.
+  @_s.JsonKey(name: 'Port')
   final int port;
 
   /// The protocol to use for routing traffic to the targets.
+  @_s.JsonKey(name: 'Protocol')
   final ProtocolEnum protocol;
 
   /// The Amazon Resource Name (ARN) of the target group.
+  @_s.JsonKey(name: 'TargetGroupArn')
   final String targetGroupArn;
 
   /// The name of the target group.
+  @_s.JsonKey(name: 'TargetGroupName')
   final String targetGroupName;
 
   /// The type of target that you must specify when registering targets with this
   /// target group. The possible values are <code>instance</code> (targets are
   /// specified by instance ID) or <code>ip</code> (targets are specified by IP
   /// address).
+  @_s.JsonKey(name: 'TargetType')
   final TargetTypeEnum targetType;
 
   /// The number of consecutive health check failures required before considering
   /// the target unhealthy.
+  @_s.JsonKey(name: 'UnhealthyThresholdCount')
   final int unhealthyThresholdCount;
 
   /// The ID of the VPC for the targets.
+  @_s.JsonKey(name: 'VpcId')
   final String vpcId;
 
   TargetGroup({
@@ -4203,11 +4842,16 @@ class TargetGroup {
 }
 
 /// Information about a target group attribute.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TargetGroupAttribute {
   /// The name of the attribute.
   ///
-  /// The following attribute is supported by both Application Load Balancers and
-  /// Network Load Balancers:
+  /// The following attributes are supported by both Application Load Balancers
+  /// and Network Load Balancers:
   ///
   /// <ul>
   /// <li>
@@ -4216,6 +4860,16 @@ class TargetGroupAttribute {
   /// deregistering target from <code>draining</code> to <code>unused</code>. The
   /// range is 0-3600 seconds. The default value is 300 seconds. If the target is
   /// a Lambda function, this attribute is not supported.
+  /// </li>
+  /// <li>
+  /// <code>stickiness.enabled</code> - Indicates whether sticky sessions are
+  /// enabled. The value is <code>true</code> or <code>false</code>. The default
+  /// is <code>false</code>.
+  /// </li>
+  /// <li>
+  /// <code>stickiness.type</code> - The type of sticky sessions. The possible
+  /// values are <code>lb_cookie</code> for Application Load Balancers or
+  /// <code>source_ip</code> for Network Load Balancers.
   /// </li>
   /// </ul>
   /// The following attributes are supported by Application Load Balancers if the
@@ -4235,15 +4889,6 @@ class TargetGroupAttribute {
   /// of the traffic to the target group. After this time period ends, the target
   /// receives its full share of traffic. The range is 30-900 seconds (15
   /// minutes). Slow start mode is disabled by default.
-  /// </li>
-  /// <li>
-  /// <code>stickiness.enabled</code> - Indicates whether sticky sessions are
-  /// enabled. The value is <code>true</code> or <code>false</code>. The default
-  /// is <code>false</code>.
-  /// </li>
-  /// <li>
-  /// <code>stickiness.type</code> - The type of sticky sessions. The possible
-  /// value is <code>lb_cookie</code>.
   /// </li>
   /// <li>
   /// <code>stickiness.lb_cookie.duration_seconds</code> - The time period, in
@@ -4276,9 +4921,11 @@ class TargetGroupAttribute {
   /// The default is <code>false</code>.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Key')
   final String key;
 
   /// The value of the attribute.
+  @_s.JsonKey(name: 'Value')
   final String value;
 
   TargetGroupAttribute({
@@ -4291,15 +4938,24 @@ class TargetGroupAttribute {
       value: _s.extractXmlStringValue(elem, 'Value'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TargetGroupAttributeToJson(this);
 }
 
 /// Information about the target group stickiness for a rule.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TargetGroupStickinessConfig {
   /// The time period, in seconds, during which requests from a client should be
   /// routed to the same target group. The range is 1-604800 seconds (7 days).
+  @_s.JsonKey(name: 'DurationSeconds')
   final int durationSeconds;
 
   /// Indicates whether target group stickiness is enabled.
+  @_s.JsonKey(name: 'Enabled')
   final bool enabled;
 
   TargetGroupStickinessConfig({
@@ -4312,15 +4968,24 @@ class TargetGroupStickinessConfig {
       enabled: _s.extractXmlBoolValue(elem, 'Enabled'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TargetGroupStickinessConfigToJson(this);
 }
 
 /// Information about how traffic will be distributed between multiple target
 /// groups in a forward rule.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: true)
 class TargetGroupTuple {
   /// The Amazon Resource Name (ARN) of the target group.
+  @_s.JsonKey(name: 'TargetGroupArn')
   final String targetGroupArn;
 
   /// The weight. The range is 0 to 999.
+  @_s.JsonKey(name: 'Weight')
   final int weight;
 
   TargetGroupTuple({
@@ -4333,12 +4998,20 @@ class TargetGroupTuple {
       weight: _s.extractXmlIntValue(elem, 'Weight'),
     );
   }
+
+  Map<String, dynamic> toJson() => _$TargetGroupTupleToJson(this);
 }
 
 /// Information about the current health of a target.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TargetHealth {
   /// A description of the target health that provides additional details. If the
   /// state is <code>healthy</code>, a description is not provided.
+  @_s.JsonKey(name: 'Description')
   final String description;
 
   /// The reason code.
@@ -4425,9 +5098,11 @@ class TargetHealth {
   /// internal error. Applies only to Network Load Balancers.
   /// </li>
   /// </ul>
+  @_s.JsonKey(name: 'Reason')
   final TargetHealthReasonEnum reason;
 
   /// The state of the target.
+  @_s.JsonKey(name: 'State')
   final TargetHealthStateEnum state;
 
   TargetHealth({
@@ -4446,14 +5121,22 @@ class TargetHealth {
 }
 
 /// Information about the health of a target.
+@_s.JsonSerializable(
+    includeIfNull: false,
+    explicitToJson: true,
+    createFactory: false,
+    createToJson: false)
 class TargetHealthDescription {
   /// The port to use to connect with the target.
+  @_s.JsonKey(name: 'HealthCheckPort')
   final String healthCheckPort;
 
   /// The description of the target.
+  @_s.JsonKey(name: 'Target')
   final TargetDescription target;
 
   /// The health information for the target.
+  @_s.JsonKey(name: 'TargetHealth')
   final TargetHealth targetHealth;
 
   TargetHealthDescription({
@@ -4475,17 +5158,29 @@ class TargetHealthDescription {
 }
 
 enum TargetHealthReasonEnum {
+  @_s.JsonValue('Elb.RegistrationInProgress')
   elbRegistrationInProgress,
+  @_s.JsonValue('Elb.InitialHealthChecking')
   elbInitialHealthChecking,
+  @_s.JsonValue('Target.ResponseCodeMismatch')
   targetResponseCodeMismatch,
+  @_s.JsonValue('Target.Timeout')
   targetTimeout,
+  @_s.JsonValue('Target.FailedHealthChecks')
   targetFailedHealthChecks,
+  @_s.JsonValue('Target.NotRegistered')
   targetNotRegistered,
+  @_s.JsonValue('Target.NotInUse')
   targetNotInUse,
+  @_s.JsonValue('Target.DeregistrationInProgress')
   targetDeregistrationInProgress,
+  @_s.JsonValue('Target.InvalidState')
   targetInvalidState,
+  @_s.JsonValue('Target.IpUnusable')
   targetIpUnusable,
+  @_s.JsonValue('Target.HealthCheckDisabled')
   targetHealthCheckDisabled,
+  @_s.JsonValue('Elb.InternalError')
   elbInternalError,
 }
 
@@ -4522,11 +5217,17 @@ extension on String {
 }
 
 enum TargetHealthStateEnum {
+  @_s.JsonValue('initial')
   initial,
+  @_s.JsonValue('healthy')
   healthy,
+  @_s.JsonValue('unhealthy')
   unhealthy,
+  @_s.JsonValue('unused')
   unused,
+  @_s.JsonValue('draining')
   draining,
+  @_s.JsonValue('unavailable')
   unavailable,
 }
 
@@ -4551,8 +5252,11 @@ extension on String {
 }
 
 enum TargetTypeEnum {
+  @_s.JsonValue('instance')
   instance,
+  @_s.JsonValue('ip')
   ip,
+  @_s.JsonValue('lambda')
   lambda,
 }
 
